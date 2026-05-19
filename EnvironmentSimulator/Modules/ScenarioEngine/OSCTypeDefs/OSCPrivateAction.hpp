@@ -1268,6 +1268,43 @@ namespace scenarioengine
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
     };
 
+    class RandomRouteAction : public OSCPrivateAction
+    {
+    public:
+        ~RandomRouteAction();
+
+        RandomRouteAction(StoryBoardElement* parent)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::RANDOM_ROUTE_ACTION,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
+        {
+        }
+
+        RandomRouteAction(const RandomRouteAction& action)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::RANDOM_ROUTE_ACTION,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
+        {
+            SetName(action.GetName());
+        }
+
+        OSCPrivateAction* Copy()
+        {
+            RandomRouteAction* new_action = new RandomRouteAction(*this);
+            return new_action;
+        }
+
+        virtual std::string Type2Str()
+        {
+            return "RandomRouteAction";
+        };
+
+        void Start(double simTime);
+        void Step(double simTime, double dt);
+
+        void ReplaceObjectRefs(Object* obj1, Object* obj2);
+    };
+
     class AssignControllerAction : public OSCPrivateAction
     {
     public:

@@ -3546,6 +3546,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                     action = acqPosAction;
                 }
+                else if (routingChild.name() == std::string("RandomRouteAction"))
+                {
+                    action = new RandomRouteAction(parent);
+                }
                 else
                 {
                     throw std::runtime_error("Action is not supported: " + std::string(routingChild.name()));

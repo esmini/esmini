@@ -38,7 +38,7 @@ Object::Object(Type type)
       ghost_Ego_(0),
       visibilityMask_(0xff),
       isGhost_(false),
-      junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM),
+      junctionSelectorStrategy_(Junction::JunctionStrategyType::SELECTOR_ANGLE),
       nextJunctionSelectorAngle_(0.0),
       scaleMode_(EntityScaleMode::NONE),
       is_active_(false),

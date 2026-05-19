@@ -5143,7 +5143,7 @@ TEST(ActionTest, TestInstantLaneChange)
     delete se;
 }
 
-TEST(RouteingTest, TestPositionOffRoute)
+TEST(RoutingTest, TestPositionOffRoute)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/route_detour.xosc", true);
     const double    dt = 0.05;
@@ -5301,6 +5301,74 @@ TEST(RouteingTest, TestPositionOffRoute)
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
     delete se;
+}
+
+TEST(RoutingTest, TestRandomRouteAction)
+{
+    SE_Env::Inst().GetRand().SetSeed(4116646194);
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/random_route_action.xosc", true);
+    const double    dt = 0.05;
+    ASSERT_NE(se, nullptr);
+    scenario_step(se, 0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 2);
+
+    // Confirm initial states
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 90, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.5, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 10.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 0);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 90.0, 1E-3);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 114.0127, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -22.5127, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 1.5708, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetR(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 10.0, 1E-3);
+    EXPECT_EQ(entities->object_[1]->pos_.GetTrackId(), 1);
+    EXPECT_EQ(entities->object_[1]->pos_.GetLaneId(), 1);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetS(), 10.0, 1E-3);
+
+    while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)
+    {
+        scenario_step(se, dt);
+    }
+
+    // confirm states after expected decisions taken in intersection
+    // first car going straight (default), second car going right (random)
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.5, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 10.0, 1E-3);
+    EXPECT_EQ(entities->object_[0]->pos_.GetTrackId(), 2);
+    EXPECT_EQ(entities->object_[0]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 4.9744, 1E-3);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 136.4377, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -1.5, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetZ(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetR(), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 10.0, 1E-3);
+    EXPECT_EQ(entities->object_[1]->pos_.GetTrackId(), 2);
+    EXPECT_EQ(entities->object_[1]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetS(), 11.4121, 1E-3);
+
+    delete se;
+    SE_Env::Inst().GetRand().ResetSeed();  // reset seed
 }
 
 TEST(PositioningTest, TestElevationMapping)
@@ -5644,14 +5712,14 @@ TEST(ParsingLightState, MissingMandatoryFields)
             <LightType>
                 <VehicleLight vehicleLightType="superTrooper"/>
             </LightType>
-            <LightState mode="on"/> 
+            <LightState mode="on"/>
           </LightStateAction>
        </AppearanceAction>
     </PrivateAction>)",
                                     R"(<PrivateAction>
        <AppearanceAction>
           <LightStateAction>
-            <LightState mode="on"/> 
+            <LightState mode="on"/>
           </LightStateAction>
        </AppearanceAction>
     </PrivateAction>)",
@@ -5661,7 +5729,7 @@ TEST(ParsingLightState, MissingMandatoryFields)
             <LightType>
                 <VehicleLight vehicleLightType="indicatorRight"/>
             </LightType>
-            <LightState /> 
+            <LightState />
           </LightStateAction>
        </AppearanceAction>
     </PrivateAction>)",
@@ -5673,7 +5741,7 @@ TEST(ParsingLightState, MissingMandatoryFields)
             </LightType>
             <LightState mode="on">
                 <Bolor colorType="red"/>
-            </LightState> 
+            </LightState>
           </LightStateAction>
        </AppearanceAction>
     </PrivateAction>)",
@@ -5687,7 +5755,7 @@ TEST(ParsingLightState, MissingMandatoryFields)
                 <Color colorType="red">
                     <ColorRgb red="1.0" green="0.0"/>
                 </Color
-            </LightState> 
+            </LightState>
           </LightStateAction>
        </AppearanceAction>
     </PrivateAction>)",
@@ -5701,7 +5769,7 @@ TEST(ParsingLightState, MissingMandatoryFields)
                 <Color colorType="red">
                     <ColorRgb red="-1.0" green="0.0" blue="0.8"/>
                 </Color
-            </LightState> 
+            </LightState>
           </LightStateAction>
        </AppearanceAction>
     </PrivateAction>)",
@@ -5716,7 +5784,7 @@ TEST(ParsingLightState, MissingMandatoryFields)
                     <ColorRgb red="-1.0" green="0.0" blue="0.8"/>
                     <ColorCmyk red="-1.0" green="0.0" blue="0.8"/>
                 </Color
-            </LightState> 
+            </LightState>
           </LightStateAction>
        </AppearanceAction>
     </PrivateAction>)"};

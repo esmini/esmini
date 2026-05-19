@@ -3836,9 +3836,6 @@ PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, boo
 
 void Viewer::SetLightMaterialAndColor(Object::VehicleLightStatus* light, CarModel* model)
 {
-    // Copy the light type and then use the base type to find material later
-    Object::VehicleLightType light_type = light->type;
-
     light->mode  = Object::VehicleLightMode::UNKNOWN;
     light->color = Object::VehicleLightColor::UNKNOWN;
 

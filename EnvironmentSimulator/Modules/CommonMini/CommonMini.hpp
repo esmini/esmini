@@ -1388,7 +1388,12 @@ class SE_Rand
 public:
     SE_Rand()
     {
-        seed_ = (std::random_device())();
+        ResetSeed();
+    }
+
+    void ResetSeed()
+    {
+        seed_ = std::random_device{}();
         gen_.seed(seed_);
     }
 

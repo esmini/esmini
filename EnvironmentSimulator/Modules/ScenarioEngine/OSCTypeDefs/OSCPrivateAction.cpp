@@ -688,12 +688,6 @@ void AcquirePositionAction::Start(double simTime)
     object_->dirty_.SetBits(Object::DirtyBit::ROUTE);
 
     OSCAction::Start(simTime);
-
-    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
-    {
-        // lateral motion controlled elsewhere
-        return;
-    }
 }
 
 void AcquirePositionAction::Step(double simTime, double dt)
@@ -705,6 +699,34 @@ void AcquirePositionAction::Step(double simTime, double dt)
 }
 
 void AcquirePositionAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+    if (object_ == obj1)
+    {
+        object_ = obj2;
+    }
+}
+
+RandomRouteAction::~RandomRouteAction()
+{
+}
+
+void RandomRouteAction::Start(double simTime)
+{
+    object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::RANDOM);
+    object_->SetJunctionSelectorAngleRandom();
+
+    OSCAction::Start(simTime);
+}
+
+void RandomRouteAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+
+    OSCAction::End();
+}
+
+void RandomRouteAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 {
     if (object_ == obj1)
     {
