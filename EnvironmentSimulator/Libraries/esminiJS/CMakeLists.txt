@@ -35,6 +35,12 @@ set(EXPR_INCLUDE_DIR
 set(FMT_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/fmt/include")
 
+if(DEFINED
+   FMT_OVERRIDE_INCLUDE_DIR)
+    set(FMT_INCLUDE_DIR
+        "${FMT_OVERRIDE_INCLUDE_DIR}")
+endif()
+
 set(YAML_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/yaml")
 
