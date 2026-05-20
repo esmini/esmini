@@ -1,8 +1,0 @@
-version: 2
-updates:
-  - package-ecosystem: "pip"
-    directory: "support/python"
-    schedule:
-      interval: "daily"
-    target-branch: "dev"
-    open-pull-requests-limit: 10
