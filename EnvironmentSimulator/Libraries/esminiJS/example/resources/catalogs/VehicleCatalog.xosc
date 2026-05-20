@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../OpenScenario.xsd">
+    <FileHeader description="DSC vehicle catalog" author="Blender Driving Scenario Creator" revMajor="1" revMinor="3" date="2026-05-20T17:52:33.205313"/>
+    <Catalog name="VehicleCatalog">
+        <Vehicle name="car_0" vehicleCategory="car">
+            <BoundingBox>
+                <Center x="2.0" y="0.0" z="0.9"/>
+                <Dimensions width="2.0" length="5.0" height="1.8"/>
+            </BoundingBox>
+            <Performance maxSpeed="69.0" maxDeceleration="10.0" maxAcceleration="10.0"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523599" wheelDiameter="0.8" trackWidth="1.554" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.0" wheelDiameter="0.8" trackWidth="1.525" positionX="0.0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+                <Property name="control" value="internal"/>
+                <Property name="model_id" value="0"/>
+            </Properties>
+        </Vehicle>
+    </Catalog>
+</OpenSCENARIO>
