@@ -17,6 +17,34 @@ Although the above approach is easy, it results in inefficient (large data), non
 
 In this section we present a few learnings and ideas on how scenarios can be designed in a way unlocking the full potential of the standards in terms of quality, flexibility, efficiency, and control.
 
+=== Editing
+If special purpose OpenSCENARIO editor is not at your disposal, any text editor can be used. But without XML support and awareness of the OpenSCENARIO and OpenDRIVE schemas, it's a bit tricky.
+
+Our best suggestion is to use VSCode with the https://marketplace.visualstudio.com/items?itemName=redhat.vscode-xml[XML Language Support by Red Hat] extension.
+
+For automatic schema association, add the following to your VSCode settings (.vscode/settings.json):
+
+```
+  "files.associations": {
+    "*.xosc": "xml",
+    "*.xodr": "xml"
+  },
+  "xml.fileAssociations": [
+    {
+      "pattern": "**/*.xosc",
+      "systemId": "./resources/schema/OpenSCENARIOv1.3.xsd"
+    },
+    {
+      "pattern": "**/*.xodr",
+      "systemId": "./resources/schema/OpenDRIVE_1.8/local_schema/OpenDRIVE_Core.xsd"
+    }
+  ]
+```
+
+Then you can simply type `<` to list available elements at this position. Select one from the list. The editor will also automatically insert the closing tag and all required attributes, which is great for learning and avoiding typos.
+
+Autoformat: `Alt + Shift + F`.
+
 === OpenDRIVE
 
 - The tangent of the road geometry should be continuous. So, curves should not be implemented as piecewise linear segments. For inspiration how to create curves from linear segments, see script example https://github.com/esmini/esmini/blob/dev/scripts/xodr_lines2curves.py[xodr_lines2curves.py].
