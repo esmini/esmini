@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenDRIVE>
+    <header name="blender_dsc" revMajor="1" revMinor="5" date="2026-05-20 17:52:33.218192" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="1" junction="-1" length="200.0">
+        <link/>
+        <planView>
+            <geometry s="0" x="0.0" y="0.0" hdg="-7.652641187405607e-08" length="200.0">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile>
+            <elevation s="0" a="0.0" b="0" c="0" d="0"/>
+        </elevationProfile>
+        <lateralProfile/>
+        <lanes>
+            <laneOffset s="0" a="0.0" b="0.0" c="0.0" d="-0.0"/>
+            <laneSection s="0">
+                <left>
+                    <lane id="8" type="shoulder" level="false">
+                        <link/>
+                        <width a="1.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                    <lane id="7" type="stop" level="false">
+                        <link/>
+                        <width a="2.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                    <lane id="6" type="border" level="false">
+                        <link/>
+                        <width a="1.75" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                    <lane id="5" type="driving" level="false">
+                        <link/>
+                        <width a="3.75" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="bold" color="white">
+                            <type name="solid" width="0.30000001192092896">
+                                <line length="0" space="0" tOffset="0" width="0.30000001192092896" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="4" type="driving" level="false">
+                        <link/>
+                        <width a="3.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="white">
+                            <type name="broken" width="0.15000000596046448">
+                                <line length="6.0" space="12.0" tOffset="0" width="0.15000000596046448" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="3" type="driving" level="false">
+                        <link/>
+                        <width a="3.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="white">
+                            <type name="broken" width="0.15000000596046448">
+                                <line length="6.0" space="12.0" tOffset="0" width="0.15000000596046448" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="2" type="border" level="false">
+                        <link/>
+                        <width a="0.75" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="bold" color="white">
+                            <type name="solid" width="0.30000001192092896">
+                                <line length="0" space="0" tOffset="0" width="0.30000001192092896" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="1" type="median" level="false">
+                        <link/>
+                        <width a="2.0" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="median" level="false">
+                        <link/>
+                        <width a="2.0" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                    <lane id="-2" type="border" level="false">
+                        <link/>
+                        <width a="0.75" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="bold" color="white">
+                            <type name="solid" width="0.30000001192092896">
+                                <line length="0" space="0" tOffset="0" width="0.30000001192092896" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-3" type="driving" level="false">
+                        <link/>
+                        <width a="3.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="white">
+                            <type name="broken" width="0.15000000596046448">
+                                <line length="6.0" space="12.0" tOffset="0" width="0.15000000596046448" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-4" type="driving" level="false">
+                        <link/>
+                        <width a="3.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="white">
+                            <type name="broken" width="0.15000000596046448">
+                                <line length="6.0" space="12.0" tOffset="0" width="0.15000000596046448" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-5" type="driving" level="false">
+                        <link/>
+                        <width a="3.75" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="bold" color="white">
+                            <type name="solid" width="0.30000001192092896">
+                                <line length="0" space="0" tOffset="0" width="0.30000001192092896" sOffset="0"/>
+                            </type>
+                        </roadMark>
+                    </lane>
+                    <lane id="-6" type="border" level="false">
+                        <link/>
+                        <width a="1.75" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                    <lane id="-7" type="stop" level="false">
+                        <link/>
+                        <width a="2.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                    <lane id="-8" type="shoulder" level="false">
+                        <link/>
+                        <width a="1.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="none" weight="standard" color="standard"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object id="0" s="0" t="1.5" subtype="guardRail" dynamic="no" zOffset="0.35" pitch="0" roll="0" height="0.2" name="railing" type="barrier" orientation="none" hdg="3.141592653589793" validLength="200.0">
+                <repeat length="200.0" distance="0" s="0" tStart="1.5" tEnd="1.5" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" widthStart="0.05" widthEnd="0.05"/>
+            </object>
+            <object id="1" s="0" t="1.5" subtype="None" dynamic="no" zOffset="0" pitch="0" roll="0" height="0.55" name="rail-pole" type="pole" orientation="none" hdg="3.141592653589793" validLength="200.0">
+                <repeat length="200.0" distance="2.0" s="0" tStart="1.5" tEnd="1.5" heightStart="0.55" heightEnd="0.55" zOffsetStart="0" zOffsetEnd="0" widthStart="0.04" widthEnd="0.04"/>
+            </object>
+            <object id="2" s="0" t="18.25" subtype="guardRail" dynamic="no" zOffset="0.35" pitch="0" roll="0" height="0.2" name="railing" type="barrier" orientation="none" hdg="3.141592653589793" validLength="200.0">
+                <repeat length="200.0" distance="0" s="0" tStart="18.25" tEnd="18.25" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" widthStart="0.05" widthEnd="0.05"/>
+            </object>
+            <object id="3" s="0" t="18.25" subtype="None" dynamic="no" zOffset="0" pitch="0" roll="0" height="0.55" name="rail-pole" type="pole" orientation="none" hdg="3.141592653589793" validLength="200.0">
+                <repeat length="200.0" distance="2.0" s="0" tStart="18.25" tEnd="18.25" heightStart="0.55" heightEnd="0.55" zOffsetStart="0" zOffsetEnd="0" widthStart="0.04" widthEnd="0.04"/>
+            </object>
+            <object id="4" s="0" t="-1.5" subtype="guardRail" dynamic="no" zOffset="0.35" pitch="0" roll="0" height="0.2" name="railing" type="barrier" orientation="none" hdg="0" validLength="200.0">
+                <repeat length="200.0" distance="0" s="0" tStart="-1.5" tEnd="-1.5" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" widthStart="0.05" widthEnd="0.05"/>
+            </object>
+            <object id="5" s="0" t="-1.5" subtype="None" dynamic="no" zOffset="0" pitch="0" roll="0" height="0.55" name="rail-pole" type="pole" orientation="none" hdg="0" validLength="200.0">
+                <repeat length="200.0" distance="2.0" s="0" tStart="-1.5" tEnd="-1.5" heightStart="0.55" heightEnd="0.55" zOffsetStart="0" zOffsetEnd="0" widthStart="0.04" widthEnd="0.04"/>
+            </object>
+            <object id="6" s="0" t="-18.25" subtype="guardRail" dynamic="no" zOffset="0.35" pitch="0" roll="0" height="0.2" name="railing" type="barrier" orientation="none" hdg="0" validLength="200.0">
+                <repeat length="200.0" distance="0" s="0" tStart="-18.25" tEnd="-18.25" heightStart="0.2" heightEnd="0.2" zOffsetStart="0.35" zOffsetEnd="0.35" widthStart="0.05" widthEnd="0.05"/>
+            </object>
+            <object id="7" s="0" t="-18.25" subtype="None" dynamic="no" zOffset="0" pitch="0" roll="0" height="0.55" name="rail-pole" type="pole" orientation="none" hdg="0" validLength="200.0">
+                <repeat length="200.0" distance="2.0" s="0" tStart="-18.25" tEnd="-18.25" heightStart="0.55" heightEnd="0.55" zOffsetStart="0" zOffsetEnd="0" widthStart="0.04" widthEnd="0.04"/>
+            </object>
+        </objects>
+    </road>
+</OpenDRIVE>

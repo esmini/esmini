@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="dsc_scenario" author="blender_dsc" revMajor="1" revMinor="3" date="2026-05-20T17:52:33.219232"/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../catalogs/VehicleCatalog"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/example.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="car_0">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_0"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="car_0">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="2.903900146484375" y="-11.587862014770508" z="0.0" h="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="car_0" ds="0.0" dt="0.0">
+                                    <Orientation h="0.0" p="0.0" r="0.0" type="absolute"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="13.88888888888889"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MainStory">
+            <Act name="MainAct">
+                <ManeuverGroup maximumExecutionCount="1" name="MainManeuverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="car_0"/>
+                    </Actors>
+                    <Maneuver name="MainManeuver">
+                        <Event name="LaneChangeEvent" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2.0" dynamicsDimension="time"/>
+                                            <LaneChangeTarget>
+                                                <RelativeTargetLane value="1" entityRef="car_0"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeStartCondition" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="2.0" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="MainActStartCondition" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0.0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="10.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
