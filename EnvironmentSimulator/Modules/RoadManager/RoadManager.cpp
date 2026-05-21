@@ -8413,12 +8413,12 @@ idx_t LaneSection::GetClosestLaneIdx(double s, double t, double laneOffset, int 
     {
         int lane_id = GetLaneIdByIdx(i);
 
-        double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
-
         // Only consider lanes with matching lane type and side
         if (laneTypeMask & GetLaneById(lane_id)->GetLaneType() && (!noZeroWidth || GetWidth(s, lane_id) > SMALL_NUMBER) &&
             (side == 0 || SIGN(lane_id) == SIGN(side)))
         {
+            double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
+
             // If position is within a lane, we can return it without further checks
             if (fabs(t - laneOffset - laneCenterOffset) < (GetWidth(s, lane_id) / 2.))
             {
