@@ -1380,13 +1380,25 @@ namespace ESMini
         public static extern int SE_GetObjectInLaneType(int object_id);
 
         /// <summary>
+        /// Check if lane change is possible for specified object based on number of drivable lanes
+        /// and road mark (line type) restrictions. A lane change direction is only reported as
+        /// possible when a neighboring driving lane exists AND the road mark on the boundary
+        /// allows crossing in that direction (e.g. broken line or laneChange="both"/"increase"/"decrease").
+        /// If the object is not currently in a driving lane, returns 0 (no lane change possible).
+        /// </summary>
+        /// <param name="object_id">Id of the object</param>
+        /// <returns>0 = no lane change possible (including when object is not in a driving lane), 1 = lane change to the left is possible, 2 = lane change to the right is possible, 3 = lane change to both left and right is possible, -1 = error (e.g. invalid object or missing road)</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_ObjectCanChangeLanes(int object_id);
+
+        /// <summary>
         /// Get the overrideActionStatus of specified object
         /// </summary>
-        /// <param name="objectId">Id of the object</param>
+        /// <param name="object_id">Id of the object</param>
         /// <param name="list">Pointer/reference to a SE_OverrideActionList struct to be filled in</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern int SE_GetOverrideActionStatus(int objectId, out SE_OverrideActionList list);
+        public static extern int SE_GetOverrideActionStatus(int object_id, out SE_OverrideActionList list);
 
         /// <summary>
         /// Get the type name of the specifed vehicle-, pedestrian- or misc object
@@ -1423,7 +1435,7 @@ namespace ESMini
         /// <summary>
         /// Get ID of the ghost associated with given object
         /// </summary>
-        /// <param name="object_id">Id of the ghost object</param>
+        /// <param name="object_id">Id of the object to which the ghost is attached</param>
         /// <returns>ghost object ID, -1 if ghost does not exist for given object</returns>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern int SE_GetObjectGhostId(int object_id);
@@ -1879,7 +1891,7 @@ namespace ESMini
         /// <summary>
         /// The SE_GetOSILaneBoundaryIds function the global ids for left, far left, right and far right lane boundaries
         /// </summary>
-        /// <param name="object_id">Handle to the object to which the sensor should be attached</param>
+        /// <param name="object_id">Id of the object</param>
         /// <param name="ids">Reference to a struct which will be filled with the Ids</param>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern void SE_GetOSILaneBoundaryIds(int object_id, out SE_LaneBoundaryId ids);
