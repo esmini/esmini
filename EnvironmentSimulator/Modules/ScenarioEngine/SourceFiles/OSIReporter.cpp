@@ -430,10 +430,9 @@ int OSIReporter::CreateOSIStaticGroundTruthFromODR()
                 roadmanager::RMObject *object = road->GetRoadObject(j);
                 if (object)
                 {
-                    const roadmanager::Repeat *rep = object->GetRepeat();
-                    bool is_discrete_repeat = (rep != nullptr && rep->GetDistance() > SMALL_NUMBER);
-                    if (is_discrete_repeat ? UpdateOSIStationaryObjectODRRepeatedObjects(road, object)
-                                          : UpdateOSIStationaryObjectODR(object))
+                    const roadmanager::Repeat *rep                = object->GetRepeat();
+                    bool                       is_discrete_repeat = (rep != nullptr && rep->GetDistance() > SMALL_NUMBER);
+                    if (is_discrete_repeat ? UpdateOSIStationaryObjectODRRepeatedObjects(road, object) : UpdateOSIStationaryObjectODR(object))
                     {
                         retval = -1;
                     }
@@ -785,8 +784,7 @@ int OSIReporter::UpdateOSIStationaryObjectODRRepeatedObjects(roadmanager::Road *
         return -1;
     }
 
-
-    double                cur_s = 0.0;
+    double                cur_s    = 0.0;
     int                   n_copies = 0;
     roadmanager::Position pos;
 
@@ -800,8 +798,8 @@ int OSIReporter::UpdateOSIStationaryObjectODRRepeatedObjects(roadmanager::Road *
         pos.SetTrackPosMode(road->GetId(),
                             s,
                             t,
-                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
-                                roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
+                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::P_REL |
+                                roadmanager::Position::PosMode::R_REL);
 
         double h_offset = rep->GetLength() > SMALL_NUMBER ? atan2(rep->GetTEnd() - rep->GetTStart(), rep->GetLength()) : 0.0;
         pos.SetHeadingRelative(h_offset);
