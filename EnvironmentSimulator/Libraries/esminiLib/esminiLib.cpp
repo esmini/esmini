@@ -1514,7 +1514,7 @@ extern "C"
         double                     lsec_s = lsec->GetS();
         for (unsigned int i = 0; i < n; i++)
         {
-            roadmanager::LaneRoadMark *rm = lane->GetLaneRoadMarkByIdx(static_cast<idx_t>(i));
+            roadmanager::LaneRoadMark *rm = lane->GetLaneRoadMarkByIdx(i);
             if (rm != nullptr && (lsec_s + rm->GetSOffset()) <= s)
             {
                 active = rm;
@@ -1586,14 +1586,14 @@ extern "C"
 
         if (has_left && lsec != nullptr)
         {
-            roadmanager::Lane *        markLane = (lane_id > 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id + 1);
+            roadmanager::Lane         *markLane = (lane_id > 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id + 1);
             roadmanager::LaneRoadMark *rm       = GetRoadMarkAtS(markLane, lsec, s);
             can_left                            = RoadMarkAllowsLaneChange(rm, 1);
         }
 
         if (has_right && lsec != nullptr)
         {
-            roadmanager::Lane *        markLane = (lane_id < 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id - 1);
+            roadmanager::Lane         *markLane = (lane_id < 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id - 1);
             roadmanager::LaneRoadMark *rm       = GetRoadMarkAtS(markLane, lsec, s);
             can_right                           = RoadMarkAllowsLaneChange(rm, -1);
         }
@@ -1601,10 +1601,10 @@ extern "C"
         return (can_left ? 1 : 0) | (can_right ? 2 : 0);
     }
 
-    SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list)
+    SE_DLL_API int SE_GetOverrideActionStatus(int object_id, SE_OverrideActionList *list)
     {
         Object *obj = nullptr;
-        if (getObjectById(objectId, obj) == -1)
+        if (getObjectById(object_id, obj) == -1)
         {
             printf("no obj\n");
             return -1;
