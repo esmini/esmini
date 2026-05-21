@@ -1656,14 +1656,14 @@ extern "C"
 
         if (has_left && lsec != nullptr)
         {
-            roadmanager::Lane *        markLane = (lane_id > 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id + 1);
+            roadmanager::Lane         *markLane = (lane_id > 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id + 1);
             roadmanager::LaneRoadMark *rm       = GetRoadMarkAtS(markLane, lsec, s);
             can_left                            = RoadMarkAllowsLaneChange(rm, 1);
         }
 
         if (has_right && lsec != nullptr)
         {
-            roadmanager::Lane *        markLane = (lane_id < 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id - 1);
+            roadmanager::Lane         *markLane = (lane_id < 0) ? lsec->GetLaneById(lane_id) : lsec->GetLaneById(lane_id - 1);
             roadmanager::LaneRoadMark *rm       = GetRoadMarkAtS(markLane, lsec, s);
             can_right                           = RoadMarkAllowsLaneChange(rm, -1);
         }
