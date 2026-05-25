@@ -26,6 +26,8 @@ using namespace scenarioengine;
 
 int main(int argc, char** argv)
 {
+    int decimals = 3;  // Default precision for floating-point numbers
+
     SE_Options& opt = SE_Env::Inst().GetOptions();
     opt.Reset();
 
@@ -36,6 +38,7 @@ int main(int argc, char** argv)
     opt.AddOption("file", "Dat-file to convert to csv", "filename", "", false, true, true);
     opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("file_refs", "include odr model, and git file references");
+    opt.AddOption("precision", "Output floating point number precision", "number of decimals", "3", true, true);
     opt.AddOption("print_csv", "Print the csv to stdout instead of saving it");
     opt.AddOption("version", "Show version and quit");
 
@@ -80,6 +83,21 @@ int main(int argc, char** argv)
         {
             printf("Failed to create file %s\n", filename.c_str());
             return -1;
+        }
+    }
+
+    if (!opt.GetOptionValueByEnum(esmini_options::PRECISION).empty())
+    {
+        int input = std::stoi(opt.GetOptionValueByEnum(esmini_options::PRECISION));
+
+        // Prevent negative precision or absurdly high numbers
+        if (input >= 0 && input <= 20)
+        {
+            decimals = input;
+        }
+        else
+        {
+            printf("Warning: Invalid precision. Using default value of %d.\n", decimals);
         }
     }
 
@@ -155,41 +173,64 @@ int main(int argc, char** argv)
             {
                 snprintf(line,
                          MAX_LINE_LEN,
-                         "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
+                         "%.*f, %d, %s, %.*f, %.*f, %.*f, %.*f, %.*f, %.*f, %.*f, %.*f, %.*f\n",
+                         decimals,
                          state->info.timeStamp,
                          state->info.id,
                          state->info.name.c_str(),
+                         decimals,
                          state->pos.x,
+                         decimals,
                          state->pos.y,
+                         decimals,
                          state->pos.z,
+                         decimals,
                          state->pos.h,
+                         decimals,
                          state->pos.p,
+                         decimals,
                          state->pos.r,
+                         decimals,
                          state->info.speed,
+                         decimals,
                          state->info.wheel_angle,
+                         decimals,
                          state->info.wheel_rot);
             }
             else
             {
                 snprintf(line,
                          MAX_LINE_LEN,
-                         "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f \n",
+                         "%.*f, %d, %s, %.*f, %.*f, %.*f, %.*f, %.*f, %.*f, %d, %d, %.*f, %.*f, %.*f, %.*f, %.*f, %.*f \n",
+                         decimals,
                          state->info.timeStamp,
                          state->info.id,
                          state->info.name.c_str(),
+                         decimals,
                          state->pos.x,
+                         decimals,
                          state->pos.y,
+                         decimals,
                          state->pos.z,
+                         decimals,
                          state->pos.h,
+                         decimals,
                          state->pos.p,
+                         decimals,
                          state->pos.r,
                          state->pos.roadId,
                          state->pos.laneId,
+                         decimals,
                          state->pos.offset,
+                         decimals,
                          state->pos.t,
+                         decimals,
                          state->pos.s,
+                         decimals,
                          state->info.speed,
+                         decimals,
                          state->info.wheel_angle,
+                         decimals,
                          state->info.wheel_rot);
             }
 

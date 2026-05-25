@@ -112,6 +112,7 @@ namespace esmini_options
         AXIS_INDICATOR,                  // 101
         GUI,                             // 102
         LIGHT_MODE,                      // 103
+        PRECISION,                       // 104
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -175,6 +176,7 @@ namespace esmini_options
         {"player_server", PLAYER_SERVER},
         {"plot", PLOT},
         {"pline_interpolation", PLINE_INTERPOLATION},
+        {"precision", PRECISION},
         {"record", RECORD},
         {"road_features", ROAD_FEATURES},
         {"return_nr_permutations", RETURN_NR_PERMUTATIONS},
