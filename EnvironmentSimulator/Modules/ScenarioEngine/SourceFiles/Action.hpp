@@ -46,6 +46,7 @@ namespace scenarioengine
             DISCONNECT_TRAILER_ACTION = 19,
             LIGHT_STATE_ACTION        = 20,
             RANDOM_ROUTE_ACTION       = 21,
+            PREFERRED_LANE_LAYER      = 22,
 
             // Global actions
             GLOBAL_ACTION_BASE_INDEX = 30,
