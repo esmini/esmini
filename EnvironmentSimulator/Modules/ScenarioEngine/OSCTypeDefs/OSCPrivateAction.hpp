@@ -634,10 +634,11 @@ namespace scenarioengine
                 RELATIVE_LANE
             };
 
-            Type type_;
-            int  value_;
+            Type               type_;
+            int                value_;
+            roadmanager::Layer layer_;
 
-            Target(Type type) : type_(type)
+            Target(Type type) : type_(type), layer_(roadmanager::LAYER_PERMANENT)
             {
             }
 
@@ -654,6 +655,7 @@ namespace scenarioengine
             TargetAbsolute(const TargetAbsolute& target) : Target(target.type_)
             {
                 value_ = target.value_;
+                layer_ = target.layer_;
             }
         };
 
@@ -670,6 +672,7 @@ namespace scenarioengine
             {
                 value_  = target.value_;
                 object_ = target.object_;
+                layer_  = target.layer_;
             }
         };
 
@@ -955,6 +958,43 @@ namespace scenarioengine
                 master_object_ = obj2;
             }
         }
+    };
+
+    class PreferredLaneLayerAction : public OSCPrivateAction
+    {
+    public:
+        roadmanager::Layer layer_;
+
+        PreferredLaneLayerAction(StoryBoardElement* parent)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::PREFERRED_LANE_LAYER,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
+              layer_(roadmanager::LAYER_PERMANENT)
+        {
+        }
+
+        PreferredLaneLayerAction(const PreferredLaneLayerAction& action)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::PREFERRED_LANE_LAYER,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
+        {
+            SetName(action.GetName());
+            layer_ = action.layer_;
+        }
+
+        OSCPrivateAction* Copy()
+        {
+            PreferredLaneLayerAction* new_action = new PreferredLaneLayerAction(*this);
+            return new_action;
+        }
+
+        virtual std::string Type2Str()
+        {
+            return "PreferredLaneLayerAction";
+        };
+
+        void Start(double simTime);
+        void Step(double simTime, double dt) override;
     };
 
     class TeleportAction : public OSCPrivateAction

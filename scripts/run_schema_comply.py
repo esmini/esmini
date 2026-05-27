@@ -22,6 +22,7 @@ SCHEMA_MAPPINGS = {
         "1": "OpenSCENARIOv1.1.1.xsd",
         "2": "OpenSCENARIOv1.2.xsd",
         "3": "OpenSCENARIOv1.3.xsd",
+        "4": "OpenSCENARIOv1.4.xsd",
     },
     "xodr": {
         "4": "OpenDRIVE_1.4H.xsd",
@@ -29,6 +30,7 @@ SCHEMA_MAPPINGS = {
         "6": "OpenDRIVE_1.6/opendrive_16_core.xsd",
         "7": "OpenDRIVE_1.7/localSchema/opendrive_17_core.xsd",
         "8": "OpenDRIVE_1.8/local_schema/OpenDRIVE_Core.xsd",
+        "9": "OpenDRIVE_1.9/OpenDRIVE_Core.xsd",
     },
 }
 
@@ -121,18 +123,16 @@ class XmlValidation:
                 return None
 
             try:
-                self.xml_version = tmp_tree.docinfo.xml_version
+                root = tmp_tree.getroot()
+                schema_xml_version = tmp_tree.docinfo.xml_version
+                schema_min_version = root.attrib.get(
+                    "{http://www.w3.org/2007/XMLSchema-versioning}minVersion"
+                )
 
-                if self.xml_version == "1.0":
-                    my_schema = xmlschema.XMLSchema(schema_file)
-                elif self.xml_version == "1.1":
+                if schema_xml_version == "1.1" or schema_min_version == "1.1":
                     my_schema = xmlschema.XMLSchema11(schema_file)
                 else:
-                    error_msg = "{}: Unsupported XML version: {}".format(
-                        xml_file, self.xml_version
-                    )
-                    self.log_error(error_msg, xml_file)
-                    return None
+                    my_schema = xmlschema.XMLSchema(schema_file)
             except xmlschema.validators.exceptions.XMLSchemaParseError as e:
                 error_msg = "{}: Schema error {}. Update xml version to 1.1?".format(
                     xml_file, e.message

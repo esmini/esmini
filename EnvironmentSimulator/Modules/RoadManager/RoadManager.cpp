@@ -1419,6 +1419,45 @@ LaneLink* Lane::GetLink(LinkType type) const
     }
     return nullptr;  // No link of requested type exists
 }
+LaneLink* Lane::GetLink(LinkType type, Layer preferred_layer) const
+{
+    LaneLink* fallback = nullptr;
+
+    for (unsigned int i = 0; i < link_.size(); i++)
+    {
+        LaneLink* l = link_[i];
+        if (l->GetType() != type)
+        {
+            continue;
+        }
+
+        if (fallback == nullptr)
+        {
+            fallback = l;
+        }
+
+        if (l->GetLayer() == preferred_layer)
+        {
+            return l;
+        }
+    }
+
+    return fallback;
+}
+
+LaneLink* Lane::GetLinkExact(LinkType type, Layer layer) const
+{
+    for (unsigned int i = 0; i < link_.size(); i++)
+    {
+        LaneLink* l = link_[i];
+        if (l->GetType() == type && l->GetLayer() == layer)
+        {
+            return l;
+        }
+    }
+
+    return nullptr;
+}
 
 void LaneWidth::Print() const
 {
@@ -1774,6 +1813,8 @@ idx_t Road::GetLaneSectionIdxByS(double s, idx_t start_at) const
                 return IDX_UNDEFINED;
             }
 
+            // Lane sections are start-inclusive and end-exclusive. Exact boundary
+            // values belong to the following section, except for the road end.
             if (s < lane_section->GetS() + lane_section->GetLength())
             {
                 break;
@@ -1782,15 +1823,18 @@ idx_t Road::GetLaneSectionIdxByS(double s, idx_t start_at) const
 
         if (i == GetNumberOfLaneSections())
         {
-            if (s > lane_section_.back()->GetS() + lane_section_.back()->GetLength() + SMALL_NUMBER)
+            // Check if s is beyond the road end (be more tolerant for exact road end)
+            double road_end = GetLength();
+
+            if (s > road_end + SMALL_NUMBER)
             {
-                // s is beyond the last lane section
-                LOG_ERROR("GetLaneSectionIdxByS: s {} is beyond the last lane section", s);
+                // s is clearly beyond the road
+                LOG_ERROR("GetLaneSectionIdxByS: s {} is beyond the road length {}", s, road_end);
                 return IDX_UNDEFINED;
             }
             else
             {
-                // s is just slightly beyond the last lane section, accept
+                // s is within road bounds, use last lane section
                 i = GetNumberOfLaneSections() - 1;
             }
         }
@@ -1799,7 +1843,45 @@ idx_t Road::GetLaneSectionIdxByS(double s, idx_t start_at) const
     return i;
 }
 
-int Road::GetLaneInfoByS(double s, idx_t start_lane_section_idx, int start_lane_id, LaneInfo& lane_info, int laneTypeMask) const
+idx_t Road::GetLaneSectionIdxByS(double s, Layer preferred_layer, idx_t start_at) const
+{
+    // Lane sections are stored grouped by layer, so the caller's current index is not a
+    // reliable traversal hint once a move crosses between permanent and temporary sections.
+    // Resolve the regular section from the start of the road, then select the preferred layer
+    // at the same s-position if one exists.
+    (void)start_at;
+    idx_t regular_idx = GetLaneSectionIdxByS(s, 0);
+
+    if (regular_idx == IDX_UNDEFINED)
+    {
+        return IDX_UNDEFINED;
+    }
+
+    // If we have a preferred layer, look for sections at the same s-coordinate with that layer
+    LaneSection* regular_section = GetLaneSectionByIdx(regular_idx);
+    if (regular_section == nullptr)
+    {
+        return regular_idx;
+    }
+
+    double target_s = regular_section->GetS();
+
+    // Look for a section with the same s-coordinate but preferred layer
+    for (idx_t i = 0; i < GetNumberOfLaneSections(); i++)
+    {
+        LaneSection* lane_section = GetLaneSectionByIdx(i);
+        if (lane_section && fabs(lane_section->GetS() - target_s) < SMALL_NUMBER && lane_section->GetLayer() == preferred_layer)
+        {
+            return i;
+        }
+    }
+
+    // No preferred layer found, return the regular section
+    return regular_idx;
+}
+
+int Road::GetLaneInfoByS(double s, idx_t start_lane_section_idx, int start_lane_id, LaneInfo& lane_info, int laneTypeMask, Layer preferred_layer)
+    const
 {
     lane_info.lane_section_idx_ = start_lane_section_idx;
     lane_info.lane_id_          = start_lane_id;
@@ -1824,27 +1906,71 @@ int Road::GetLaneInfoByS(double s, idx_t start_lane_section_idx, int start_lane_
 
             if (s > lane_section->GetS() + lane_section->GetLength())
             {
-                while (lane_section != nullptr && s > lane_section->GetS() + lane_section->GetLength() - SMALL_NUMBER &&
-                       lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
+                size_t remaining_sections = GetNumberOfLaneSections();
+                while (lane_section != nullptr && s > lane_section->GetS() + lane_section->GetLength() - SMALL_NUMBER && remaining_sections-- > 0)
                 {
+                    double current_lane_section_s = lane_section->GetS();
+
                     // Find out connecting lane, then move to next lane section
                     if (lane_info.lane_id_ != 0)
                     {
-                        lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
+                        lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR, lane_section->GetLayer());
                     }
-                    lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
+
+                    idx_t next_lane_section_idx =
+                        GetLaneSectionIdxByS(lane_section->GetS() + lane_section->GetLength() + SMALL_NUMBER, preferred_layer, 0);
+                    if (next_lane_section_idx == IDX_UNDEFINED || next_lane_section_idx == lane_info.lane_section_idx_)
+                    {
+                        break;
+                    }
+
+                    LaneSection* next_lane_section = GetLaneSectionByIdx(next_lane_section_idx);
+                    if (next_lane_section == nullptr)
+                    {
+                        break;
+                    }
+
+                    if (next_lane_section->GetS() <= current_lane_section_s + SMALL_NUMBER)
+                    {
+                        break;
+                    }
+
+                    lane_info.lane_section_idx_ = next_lane_section_idx;
+                    lane_section                = next_lane_section;
                 }
             }
             else if (s < lane_section->GetS())
             {
-                while (lane_section != nullptr && s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
+                size_t remaining_sections = GetNumberOfLaneSections();
+                while (lane_section != nullptr && s < lane_section->GetS() && remaining_sections-- > 0)
                 {
+                    double current_lane_section_s = lane_section->GetS();
+
                     // Move to previous lane section
                     if (lane_info.lane_id_ != 0)
                     {
-                        lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
+                        lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR, lane_section->GetLayer());
                     }
-                    lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
+
+                    idx_t previous_lane_section_idx = GetLaneSectionIdxByS(lane_section->GetS() - SMALL_NUMBER, preferred_layer, 0);
+                    if (previous_lane_section_idx == IDX_UNDEFINED || previous_lane_section_idx == lane_info.lane_section_idx_)
+                    {
+                        break;
+                    }
+
+                    LaneSection* previous_lane_section = GetLaneSectionByIdx(previous_lane_section_idx);
+                    if (previous_lane_section == nullptr)
+                    {
+                        break;
+                    }
+
+                    if (previous_lane_section->GetS() >= current_lane_section_s - SMALL_NUMBER)
+                    {
+                        break;
+                    }
+
+                    lane_info.lane_section_idx_ = previous_lane_section_idx;
+                    lane_section                = previous_lane_section;
                 }
             }
 
@@ -1877,7 +2003,7 @@ int Road::GetLaneInfoByS(double s, idx_t start_lane_section_idx, int start_lane_
                         laneTypeMask);
                 }
 
-                double       lane_offset    = GetLaneOffset(s);
+                double       lane_offset    = GetLaneOffset(s, lane_section->GetLayer());
                 unsigned int new_lane_index = lane_section->GetClosestLaneIdx(s, t, lane_offset, 0, offset, true, laneTypeMask);
 
                 lane_info.lane_id_ = lane_section->GetLaneByIdx(new_lane_index)->GetId();
@@ -1891,7 +2017,7 @@ int Road::GetLaneInfoByS(double s, idx_t start_lane_section_idx, int start_lane_
     return 0;
 }
 
-int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connectingRoadId) const
+int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connectingRoadId, Layer preferred_layer) const
 {
     Lane* lane;
 
@@ -1930,10 +2056,10 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, id_t connecti
             return 0;
         }
 
-        LaneLink* lane_link = lane->GetLink(road_link->GetType());
+        LaneLink* lane_link = lane->GetLink(road_link->GetType(), preferred_layer);
         if (lane_link != nullptr)
         {
-            return lane->GetLink(road_link->GetType())->GetId();
+            return lane_link->GetId();
         }
         else
         {
@@ -2373,7 +2499,7 @@ void LaneSection::AddLane(Lane* lane)
     }
 }
 
-int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type) const
+int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type, Layer preferred_layer) const
 {
     int id = incoming_lane_id;
 
@@ -2389,9 +2515,10 @@ int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type) c
         return 0;
     }
 
-    if (GetLaneById(id)->GetLink(link_type))
+    LaneLink* lane_link = GetLaneById(id)->GetLink(link_type, preferred_layer);
+    if (lane_link)
     {
-        id = GetLaneById(id)->GetLink(link_type)->GetId();
+        id = lane_link->GetId();
     }
     else
     {
@@ -2987,40 +3114,72 @@ RMObject::ObjectType RMObject::Str2Type(std::string type)
 
 double Road::GetLaneOffset(double s) const
 {
-    unsigned int i = 0;
+    return GetLaneOffset(s, LAYER_PERMANENT);
+}
 
+double Road::GetLaneOffset(double s, Layer preferred_layer) const
+{
     if (lane_offset_.size() == 0)
     {
         return 0;
     }
 
-    for (; i + 1 < lane_offset_.size(); i++)
+    LaneOffset* active_lane_offset = nullptr;
+
+    for (auto* lane_offset : lane_offset_)
     {
-        if (s < lane_offset_[i + 1]->GetS())
+        if (lane_offset->GetLayer() != preferred_layer)
         {
-            break;
+            continue;
+        }
+
+        if (lane_offset->GetS() - s > SMALL_NUMBER)
+        {
+            continue;
+        }
+
+        if (active_lane_offset == nullptr || lane_offset->GetS() > active_lane_offset->GetS())
+        {
+            active_lane_offset = lane_offset;
         }
     }
-    return (lane_offset_[i]->GetLaneOffset(s));
+
+    return active_lane_offset != nullptr ? active_lane_offset->GetLaneOffset(s) : 0;
 }
 
 double Road::GetLaneOffsetPrim(double s) const
 {
-    unsigned int i = 0;
+    return GetLaneOffsetPrim(s, LAYER_PERMANENT);
+}
 
+double Road::GetLaneOffsetPrim(double s, Layer preferred_layer) const
+{
     if (lane_offset_.size() == 0)
     {
         return 0;
     }
 
-    for (; i + 1 < lane_offset_.size(); i++)
+    LaneOffset* active_lane_offset = nullptr;
+
+    for (auto* lane_offset : lane_offset_)
     {
-        if (s < lane_offset_[i + 1]->GetS())
+        if (lane_offset->GetLayer() != preferred_layer)
         {
-            break;
+            continue;
+        }
+
+        if (lane_offset->GetS() - s > SMALL_NUMBER)
+        {
+            continue;
+        }
+
+        if (active_lane_offset == nullptr || lane_offset->GetS() > active_lane_offset->GetS())
+        {
+            active_lane_offset = lane_offset;
         }
     }
-    return (lane_offset_[i]->GetLaneOffsetPrim(s));
+
+    return active_lane_offset != nullptr ? active_lane_offset->GetLaneOffsetPrim(s) : 0;
 }
 
 unsigned int Road::GetNumberOfLanes(double s) const
@@ -3343,20 +3502,26 @@ double Road::GetWidth(double s, int side, int laneTypeMask) const
 
 void Road::AddLaneOffset(LaneOffset* lane_offset)
 {
-    // Adjust lane offset length
-    if (lane_offset_.size() > 0)
+    auto previous_lane_offset =
+        std::find_if(lane_offset_.rbegin(),
+                     lane_offset_.rend(),
+                     [lane_offset](const LaneOffset* existing_lane_offset) { return existing_lane_offset->GetLayer() == lane_offset->GetLayer(); });
+
+    if (previous_lane_offset != lane_offset_.rend())
     {
-        LaneOffset* lo_previous = lane_offset_.back();
-        lo_previous->SetLength(lane_offset->GetS() - lo_previous->GetS());
+        (*previous_lane_offset)->SetLength(lane_offset->GetS() - (*previous_lane_offset)->GetS());
     }
     else if (lane_offset->GetS() > SMALL_NUMBER)
     {
-        // first lane offset entry does not start from 0, add one
-        lane_offset_.push_back(new LaneOffset(0.0,
-                                              lane_offset->GetPolynomial().GetA(),
-                                              lane_offset->GetPolynomial().GetB(),
-                                              lane_offset->GetPolynomial().GetC(),
-                                              lane_offset->GetPolynomial().GetD()));
+        // first lane offset entry for this layer does not start from 0, add one
+        LaneOffset* initial_lane_offset = new LaneOffset(0.0,
+                                                         lane_offset->GetPolynomial().GetA(),
+                                                         lane_offset->GetPolynomial().GetB(),
+                                                         lane_offset->GetPolynomial().GetC(),
+                                                         lane_offset->GetPolynomial().GetD(),
+                                                         lane_offset->GetLayer());
+        initial_lane_offset->SetLength(lane_offset->GetS());
+        lane_offset_.push_back(initial_lane_offset);
     }
     lane_offset->SetLength(length_ - lane_offset->GetS());
 
@@ -3373,6 +3538,21 @@ double Road::GetCenterOffset(double s, int lane_id) const
     }
 
     LOG_ERROR("Lane section not found for road id {} s: {}", GetId(), s);
+
+    return 0.0;
+}
+
+double Road::GetCenterOffset(double s, int lane_id, Layer preferred_layer) const
+{
+    // First find out what lane section, preferring the specified layer
+    idx_t        lane_section_idx = GetLaneSectionIdxByS(s, preferred_layer);
+    LaneSection* lane_section     = GetLaneSectionByIdx(lane_section_idx);
+    if (lane_section != nullptr)
+    {
+        return lane_section->GetCenterOffset(s, lane_id);
+    }
+
+    LOG_ERROR("Lane section not found for road id {} s: {} layer: {}", GetId(), s, (preferred_layer == LAYER_TEMPORARY) ? "temporary" : "permanent");
 
     return 0.0;
 }
@@ -3396,15 +3576,149 @@ RoadLink* Road::GetLink(LinkType type) const
 
 void Road::AddLaneSection(LaneSection* lane_section)
 {
-    // Adjust last lane section length
+    // Adjust last lane section length only if it doesn't have an explicit length
     if (lane_section_.size() > 0)
     {
-        LaneSection* ls_previous = lane_section_.back();
-        ls_previous->SetLength(MIN(lane_section->GetS() - ls_previous->GetS(), GetLength()));
+        LaneSection* ls_previous       = lane_section_.back();
+        double       current_length    = ls_previous->GetLength();
+        double       calculated_length = lane_section->GetS() - ls_previous->GetS();
+
+        if (current_length <= SMALL_NUMBER)  // No explicit length set, use SMALL_NUMBER instead of 0.0
+        {
+            ls_previous->SetLength(MIN(calculated_length, GetLength() - ls_previous->GetS()));
+        }
+        else  // Explicit length was set, use minimum to avoid overflow
+        {
+            ls_previous->SetLength(MIN(current_length, MIN(calculated_length, GetLength() - ls_previous->GetS())));
+        }
     }
-    lane_section->SetLength(MIN(length_ - lane_section->GetS(), GetLength()));
+
+    // Set initial length for new lane section if not explicitly set
+    if (lane_section->GetLength() <= SMALL_NUMBER)  // Use SMALL_NUMBER instead of 0.0
+    {
+        lane_section->SetLength(GetLength() - lane_section->GetS());
+    }
 
     lane_section_.push_back(lane_section);
+}
+
+void Road::CalculateLaneSectionLengths()
+{
+    if (lane_section_.empty())
+    {
+        return;
+    }
+
+    LOG_DEBUG("CalculateLaneSectionLengths: Road {} has {} lane sections, road length = {:.2f}", GetId(), lane_section_.size(), GetLength());
+
+    // Find the last section for each layer to ensure proper extension to road end
+    int last_permanent_idx = -1;
+    int last_temporary_idx = -1;
+
+    for (size_t i = 0; i < lane_section_.size(); i++)
+    {
+        if (lane_section_[i]->GetLayer() == LAYER_PERMANENT)
+        {
+            last_permanent_idx = static_cast<int>(i);
+        }
+        else if (lane_section_[i]->GetLayer() == LAYER_TEMPORARY)
+        {
+            last_temporary_idx = static_cast<int>(i);
+        }
+    }
+
+    // Recalculate length for each lane section
+    for (size_t i = 0; i < lane_section_.size(); i++)
+    {
+        LaneSection* lane_section   = lane_section_[i];
+        double       current_length = lane_section->GetLength();
+        double       calculated_length;
+        bool         is_last_in_layer = false;
+
+        // Check if this is the last section of its layer
+        if ((lane_section->GetLayer() == LAYER_PERMANENT && static_cast<int>(i) == last_permanent_idx) ||
+            (lane_section->GetLayer() == LAYER_TEMPORARY && static_cast<int>(i) == last_temporary_idx))
+        {
+            is_last_in_layer = true;
+        }
+
+        if (is_last_in_layer)
+        {
+            // Last lane section of its layer: length is from section start to road end
+            calculated_length = GetLength() - lane_section->GetS();
+        }
+        else
+        {
+            // Other lane sections: find the next section in the same layer or road end
+            calculated_length = GetLength() - lane_section->GetS();  // default to road end
+
+            for (size_t j = i + 1; j < lane_section_.size(); j++)
+            {
+                if (lane_section_[j]->GetLayer() == lane_section->GetLayer() && lane_section_[j]->GetS() > lane_section->GetS())
+                {
+                    calculated_length = lane_section_[j]->GetS() - lane_section->GetS();
+                    break;
+                }
+            }
+        }
+
+        // Ensure calculated length is non-negative and doesn't exceed remaining road length
+        calculated_length = MAX(0.0, MIN(calculated_length, GetLength() - lane_section->GetS()));
+
+        // Handle explicit length vs calculated length
+        double final_length;
+        if (current_length > SMALL_NUMBER && !is_last_in_layer)  // Not the last section of its layer
+        {
+            // Use the minimum between explicit length and calculated length
+            final_length = MIN(current_length, calculated_length);
+            LOG_DEBUG("Lane section {}: s={:.2f}, explicit_length={:.2f}, calculated_length={:.2f}, final_length={:.2f} (using minimum), layer={}",
+                      i,
+                      lane_section->GetS(),
+                      current_length,
+                      calculated_length,
+                      final_length,
+                      (lane_section->GetLayer() == LAYER_TEMPORARY) ? "temp" : "perm");
+        }
+        else if (is_last_in_layer)
+        {
+            // Last section of its layer - use calculated length to reach road end, unless explicit length is shorter
+            if (current_length > SMALL_NUMBER)
+            {
+                final_length = MIN(current_length, calculated_length);
+                LOG_DEBUG(
+                    "Lane section {} (LAST in layer): s={:.2f}, explicit_length={:.2f}, calculated_length={:.2f}, final_length={:.2f} (min of explicit/calculated), layer={}",
+                    i,
+                    lane_section->GetS(),
+                    current_length,
+                    calculated_length,
+                    final_length,
+                    (lane_section->GetLayer() == LAYER_TEMPORARY) ? "temp" : "perm");
+            }
+            else
+            {
+                final_length = calculated_length;
+                LOG_DEBUG("Lane section {} (LAST in layer): s={:.2f}, calculated_length={:.2f}, final_length={:.2f} (forced to road end), layer={}",
+                          i,
+                          lane_section->GetS(),
+                          calculated_length,
+                          final_length,
+                          (lane_section->GetLayer() == LAYER_TEMPORARY) ? "temp" : "perm");
+            }
+        }
+        else
+        {
+            // No explicit length set - use calculated length
+            final_length = calculated_length;
+            LOG_DEBUG("Lane section {}: s={:.2f}, calculated_length={:.2f}, final_length={:.2f} (no explicit length), layer={}",
+                      i,
+                      lane_section->GetS(),
+                      calculated_length,
+                      final_length,
+                      (lane_section->GetLayer() == LAYER_TEMPORARY) ? "temp" : "perm");
+        }
+
+        lane_section->SetLength(final_length);
+    }
 }
 
 bool Road::GetZAndPitchByS(double s, double* z_centerline, double* z_prim, double* z_primPrim, double* pitch, idx_t* index) const
@@ -4052,9 +4366,30 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
             }
         }
 
-        pugi::xml_node lanes = road_node.child("lanes");
-        if (lanes != NULL)
+        // Parse lanes - handle multiple lanes elements with different layer attributes
+        for (pugi::xml_node lanes : road_node.children("lanes"))
         {
+            Layer layer = LAYER_PERMANENT;  // Default to permanent
+
+            // Check for layer attribute
+            if (!lanes.attribute("layer").empty())
+            {
+                std::string layer_str = lanes.attribute("layer").value();
+                if (layer_str == "temporary")
+                {
+                    layer = LAYER_TEMPORARY;
+                }
+                else if (layer_str == "permanent")
+                {
+                    layer = LAYER_PERMANENT;
+                }
+                else
+                {
+                    LOG_WARN("Unknown layer '{}' for road {}, defaulting to permanent", layer_str, r->GetIdStr());
+                    layer = LAYER_PERMANENT;
+                }
+            }
+
             for (pugi::xml_node_iterator child = lanes.children().begin(); child != lanes.children().end(); child++)
             {
                 if (!strcmp(child->name(), "laneOffset"))
@@ -4064,7 +4399,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     double b = atof(child->attribute("b").value());
                     double c = atof(child->attribute("c").value());
                     double d = atof(child->attribute("d").value());
-                    r->AddLaneOffset(new LaneOffset(s, a, b, c, d));
+                    r->AddLaneOffset(new LaneOffset(s, a, b, c, d, layer));
                 }
                 else if (!strcmp(child->name(), "laneSection"))
                 {
@@ -4077,7 +4412,24 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                  r->GetLength());
                         s = r->GetLength();
                     }
-                    LaneSection* lane_section = new LaneSection(s);
+                    LaneSection* lane_section = new LaneSection(s, layer);
+
+                    // Check for explicit length attribute with validation
+                    if (!child->attribute("length").empty())
+                    {
+                        double explicit_length = atof(child->attribute("length").value());
+                        // Only use explicit length if it's positive and reasonable
+                        if (explicit_length > 0.0 && explicit_length <= r->GetLength())
+                        {
+                            lane_section->SetLength(explicit_length);
+                            LOG_DEBUG("Lane section at s={:.2f} has explicit length={:.2f}", s, explicit_length);
+                        }
+                        else
+                        {
+                            LOG_WARN("Ignoring invalid explicit length {:.2f} for lane section at s={:.2f}", explicit_length, s);
+                        }
+                    }
+
                     r->AddLaneSection(lane_section);
 
                     for (pugi::xml_node_iterator child2 = child->children().begin(); child2 != child->children().end(); child2++)
@@ -4224,15 +4576,41 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                             pugi::xml_node lane_link = lane_node->child("link");
                             if (lane_link != NULL)
                             {
-                                pugi::xml_node successor = lane_link.child("successor");
-                                if (successor != NULL)
+                                for (pugi::xml_node successor = lane_link.child("successor"); successor;
+                                     successor                = successor.next_sibling("successor"))
                                 {
-                                    lane->AddLink(new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value())));
+                                    Layer link_layer = LAYER_PERMANENT;
+                                    if (!successor.attribute("layer").empty())
+                                    {
+                                        std::string link_layer_str = successor.attribute("layer").value();
+                                        if (link_layer_str == "temporary")
+                                        {
+                                            link_layer = LAYER_TEMPORARY;
+                                        }
+                                        else if (link_layer_str == "permanent")
+                                        {
+                                            link_layer = LAYER_PERMANENT;
+                                        }
+                                    }
+                                    lane->AddLink(new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value()), link_layer));
                                 }
-                                pugi::xml_node predecessor = lane_link.child("predecessor");
-                                if (predecessor != NULL)
+                                for (pugi::xml_node predecessor = lane_link.child("predecessor"); predecessor;
+                                     predecessor                = predecessor.next_sibling("predecessor"))
                                 {
-                                    lane->AddLink(new LaneLink(PREDECESSOR, atoi(predecessor.attribute("id").value())));
+                                    Layer link_layer = LAYER_PERMANENT;
+                                    if (!predecessor.attribute("layer").empty())
+                                    {
+                                        std::string link_layer_str = predecessor.attribute("layer").value();
+                                        if (link_layer_str == "temporary")
+                                        {
+                                            link_layer = LAYER_TEMPORARY;
+                                        }
+                                        else if (link_layer_str == "permanent")
+                                        {
+                                            link_layer = LAYER_PERMANENT;
+                                        }
+                                    }
+                                    lane->AddLink(new LaneLink(PREDECESSOR, atoi(predecessor.attribute("id").value()), link_layer));
                                 }
                             }
 
@@ -4725,6 +5103,9 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
         }
 
         road_.push_back(r);
+
+        // Calculate proper lane section lengths now that all sections are added
+        r->CalculateLaneSectionLengths();
 
         pugi::xml_node signals = road_node.child("signals");
         if (signals != NULL)
@@ -7101,6 +7482,9 @@ void Position::Init()
 
     route_waypoint_s_   = 0.0;
     route_waypoint_dir_ = 0;
+
+    has_explicit_lane_layer_ = false;
+    explicit_lane_layer_     = LAYER_PERMANENT;
 }
 
 Position::Position()
@@ -7264,6 +7648,9 @@ void roadmanager::Position::CopyConfig(const Position& from)
     lockOnLane_      = from.lockOnLane_;
     rel_pos_         = from.rel_pos_;
     t_trajectory_    = from.t_trajectory_;
+
+    has_explicit_lane_layer_ = from.has_explicit_lane_layer_;
+    explicit_lane_layer_     = from.explicit_lane_layer_;
 }
 
 void Position::Duplicate(const Position& from)
@@ -7554,14 +7941,9 @@ void OpenDrive::SetLaneOSIPoints()
         {
             // Get the ending position of the current lane section
             lsec = road->GetLaneSectionByIdx(j);
-            if (j == number_of_lane_sections - 1)
-            {
-                lsec_end = road->GetLength();
-            }
-            else
-            {
-                lsec_end = road->GetLaneSectionByIdx(j + 1)->GetS();
-            }
+
+            // Use the lane section's own length (which accounts for explicit length attributes)
+            lsec_end = lsec->GetS() + lsec->GetLength();
 
             // Looping through each lane
             number_of_lanes        = lsec->GetNumberOfLanes();
@@ -7782,7 +8164,13 @@ void OpenDrive::SetLaneBoundaryPoints()
         {
             // Get the ending position of the current lane section
             lsec = road->GetLaneSectionByIdx(j);
-            if (j == number_of_lane_sections - 1)
+
+            // Respect explicit length attribute if set (e.g., for temporary lane sections)
+            if (lsec->GetLength() > SMALL_NUMBER)
+            {
+                lsec_end = lsec->GetS() + lsec->GetLength();
+            }
+            else if (j == number_of_lane_sections - 1)
             {
                 lsec_end = road->GetLength();
             }
@@ -7790,6 +8178,7 @@ void OpenDrive::SetLaneBoundaryPoints()
             {
                 lsec_end = road->GetLaneSectionByIdx(j + 1)->GetS();
             }
+
             // Looping through each lane
             number_of_lanes = lsec->GetNumberOfLanes();
             for (unsigned int k = 0; k < number_of_lanes; k++)
@@ -7933,7 +8322,13 @@ void OpenDrive::SetRoadMarkOSIPoints()
         {
             // Get the ending position of the current lane section
             lsec = road->GetLaneSectionByIdx(j);
-            if (j == number_of_lane_sections - 1)
+
+            // Respect explicit length attribute if set (e.g., for temporary lane sections)
+            if (lsec->GetLength() > SMALL_NUMBER)
+            {
+                lsec_end = lsec->GetS() + lsec->GetLength();
+            }
+            else if (j == number_of_lane_sections - 1)
             {
                 lsec_end = road->GetLength();
             }
@@ -8465,7 +8860,7 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
     }
 
     double offset;
-    double lane_offset = road->GetLaneOffset(s_);
+    double lane_offset = road->GetLaneOffset(s_, lane_section->GetLayer());
     idx_t  lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, true, snapToLaneTypes_);
 
     if (lane_idx == IDX_UNDEFINED)
@@ -8508,7 +8903,7 @@ void Position::Track2Lane()
 
     // Find the closest driving lane within the lane section
     double offset;
-    double lane_offset = road->GetLaneOffset(s_);
+    double lane_offset = road->GetLaneOffset(s_, lane_section->GetLayer());
     idx_t  lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, true, snapToLaneTypes_);
 
     if (lane_idx == IDX_UNDEFINED)
@@ -9227,11 +9622,12 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
             }
 
             // Now find closest lane at that lateral position, at updated s value
-            double lane_offset = roadMin->GetLaneOffset(closestS);
+            Layer  lane_layer  = lsec != nullptr ? lsec->GetLayer() : LAYER_PERMANENT;
+            double lane_offset = roadMin->GetLaneOffset(closestS, lane_layer);
             fixed_t            = (change_direction ? -1 : 1) * SIGN(lane_id_) * lsec->GetCenterOffset(s_, lane_id_) + lane_offset;
             fixed_t /= AVOID_ZERO(cos(GetRRoad()));  // compensate for banking
 
-            LaneSection* lsec_new = roadMin->GetLaneSectionByS(closestS);
+            LaneSection* lsec_new = roadMin->GetLaneSectionByS(closestS, lane_layer);
             if (lsec_new)
             {
                 double offset;
@@ -9404,11 +9800,13 @@ void Position::LaneBoundary2Track()
 
     if (road != nullptr && road->GetNumberOfLaneSections() > 0)
     {
+        // Always use the explicitly set lane_section_idx_
+        // This ensures OSI point generation and visualization work correctly for all layers
         LaneSection* lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 
         if (lane_section != nullptr)
         {
-            t_        = road->GetLaneOffset(s_) + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            t_        = road->GetLaneOffset(s_, lane_section->GetLayer()) + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
             h_offset_ = GetHOffset(road, lane_section);
         }
     }
@@ -9443,11 +9841,13 @@ void Position::Lane2Track()
 
     if (road != nullptr && road->GetNumberOfLaneSections() > 0)
     {
+        // Always use the explicitly set lane_section_idx_
+        // This ensures OSI point generation and visualization work correctly for all layers
         LaneSection* lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 
         if (lane_section != nullptr)
         {
-            t_        = offset_ + road->GetLaneOffset(s_) + lane_section->GetCenterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            t_ = offset_ + road->GetLaneOffset(s_, lane_section->GetLayer()) + lane_section->GetCenterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
             h_offset_ = GetHOffset(road, lane_section);
         }
     }
@@ -9460,11 +9860,13 @@ void Position::RoadMark2Track()
 
     if (road != nullptr && road->GetNumberOfLaneSections() > 0)
     {
+        // Always use the explicitly set lane_section_idx_
+        // This ensures OSI point generation and visualization work correctly for all layers
         LaneSection* lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 
         if (lane_section != nullptr)
         {
-            t_        = road->GetLaneOffset(s_) + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            t_        = road->GetLaneOffset(s_, lane_section->GetLayer()) + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
             h_offset_ = GetHOffset(road, lane_section);
 
             Lane* lane = lane_section->GetLaneByIdx(lane_idx_);
@@ -9619,7 +10021,7 @@ Position::ReturnCode Position::SetTrackPosMode(id_t track_id, double s, double t
     return retval_long;
 }
 
-void Position::ForceLaneId(int lane_id)
+void Position::ForceLaneId(int lane_id, Layer preferred_layer)
 {
     if (lane_idx_ == IDX_UNDEFINED || lane_section_idx_ == IDX_UNDEFINED)
     {
@@ -9628,10 +10030,38 @@ void Position::ForceLaneId(int lane_id)
     // find out lateral distance between current and target lane
     Road* road = GetRoadById(GetTrackId());
 
-    double lat_dist = road->GetLaneSectionByIdx(lane_section_idx_)->GetOffsetBetweenLanes(lane_id_, lane_id, GetS());
+    // Use explicit layer parameter to find the correct lane section
+    idx_t        target_lane_section_idx = road->GetLaneSectionIdxByS(GetS(), preferred_layer, lane_section_idx_);
+    LaneSection* target_lane_section     = road->GetLaneSectionByIdx(target_lane_section_idx);
 
-    lane_id_ = lane_id;
-    offset_ -= lat_dist;
+    if (target_lane_section == nullptr || target_lane_section->GetLaneById(lane_id) == nullptr)
+    {
+        LOG_WARN("ForceLaneId: Target lane {} not found in layer {} at s={}",
+                 lane_id,
+                 preferred_layer == LAYER_PERMANENT ? "permanent" : "temporary",
+                 GetS());
+        return;
+    }
+
+    if (target_lane_section_idx != lane_section_idx_)
+    {
+        // Cross-section move (e.g., layer change): preserve the physical lateral position
+        // and express it as an offset relative to the target lane center.
+        double target_lane_center =
+            road->GetLaneOffset(GetS(), target_lane_section->GetLayer()) + target_lane_section->GetCenterOffset(GetS(), lane_id) * SIGN(lane_id);
+        offset_ = t_ - target_lane_center;
+    }
+    else
+    {
+        double lat_dist = target_lane_section->GetOffsetBetweenLanes(lane_id_, lane_id, GetS());
+        offset_ -= lat_dist;
+    }
+
+    lane_id_          = lane_id;
+    lane_section_idx_ = target_lane_section_idx;
+
+    // Find lane index in the new lane section
+    lane_idx_ = target_lane_section->GetLaneIdxById(lane_id_);
 
     // Update track position (t) as well
     Lane2Track();
@@ -9725,14 +10155,18 @@ int Position::TeleportTo(Position* position)
     return 0;
 }
 
-Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, ContactPointType& contact_point_type, double junctionSelectorAngle)
+Position::ReturnCode Position::MoveToConnectingRoad(RoadLink*         road_link,
+                                                    ContactPointType& contact_point_type,
+                                                    double            junctionSelectorAngle,
+                                                    Layer             preferred_layer)
 {
     Road*        road      = GetOpenDrive()->GetRoadByIdx(track_idx_);
     Road*        next_road = 0;
     LaneSection* lane_section;
     Lane*        lane;
-    int          new_lane_id = 0;
-    ReturnCode   ret_val     = ReturnCode::OK;
+    int          new_lane_id       = 0;
+    Layer        target_lane_layer = preferred_layer;
+    ReturnCode   ret_val           = ReturnCode::OK;
 
     if (road == nullptr)
     {
@@ -9774,10 +10208,11 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
 
     if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
     {
-        LaneLink* lane_link = lane->GetLink(road_link->GetType());
+        LaneLink* lane_link = lane->GetLink(road_link->GetType(), preferred_layer);
         if (lane_link != nullptr)
         {
-            new_lane_id = lane->GetLink(road_link->GetType())->GetId();
+            new_lane_id       = lane_link->GetId();
+            target_lane_layer = lane_link->GetLayer();
             if (new_lane_id == 0)
             {
                 LOG_INFO("Road+ new lane id {}", new_lane_id);
@@ -9967,7 +10402,7 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
     if (road_link->GetContactPointType() == CONTACT_POINT_START)
     {
         // Specify first (0) lane section
-        SetLanePos(next_road->GetId(), new_lane_id, 0, new_offset, 0);
+        SetLanePos(next_road->GetId(), new_lane_id, 0, new_offset, 0, target_lane_layer);
     }
     else if (road_link->GetContactPointType() == CONTACT_POINT_END)
     {
@@ -9976,17 +10411,18 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
                    new_lane_id,
                    next_road->GetLength(),
                    new_offset,
-                   GetRoadById(road_link->GetElementId())->GetNumberOfLaneSections() - 1);
+                   GetRoadById(road_link->GetElementId())->GetNumberOfLaneSections() - 1,
+                   target_lane_layer);
     }
     else if (road_link->GetContactPointType() == CONTACT_POINT_JUNCTION && road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
     {
         if (contact_point_type == CONTACT_POINT_START)
         {
-            SetLanePos(next_road->GetId(), new_lane_id, 0, new_offset);
+            SetLanePos(next_road->GetId(), new_lane_id, 0, new_offset, IDX_UNDEFINED, target_lane_layer);
         }
         else if (contact_point_type == CONTACT_POINT_END)
         {
-            SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), new_offset);
+            SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), new_offset, IDX_UNDEFINED, target_lane_layer);
         }
         else
         {
@@ -10040,7 +10476,8 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                                           double            junctionSelectorAngle,
                                           bool              actualDistance,
                                           MoveDirectionMode mode,
-                                          bool              updateRoute)
+                                          bool              updateRoute,
+                                          Layer             preferred_layer)
 {
     RoadLink*        link      = nullptr;
     int              max_links = 8;  // limit lookahead through junctions/links
@@ -10136,10 +10573,10 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         {
             // If link is OK then move to the start- or endpoint of the connected road, depending on contact point
             if (link == nullptr || link->GetElementId() == ID_UNDEFINED ||
-                static_cast<int>((ret_val = MoveToConnectingRoad(link, contact_point_type, junctionSelectorAngle))) < 0)
+                static_cast<int>((ret_val = MoveToConnectingRoad(link, contact_point_type, junctionSelectorAngle, preferred_layer))) < 0)
             {
                 // Failed to find a connection, stay at end of current road
-                SetLanePos(track_id_, lane_id_, s_stop, offset_);
+                SetLanePos(track_id_, lane_id_, s_stop, offset_, IDX_UNDEFINED, preferred_layer);
 
                 status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROAD);
                 return ReturnCode::ERROR_END_OF_ROAD;
@@ -10162,7 +10599,8 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         road = GetOpenDrive()->GetRoadById(track_id_);
 
         Position   pos_save = *this;
-        ReturnCode ret_val2 = SetLanePos(track_id_, lane_id_, s_ + (done ? ds_road : 0.0), offset_ + signed_dLaneOffset);
+        ReturnCode ret_val2 =
+            SetLanePos(track_id_, lane_id_, s_ + (done ? ds_road : 0.0), offset_ + signed_dLaneOffset, IDX_UNDEFINED, preferred_layer);
 
         if (SIGN(lane_id_) != SIGN(pos_save.lane_id_))
         {
@@ -10175,14 +10613,14 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
             if (lane_id_ != 0)
             {
                 LaneInfo li;
-                if (road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_) != 0)
+                if (road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_, preferred_layer) != 0)
                 {
                     ret_val = ReturnCode::ERROR_GENERIC;
                 }
                 else if (road->GetLaneWidthByS(GetS(), li.lane_id_) < SMALL_NUMBER)
                 {
                     double offset       = 0;
-                    double lane_offset  = road->GetLaneOffset(GetS());
+                    double lane_offset  = road->GetLaneOffset(GetS(), road->GetLaneSectionByIdx(li.lane_section_idx_)->GetLayer());
                     int    old_lane_id  = lane_id_;
                     idx_t  new_lane_idx = road->GetLaneSectionByIdx(li.lane_section_idx_)
                                              ->GetClosestLaneIdx(GetS(), GetT(), lane_offset, SIGN(lane_id_), offset, true, snapToLaneTypes_);
@@ -10203,7 +10641,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                         }
                         else
                         {
-                            SetLanePos(track_id_, new_lane_id, GetS(), 0);
+                            SetLanePos(track_id_, new_lane_id, GetS(), 0, IDX_UNDEFINED, preferred_layer);
                             LOG_INFO("MoveAlongS Lane {} on road {} is or became zero width, moved to closest available lane: {}",
                                      old_lane_id,
                                      road->GetId(),
@@ -10245,15 +10683,18 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     return ret_val;
 }
 
-Position::ReturnCode Position::SetLanePos(id_t track_id, int lane_id, double s, double offset, idx_t lane_section_idx)
+Position::ReturnCode Position::SetLanePos(id_t track_id, int lane_id, double s, double offset, idx_t lane_section_idx, Layer preferred_layer)
 {
-    return SetLanePosMode(track_id, lane_id, s, offset, GetMode(PosModeType::UPDATE), lane_section_idx);
+    return SetLanePosMode(track_id, lane_id, s, offset, GetMode(PosModeType::UPDATE), lane_section_idx, preferred_layer);
 }
 
-Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, idx_t lane_section_idx)
+Position::ReturnCode
+Position::SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, idx_t lane_section_idx, Layer preferred_layer)
 {
-    offset_             = offset;
-    ReturnCode retvalue = SetLongitudinalTrackPos(track_id, s);
+    int requested_lane_id = lane_id;
+    offset_               = offset;
+    ReturnCode retvalue   = SetLongitudinalTrackPos(track_id, s);
+    double     current_s  = GetS();
 
     if (retvalue == ReturnCode::ERROR_GENERIC)
     {
@@ -10274,7 +10715,8 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
     if (lane_id != lane_id_ && lane_section_idx == IDX_UNDEFINED)
     {
         // New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
-        lane_section_idx = road->GetLaneSectionIdxByS(s);
+        // Use preferred layer to find the correct lane section
+        lane_section_idx = road->GetLaneSectionIdxByS(current_s, preferred_layer);
     }
 
     LaneSection* lane_section = 0;
@@ -10299,9 +10741,86 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
     }
     else  // Find LaneSection and info according to s
     {
+        // Check if we should look for lane section in the preferred layer
+        idx_t preferred_lane_section_idx = road->GetLaneSectionIdxByS(current_s, preferred_layer);
+
         LaneInfo li;
 
-        int retval_tmp = road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_);
+        int effective_lane_id = lane_id_;
+        if (effective_lane_id != 0 && preferred_lane_section_idx != IDX_UNDEFINED)
+        {
+            LaneSection* preferred_lane_section  = road->GetLaneSectionByIdx(preferred_lane_section_idx);
+            LaneSection* transition_lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+            bool         cross_layer_transition  = transition_lane_section != nullptr && preferred_lane_section != nullptr &&
+                                          preferred_lane_section->GetLayer() != transition_lane_section->GetLayer();
+
+            if (preferred_lane_section != nullptr && cross_layer_transition)
+            {
+                Lane* transition_lane  = transition_lane_section != nullptr ? transition_lane_section->GetLaneById(effective_lane_id) : nullptr;
+                bool  resolved_by_link = false;
+
+                if (transition_lane != nullptr)
+                {
+                    LaneLink* transition_link = transition_lane->GetLinkExact(SUCCESSOR, preferred_lane_section->GetLayer());
+                    if (transition_link == nullptr || preferred_lane_section->GetLaneById(transition_link->GetId()) == nullptr)
+                    {
+                        transition_link = transition_lane->GetLinkExact(PREDECESSOR, preferred_lane_section->GetLayer());
+                    }
+
+                    if (transition_link != nullptr && preferred_lane_section->GetLaneById(transition_link->GetId()) != nullptr)
+                    {
+                        LOG_INFO(
+                            "SetLanePosMode cross-layer link: road={} s={:.2f} lane={} {} -> lane={} {}",
+                            road->GetId(),
+                            s,
+                            effective_lane_id,
+                            transition_lane_section != nullptr && transition_lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                            transition_link->GetId(),
+                            preferred_lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent");
+                        effective_lane_id = transition_link->GetId();
+                        resolved_by_link  = true;
+                    }
+                }
+
+                if (!resolved_by_link)
+                {
+                    double fallback_offset = 0.0;
+                    double lane_offset     = road->GetLaneOffset(s, preferred_lane_section->GetLayer());
+                    idx_t  fallback_lane_idx =
+                        preferred_lane_section
+                            ->GetClosestLaneIdx(s, GetT(), lane_offset, SIGN(effective_lane_id), fallback_offset, true, snapToLaneTypes_);
+
+                    if (fallback_lane_idx != IDX_UNDEFINED)
+                    {
+                        int fallback_lane_id = preferred_lane_section->GetLaneByIdx(fallback_lane_idx)->GetId();
+                        LOG_WARN(
+                            "SetLanePosMode: missing lane link from lane {} layer {} into layer {} at s {:.2f}; geometric fallback chose lane {}",
+                            lane_id_,
+                            transition_lane_section != nullptr && transition_lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                            preferred_lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                            s,
+                            fallback_lane_id);
+                        effective_lane_id = fallback_lane_id;
+                    }
+                    else
+                    {
+                        LOG_WARN(
+                            "SetLanePosMode: missing lane link from lane {} layer {} into layer {} at s {:.2f}; geometric fallback found no lane",
+                            lane_id_,
+                            transition_lane_section != nullptr && transition_lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                            preferred_lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                            s);
+                    }
+                }
+            }
+        }
+
+        // For cross-layer transitions, start from the preferred layer section (we resolved the lane ID above).
+        // For same-layer moves, start from the current lane_section_idx_ so that GetLaneInfoByS follows
+        // lane links when crossing lane section boundaries (important for lane ID changes like -1 → -2).
+        idx_t start_section_idx = (effective_lane_id != lane_id_) ? preferred_lane_section_idx : lane_section_idx_;
+
+        int retval_tmp = road->GetLaneInfoByS(GetS(), start_section_idx, effective_lane_id, li, snapToLaneTypes_, preferred_layer);
         if (retvalue == ReturnCode::OK)
         {
             // previous returncode prevails
@@ -10312,6 +10831,77 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
         lane_id_          = li.lane_id_;
 
         lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+        if (lane_section != nullptr && lane_id_ != 0 && lane_section->GetLaneById(lane_id_) == nullptr)
+        {
+            bool resolved_by_link            = false;
+            bool found_cross_layer_candidate = false;
+            for (idx_t i = 0; i < road->GetNumberOfLaneSections(); i++)
+            {
+                LaneSection* candidate_lane_section = road->GetLaneSectionByIdx(i);
+                if (candidate_lane_section == nullptr || candidate_lane_section == lane_section ||
+                    fabs(candidate_lane_section->GetS() - lane_section->GetS()) >= SMALL_NUMBER)
+                {
+                    continue;
+                }
+
+                if (candidate_lane_section->GetLayer() != lane_section->GetLayer())
+                {
+                    found_cross_layer_candidate = true;
+                }
+
+                Lane* candidate_lane = candidate_lane_section->GetLaneById(requested_lane_id);
+                if (candidate_lane == nullptr)
+                {
+                    continue;
+                }
+
+                LaneLink* candidate_link = candidate_lane->GetLinkExact(SUCCESSOR, lane_section->GetLayer());
+                if (candidate_link == nullptr || lane_section->GetLaneById(candidate_link->GetId()) == nullptr)
+                {
+                    candidate_link = candidate_lane->GetLinkExact(PREDECESSOR, lane_section->GetLayer());
+                }
+
+                if (candidate_link != nullptr && lane_section->GetLaneById(candidate_link->GetId()) != nullptr)
+                {
+                    LOG_INFO("SetLanePosMode sibling cross-layer link: road={} s={:.2f} requested_lane={} {} -> lane={} {}",
+                             road->GetId(),
+                             s,
+                             requested_lane_id,
+                             candidate_lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                             candidate_link->GetId(),
+                             lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent");
+                    lane_id_         = candidate_link->GetId();
+                    resolved_by_link = true;
+                    break;
+                }
+            }
+
+            if (!resolved_by_link && found_cross_layer_candidate)
+            {
+                double fallback_offset = 0.0;
+                double lane_offset     = road->GetLaneOffset(s, lane_section->GetLayer());
+                idx_t  fallback_lane_idx =
+                    lane_section->GetClosestLaneIdx(s, GetT(), lane_offset, SIGN(requested_lane_id), fallback_offset, true, snapToLaneTypes_);
+
+                if (fallback_lane_idx != IDX_UNDEFINED)
+                {
+                    lane_id_ = lane_section->GetLaneByIdx(fallback_lane_idx)->GetId();
+                    LOG_WARN("SetLanePosMode: no linked lane found for requested lane {} into layer {} at s {:.2f}; geometric fallback chose lane {}",
+                             requested_lane_id,
+                             lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                             s,
+                             lane_id_);
+                }
+                else
+                {
+                    LOG_WARN("SetLanePosMode: no linked lane found for requested lane {} into layer {} at s {:.2f}; geometric fallback found no lane",
+                             requested_lane_id,
+                             lane_section->GetLayer() == LAYER_TEMPORARY ? "temporary" : "permanent",
+                             s);
+                }
+            }
+        }
     }
 
     if (lane_section != nullptr)
@@ -10832,7 +11422,7 @@ double Position::GetHOffset(Road* road, LaneSection* lane_section) const
 {
     if (road != nullptr && lane_section != nullptr)
     {
-        return atan(GetTotalLaneWidthPrim(lane_section) + road->GetLaneOffsetPrim(s_));
+        return atan(GetTotalLaneWidthPrim(lane_section) + road->GetLaneOffsetPrim(s_, lane_section->GetLayer()));
     }
 
     return 0.0;
@@ -10843,7 +11433,8 @@ double Position::GetHOffset() const
     Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
     if (road != nullptr)
     {
-        return atan(GetTotalLaneWidthPrim() + road->GetLaneOffsetPrim(s_));
+        LaneSection* lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+        return atan(GetTotalLaneWidthPrim() + road->GetLaneOffsetPrim(s_, lane_section != nullptr ? lane_section->GetLayer() : LAYER_PERMANENT));
     }
 
     return 0.0;
@@ -11240,7 +11831,8 @@ bool Position::IsOffRoad() const
     if (road)
     {
         // Check whether outside road width
-        double center_offset = t_ - road->GetLaneOffset(s_);
+        LaneSection* lane_section  = road->GetLaneSectionByIdx(lane_section_idx_);
+        double       center_offset = t_ - road->GetLaneOffset(s_, lane_section != nullptr ? lane_section->GetLayer() : LAYER_PERMANENT);
         if (fabs(center_offset) > road->GetWidth(GetS(), SIGN(center_offset), ~Lane::LaneType::LANE_TYPE_NONE))
         {
             return true;
@@ -11956,7 +12548,7 @@ id_t Position::GetLaneGlobalId() const
     }
 
     double offset;
-    double lane_offset = road->GetLaneOffset(s_);
+    double lane_offset = road->GetLaneOffset(s_, lane_section->GetLayer());
     idx_t  lane_idx    = lane_section->GetClosestLaneIdx(s_, t_, lane_offset, 0, offset, false, Lane::LaneType::LANE_TYPE_ANY);
 
     if (lane_idx == IDX_UNDEFINED)
@@ -11981,6 +12573,25 @@ id_t Position::GetLaneGlobalId() const
     }
 
     return lane_section->GetLaneGlobalIdByIdx(lane_idx);
+}
+
+Layer Position::GetCurrentLaneLayer() const
+{
+    Road* road = GetRoadById(GetTrackId());
+    if (road == nullptr)
+    {
+        // No road, return default
+        return LAYER_PERMANENT;
+    }
+
+    LaneSection* lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+    if (lane_section == nullptr)
+    {
+        // No lane section, return default
+        return LAYER_PERMANENT;
+    }
+
+    return lane_section->GetLayer();
 }
 
 double Position::GetS() const
