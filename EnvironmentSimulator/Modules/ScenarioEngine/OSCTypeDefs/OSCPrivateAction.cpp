@@ -913,7 +913,13 @@ void LatLaneChangeAction::Start(double simTime)
 
     // Set initial state
     internal_pos_ = object_->pos_;
-    internal_pos_.ForceLaneId(target_lane_id_);
+
+    if (target_->layer_ != object_->GetCurrentLaneLayer() && target_lane_id_ != object_->pos_.GetLaneId())
+    {
+        object_->SetCurrentLaneLayer(target_->layer_);
+    }
+
+    internal_pos_.ForceLaneId(target_lane_id_, target_->layer_);
 
     // Make offsets agnostic to lane sign
     transition_.SetStartVal(SIGN(internal_pos_.GetLaneId()) * internal_pos_.GetOffset());
@@ -989,7 +995,9 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     object_->pos_.SetLanePos(internal_pos_.GetTrackId(),
                              internal_pos_.GetLaneId(),
                              internal_pos_.GetS(),
-                             offset_agnostic * SIGN(internal_pos_.GetLaneId()));
+                             offset_agnostic * SIGN(internal_pos_.GetLaneId()),
+                             IDX_UNDEFINED,
+                             target_->layer_);
 
     if (transition_.shape_ == DynamicsShape::STEP ||
         (transition_.dimension_ != DynamicsDimension::RATE && transition_.GetParamTargetVal() < SMALL_NUMBER))
@@ -1000,8 +1008,13 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 
     double ds = object_->pos_.DistanceToDS(SIGN(object_->speed_) * delta_long);  // find correspondning delta s along road reference line
 
-    object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
-    internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
+    object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true, target_->layer_);
+    internal_pos_.SetLanePos(object_->pos_.GetTrackId(),
+                             object_->pos_.GetLaneId(),
+                             object_->pos_.GetS(),
+                             object_->pos_.GetOffset(),
+                             IDX_UNDEFINED,
+                             target_->layer_);
 
     if (object_->pos_.GetRoute())
     {
@@ -1023,6 +1036,8 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         (transition_.GetParamVal() > 0 &&
          SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal())))
     {
+        // Lane change complete - update current lane layer to target lane layer
+        object_->SetCurrentLaneLayer(target_->layer_);
         OSCAction::End();
         object_->pos_.SetHeadingRelativeRoadDirection(0);
     }
@@ -1087,7 +1102,7 @@ void LatLaneOffsetAction::Start(double simTime)
         refpos.SetTrackPos(refpos.GetTrackId(), refpos.GetS(), refpos.GetT() + target_->value_ * (IsAngleForward(refpos.GetHRelative()) ? 1 : -1));
 
         // Transform target position into lane position based on current lane id
-        refpos.ForceLaneId(lane_id);
+        refpos.ForceLaneId(lane_id, object_->GetLaneLayerPreference());
 
         // Target lane offset = target t value - t value of current lane (which is current t - current offset)
         transition_.SetTargetVal(SIGN(object_->pos_.GetLaneId()) * (refpos.GetT() - (object_->pos_.GetT() - object_->pos_.GetOffset())));
@@ -1122,7 +1137,9 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
         object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
                                  object_->pos_.GetLaneId(),
                                  object_->pos_.GetS(),
-                                 SIGN(object_->pos_.GetLaneId()) * transition_.GetTargetVal());
+                                 SIGN(object_->pos_.GetLaneId()) * transition_.GetTargetVal(),
+                                 IDX_UNDEFINED,
+                                 object_->GetLaneLayerPreference());
         object_->pos_.SetHeadingRelativeRoadDirection(0);
     }
     else
@@ -1130,7 +1147,9 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
         object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
                                  object_->pos_.GetLaneId(),
                                  object_->pos_.GetS(),
-                                 SIGN(object_->pos_.GetLaneId()) * offset_agnostic);
+                                 SIGN(object_->pos_.GetLaneId()) * offset_agnostic,
+                                 IDX_UNDEFINED,
+                                 object_->GetLaneLayerPreference());
 
         // Convert rate (lateral-movment/time) to lateral-movement/long-movement
         double angle = atan(transition_.EvaluatePrim() / AVOID_ZERO(object_->GetSpeed()));
@@ -2261,7 +2280,12 @@ void LatDistanceAction::Step(double simTime, double dt)
 
                 roadmanager::Position desired_pos;
                 GetDesiredRoadPos(distance_error, desired_pos);
-                object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
+                object_->pos_.SetLanePos(desired_pos.GetTrackId(),
+                                         desired_pos.GetLaneId(),
+                                         desired_pos.GetS(),
+                                         desired_pos.GetOffset(),
+                                         IDX_UNDEFINED,
+                                         object_->GetLaneLayerPreference());
                 object_->SetSpeed(object_->GetSpeed());
                 if (!continuous_)
                 {
@@ -2340,7 +2364,9 @@ void LatDistanceAction::Step(double simTime, double dt)
                 object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
                                          object_->pos_.GetLaneId(),
                                          object_->pos_.GetS(),
-                                         object_->pos_.GetOffset() + lat_vel_ * dt);
+                                         object_->pos_.GetOffset() + lat_vel_ * dt,
+                                         IDX_UNDEFINED,
+                                         object_->GetLaneLayerPreference());
 
                 object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
 
@@ -2365,6 +2391,25 @@ void LatDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
     {
         target_object_ = obj2;
     }
+}
+
+void PreferredLaneLayerAction::Start(double simTime)
+{
+    OSCAction::Start(simTime);
+
+    LOG_INFO("Starting PreferredLaneLayerAction: Setting preferred layer to {}", layer_ == roadmanager::LAYER_PERMANENT ? "permanent" : "temporary");
+
+    // Set the preferred lane layer for this entity
+    // This only sets the preference - the current lane layer will change naturally
+    // when the vehicle moves into a section where the preferred lane layer exists
+    object_->SetLaneLayerPreference(layer_);
+}
+
+void PreferredLaneLayerAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+    // Nothing to do in step - layer preference is set once at start
 }
 
 void TeleportAction::Start(double simTime)
@@ -2429,6 +2474,15 @@ void TeleportAction::Start(double simTime)
     if (object_->GetType() == Object::Type::VEHICLE)
     {
         static_cast<Vehicle*>(object_)->AlignRearAxlePosition();
+    }
+
+    // If LanePosition had an explicit lane layer attribute, set the entity's
+    // lane layer so it continues following the correct lane layer during
+    // movement
+    if (position_.HasExplicitLaneLayer())
+    {
+        object_->SetLaneLayerPreference(position_.GetExplicitLaneLayer());
+        object_->SetCurrentLaneLayer(position_.GetExplicitLaneLayer());
     }
 
     LOG_INFO("{} New position:", object_->name_);

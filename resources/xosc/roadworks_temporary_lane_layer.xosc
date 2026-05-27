@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="4" date="2026-05-29T18:00:00" description="Construction site with temporary lane layers test scenario" author="johschmitz"/>
+    <CatalogLocations/>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/roadworks_permanent_temporary_layers.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <Vehicle name="car_white" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <Performance maxSpeed="69" maxAcceleration="3.0" maxDeceleration="10.0"/>
+                <BoundingBox>
+                    <Center x="1.4" y="0.0" z="0.9"/>
+                    <Dimensions width="2.0" height="1.8" length="4.5"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.523598776" wheelDiameter="0.6" trackWidth="1.8" positionX="2.8" positionZ="0.3"/>
+                    <RearAxle maxSteering="0.0" wheelDiameter="0.6" trackWidth="1.8" positionX="0.0" positionZ="0.3"/>
+                </Axles>
+                <Properties>
+                    <Property name="control" value="internal"/>
+                    <Property name="model_id" value="0"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Lead">
+            <Vehicle name="car_red" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <Performance maxSpeed="69" maxAcceleration="3.0" maxDeceleration="10.0"/>
+                <BoundingBox>
+                    <Center x="1.4" y="0.0" z="0.9"/>
+                    <Dimensions width="2.0" height="1.8" length="4.5"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.523598776" wheelDiameter="0.6" trackWidth="1.8" positionX="2.8" positionZ="0.3"/>
+                    <RearAxle maxSteering="0.0" wheelDiameter="0.6" trackWidth="1.8" positionX="0.0" positionZ="0.3"/>
+                </Axles>
+                <Properties>
+                    <Property name="control" value="internal"/>
+                    <Property name="model_id" value="2"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="temp_layer_vehicle">
+            <Vehicle name="car_blue" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <Performance maxSpeed="69" maxAcceleration="3.0" maxDeceleration="10.0"/>
+                <BoundingBox>
+                    <Center x="1.4" y="0.0" z="0.9"/>
+                    <Dimensions width="2.0" height="1.8" length="4.5"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.523598776" wheelDiameter="0.6" trackWidth="1.8" positionX="2.8" positionZ="0.3"/>
+                    <RearAxle maxSteering="0.0" wheelDiameter="0.6" trackWidth="1.8" positionX="0.0" positionZ="0.3"/>
+                </Axles>
+                <Properties>
+                    <Property name="model_id" value="1"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="permanent_layer_vehicle">
+            <Vehicle name="car_yellow" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <Performance maxSpeed="69" maxAcceleration="3.0" maxDeceleration="10.0"/>
+                <BoundingBox>
+                    <Center x="1.4" y="0.0" z="0.9"/>
+                    <Dimensions width="2.0" height="1.8" length="4.5"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.523598776" wheelDiameter="0.6" trackWidth="1.8" positionX="2.8" positionZ="0.3"/>
+                    <RearAxle maxSteering="0.0" wheelDiameter="0.6" trackWidth="1.8" positionX="0.0" positionZ="0.3"/>
+                </Axles>
+                <Properties>
+                    <Property name="model_id" value="3"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-100.0" y="-4.5" z="0.0" h="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <RelativeRoadPosition entityRef="Ego" ds="0.0" dt="0.0">
+                                    <Orientation h="0.0" p="0.0" r="0.0" type="absolute"/>
+                                </RelativeRoadPosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="20.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LateralAction>
+                            <LaneChangeAction>
+                                <LaneChangeActionDynamics dynamicsShape="cubic" value="2.0" dynamicsDimension="rate"/>
+                                <LaneChangeTarget>
+                                    <RelativeTargetLane value="0" entityRef="Ego"/>
+                                </LaneChangeTarget>
+                            </LaneChangeAction>
+                        </LateralAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <PreferredLaneLayerAction layer="temporary"/>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Lead">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-3" s="30.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="15.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <PreferredLaneLayerAction layer="permanent"/>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="temp_layer_vehicle">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="100.0" layer="temporary"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="16.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="permanent_layer_vehicle">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-4" s="100.0" layer="permanent"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="16.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story_layer_change">
+            <Act name="act_layer_change">
+                <ManeuverGroup name="layer_change_maneuver" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="first_lane_change_on_temporary">
+                        <Event name="first_lane_change_event" priority="overwrite">
+                            <Action name="first_lane_change_action">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" dynamicsDimension="time" value="3.0"/>
+                                            <LaneChangeTarget>
+                                                <AbsoluteTargetLane value="-2" layer="temporary"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="first_change_trigger" delay="0" conditionEdge="rising">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <ReachPositionCondition tolerance="5.0">
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="-3" s="70.0"/>
+                                                    </Position>
+                                                </ReachPositionCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="change_to_permanent">
+                        <Event name="to_permanent_layer_event" priority="overwrite">
+                            <Action name="to_permanent_layer_action">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" dynamicsDimension="time" value="3.0"/>
+                                            <LaneChangeTarget>
+                                                <AbsoluteTargetLane value="-4" layer="permanent"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="second_change_trigger" delay="0" conditionEdge="rising">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <ReachPositionCondition tolerance="5.0">
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="-4" s="160.0"/>
+                                                    </Position>
+                                                </ReachPositionCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="change_back_to_temporary">
+                        <Event name="back_to_temporary_event" priority="overwrite">
+                            <Action name="back_to_temporary_action">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" dynamicsDimension="time" value="3.0"/>
+                                            <LaneChangeTarget>
+                                                <AbsoluteTargetLane value="-2" layer="temporary"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="third_change_trigger" delay="0" conditionEdge="rising">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <ReachPositionCondition tolerance="5.0">
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="-4" s="250.0"/>
+                                                    </Position>
+                                                </ReachPositionCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="lead_layer_change_maneuver" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Lead"/>
+                    </Actors>
+                    <Maneuver name="lead_change_to_temporary">
+                        <Event name="lead_to_temporary_event" priority="overwrite">
+                            <Action name="lead_to_temporary_action">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" dynamicsDimension="time" value="3.0"/>
+                                            <LaneChangeTarget>
+                                                <AbsoluteTargetLane value="-1" layer="temporary"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="lead_change_trigger" delay="0" conditionEdge="rising">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Lead"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <ReachPositionCondition tolerance="5.0">
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="-3" s="120.0"/>
+                                                    </Position>
+                                                </ReachPositionCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="end_of_road" delay="0" conditionEdge="rising">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <ReachPositionCondition tolerance="10.0">
+                                <Position>
+                                    <LanePosition roadId="1" laneId="-4" s="390.0"/>
+                                </Position>
+                            </ReachPositionCondition>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
