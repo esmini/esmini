@@ -684,7 +684,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         obj_osi_internal.sobj->mutable_classification()->set_color(
             osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
 
-        source_reference->add_identifier()->assign(object->GetParkingSpace().GetRestrictions());
+        source_reference->add_identifier(fmt::format("restrictions:{}", object->GetParkingSpace().GetRestrictions()));
     }
     else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE || obj_type == roadmanager::RMObject::ObjectType::RAILING ||
              obj_type == roadmanager::RMObject::ObjectType::PATCH || obj_type == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||

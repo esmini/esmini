@@ -1575,7 +1575,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().orientation().roll(), 0.0, 1e-3);
     ASSERT_EQ(osi_gt_ptr->stationary_object(4).source_reference().size(), 1);
     ASSERT_EQ(osi_gt_ptr->stationary_object(4).source_reference().Get(0).identifier().size(), 3);
-    EXPECT_STREQ(osi_gt_ptr->stationary_object(4).source_reference().Get(0).identifier().Get(0).c_str(), "5_kalle");
+    EXPECT_STREQ(osi_gt_ptr->stationary_object(4).source_reference().Get(0).identifier().Get(0).c_str(), "restrictions:5_kalle");
 
     // verify vertices of barrier outline objects
     EXPECT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 10);
