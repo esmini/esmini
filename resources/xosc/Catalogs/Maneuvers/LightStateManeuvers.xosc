@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+      revMinor="3"
+      date="2026-05-28T10:00:00"
+      description="Automatic light control demo"
+      author="esmini team" />
+   <Catalog name="LightStateManeuvers">
+      <Maneuver name="LightsOnWhenDrivingManeuver">
+         <ParameterDeclarations>
+            <ParameterDeclaration name="EntityName" parameterType="string" value="Ego" />
+         </ParameterDeclarations>
+         <Event name="LightsOnWhenDrivingEvent" priority="parallel" maximumExecutionCount="1000">
+            <Action name="LowBeamOnWhenDrivingAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="lowBeam" />
+                        </LightType>
+                        <LightState mode="on" luminousIntensity="12000" />
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <Action name="DaytimeRunningLightsOnWhenDrivingAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="daytimeRunningLights" />
+                        </LightType>
+                        <LightState mode="on" luminousIntensity="500" />
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightsOnWhenDrivingForwardCondition" delay="0"
+                     conditionEdge="rising">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <SpeedCondition value="0.01" rule="greaterThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+               <ConditionGroup>
+                  <Condition name="LightsOnWhenDrivingForwardInitiallyCondition1" delay="0"
+                     conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition rule="equalTo" value="0" />
+                     </ByValueCondition>
+                  </Condition>
+                  <Condition name="LightsOnWhenDrivingForwardInitiallyCondition2" delay="0"
+                     conditionEdge="none">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <SpeedCondition value="0.01" rule="greaterThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+               <ConditionGroup>
+                  <Condition name="LightsOnWhenReversingCondition" delay="0" conditionEdge="rising">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <SpeedCondition value="-0.01" rule="lessThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+               <ConditionGroup>
+                  <Condition name="LightsOnWhenReversingInitiallyCondition1" delay="0"
+                     conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition rule="equalTo" value="0" />
+                     </ByValueCondition>
+                  </Condition>
+                  <Condition name="LightsOnWhenReversingInitiallyCondition2" delay="0"
+                     conditionEdge="none">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <SpeedCondition value="-0.01" rule="lessThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Event>
+         <Event name="LightsOffWhenStandstill" priority="parallel" maximumExecutionCount="1000">
+            <Action name="LightsOffWhenStandstillAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="lowBeam" />
+                        </LightType>
+                        <LightState mode="off" luminousIntensity="0" />
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <Action name="DaytimeRunningLightsOffWhenStandstillAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="daytimeRunningLights" />
+                        </LightType>
+                        <LightState mode="off" luminousIntensity="0" />
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightsOffWhenStandstillCondition" delay="0" conditionEdge="rising">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <StandStillCondition duration="0.0" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Event>
+         <Event name="LightsOnWhenReversingEvent" priority="parallel" maximumExecutionCount="1000">
+            <Action name="LightsOnWhenReversingAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="reversingLights" />
+                        </LightType>
+                        <LightState mode="on" luminousIntensity="600" />
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightsOnWhenReversingCondition" delay="0" conditionEdge="rising">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <SpeedCondition value="-0.01" rule="lessThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Event>
+         <Event name="LightsOffWhenNotReversingEvent" priority="parallel"
+            maximumExecutionCount="1000">
+            <Action name="LightsOffWhenNotReversingAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="reversingLights" />
+                        </LightType>
+                        <LightState mode="off" luminousIntensity="0" />
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightsOffWhenNotReversingCondition" delay="0"
+                     conditionEdge="rising">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <SpeedCondition value="-0.01" rule="greaterThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Event>
+         <Event name="LightsOnWhenBrakingEvent" priority="parallel" maximumExecutionCount="1000">
+            <Action name="LightsOnWhenBrakingAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="brakeLights" />
+                        </LightType>
+                        <LightState mode="on" luminousIntensity="800" />
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightsOnWhenBraking1" delay="0" conditionEdge="rising">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <AccelerationCondition value="-0.25" rule="lessThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+                  <Condition name="LightsOnWhenBraking2" delay="0" conditionEdge="none">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <SpeedCondition rule="greaterThan" value="0.1" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Event>
+         <Event name="LightsOffWhenNotBrakingEvent" priority="parallel" maximumExecutionCount="1000">
+            <Action name="LightsOffWhenNotBrakingAction">
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction>
+                        <LightType>
+                           <VehicleLight vehicleLightType="brakeLights" />
+                        </LightType>
+                        <LightState mode="off"/>
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Action>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightsOffAfterBrakingWhenDrivingForwardCondition1" delay="0"
+                     conditionEdge="rising">
+                     <ByEntityCondition>
+                        <EntityCondition>
+                           <AccelerationCondition value="-0.05" rule="greaterThan" />
+                        </EntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                           <EntityRef entityRef="$EntityName" />
+                        </TriggeringEntities>
+                     </ByEntityCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Event>
+      </Maneuver>
+   </Catalog>
+</OpenSCENARIO>
