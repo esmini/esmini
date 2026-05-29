@@ -1471,8 +1471,6 @@ namespace scenarioengine
               transitionTime_(0.0),
               flashingOffDuration_(0.5),
               flashingOnDuration_(0.5),
-              transitionTimer_(0.0),
-              flashingTimer_(0.0),
               cmyk_{-1.0, -1.0, -1.0, -1.0},
               RGB_ARRAY_SIZE_(3),
               CMYK_ARRAY_SIZE_(4),
@@ -1482,10 +1480,9 @@ namespace scenarioengine
               luminousitySet_(false),
               actionVehicleLightStatus_(),
               flashStatus_(FlashingStatus::UNDEFINED),
-              colorSet_(false),
-              vehicleLights_(),
-              transitioned_(false)
+              colorSet_(false)
         {
+            SetInitState();
         }
 
         ~LightStateAction();
@@ -1513,6 +1510,8 @@ namespace scenarioengine
         bool                      CheckConflictingLights(const Object::VehicleLightType& type);
         void                      HandleConflictingLights(const Object::VehicleLightType& type);
         void                      ResetLight(Object::VehicleLightStatus& light, Object::VehicleLightMode mode = Object::VehicleLightMode::UNKNOWN);
+
+        void SetInitState();
 
         // Getters
         double* GetCmyk()

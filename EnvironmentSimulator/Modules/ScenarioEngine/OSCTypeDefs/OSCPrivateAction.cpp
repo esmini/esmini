@@ -3125,11 +3125,6 @@ void VisibilityAction::Step(double simTime, double dt)
 
 void LightStateAction::SetVehicleLightState(Object::VehicleLightStatus* vehicleLight, double luminousity)
 {
-    if (!luminousitySet_)
-    {
-        luminousity = DEFAULT_LUMINOUS_INTENSITY_;
-    }
-
     luminousity = CLAMP(luminousity, 0.0, MAX_INTENSITY_LUM);
 
     for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
@@ -3148,6 +3143,9 @@ void LightStateAction::SetVehicleLightState(Object::VehicleLightStatus* vehicleL
 
 void LightStateAction::Start(double simTime)
 {
+    // Make sure transition flag is reset, in case we have maximumExecutionCount > 1
+    SetInitState();
+
     SetVehicleLights(GetVehicleLightType());
     if (vehicleLights_.front().vehicleLight_->type == Object::VehicleLightType::UNDEFINED)
     {
@@ -3177,6 +3175,7 @@ void LightStateAction::Start(double simTime)
         lightState.previousIntensity_ = vehicleLight->luminousIntensity;
         vehicleLight->mode            = actionVehicleLightStatus_.mode;
         vehicleLight->color           = actionVehicleLightStatus_.color;
+
         // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
         std::copy_n(vehicleLight->rgb, RGB_ARRAY_SIZE_, lightState.previousMinRgb_);
         std::copy_n(vehicleLight->maxRgb, RGB_ARRAY_SIZE_, lightState.previousMaxRgb_);
@@ -3218,7 +3217,7 @@ void LightStateAction::Step(double simTime, double dt)
         transitioned_ = true;  // Make sure we only enter this if-statement once
     }
 
-    if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
+    if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)  // We enter here at least once, always
     {
         double transitionFactor = 1.0;
         if (transitionTime_ != 0.0)
@@ -3230,6 +3229,12 @@ void LightStateAction::Step(double simTime, double dt)
         {
             if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
             {
+                if (!luminousitySet_)
+                {
+                    actionVehicleLightStatus_.luminousIntensity = DEFAULT_LUMINOUS_INTENSITY_;
+                    luminousitySet_                             = true;
+                }
+
                 lightState.transitionLuminousity_ =
                     lightState.previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - lightState.previousIntensity_) * transitionFactor;
             }
@@ -3239,6 +3244,11 @@ void LightStateAction::Step(double simTime, double dt)
             }
             else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
             {
+                if (!luminousitySet_)
+                {
+                    actionVehicleLightStatus_.luminousIntensity = DEFAULT_LUMINOUS_INTENSITY_;
+                    luminousitySet_                             = true;
+                }
                 // Turn on the light
                 lightState.transitionLuminousity_ =
                     lightState.previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - lightState.previousIntensity_) * transitionFactor;
@@ -3346,6 +3356,14 @@ void LightStateAction::ResetLight(Object::VehicleLightStatus& light, Object::Veh
     light.emission[0] = 0.0;
     light.emission[1] = 0.0;
     light.emission[2] = 0.0;
+}
+
+void LightStateAction::SetInitState()
+{
+    transitioned_    = false;
+    transitionTimer_ = 0.0;
+    flashingTimer_   = 0.0;
+    vehicleLights_   = {};
 }
 
 bool LightStateAction::CheckConflictingLights(const Object::VehicleLightType& type)
