@@ -2178,9 +2178,19 @@ namespace roadmanager
         {
             return this;
         }
+        void SetId(id_t id)
+        {
+            id_ = id;
+        }
+        id_t GetId() const
+        {
+            return id_;
+        }
         virtual ~OutlineCorner()
         {
         }
+
+        id_t id_ = ID_UNDEFINED;
     };
 
     class OutlineCornerRoad : public OutlineCorner
@@ -2260,6 +2270,12 @@ namespace roadmanager
         {
             corner_.push_back(outlineCorner);
         }
+        OutlineCorner *GetCornerById(id_t id) const
+        {
+            auto it = std::find_if(corner_.begin(), corner_.end(), [id](OutlineCorner *corner) { return corner->GetId() == id; });
+
+            return (it != corner_.end()) ? *it : nullptr;
+        }
         void SetCountourType(ContourType contourType)
         {
             contourType_ = contourType;
@@ -2316,6 +2332,54 @@ namespace roadmanager
     private:
         Access      access_{};
         std::string restrictions_;
+    };
+
+    // OpenDRIVE object marking (ASAM OpenDRIVE 1.8.0, section 13.8).
+    // A marking is either attached to one side of the object bounding box (side_ != NONE),
+    // or defined along outline edges by referencing outline corner ids (corner_references_).
+    class ObjectMarking
+    {
+    public:
+        enum class Side
+        {
+            NONE,  // no bounding box side; outline cornerReference based
+            FRONT,
+            REAR,
+            LEFT,
+            RIGHT
+        };
+
+        ObjectMarking() = default;
+
+        bool UsesOutline() const
+        {
+            return !corner_references_.empty();
+        }
+
+        static Side Str2Side(const std::string &str)
+        {
+            if (str == "front")
+                return Side::FRONT;
+            else if (str == "rear")
+                return Side::REAR;
+            else if (str == "left")
+                return Side::LEFT;
+            else if (str == "right")
+                return Side::RIGHT;
+            return Side::NONE;
+        }
+
+        RoadMarkColor                color_          = RoadMarkColor::WHITE;
+        double                       line_length_    = 0.0;  // length of the visible part [m]
+        double                       space_length_   = 0.0;  // length of the gap between visible parts [m]
+        double                       start_offset_   = 0.0;  // u-offset from start of bounding box side [m]
+        double                       stop_offset_    = 0.0;  // u-offset from end of bounding box side [m]
+        double                       width_          = 0.1;  // width of the marking [m]
+        double                       z_offset_       = 0.0;  // thickness of the marking above the road [m]
+        double                       lateral_offset_ = 0.0;  // custom (userData "lateralOffset"): shift marking sideways, left (+) / right (-) [m]
+        LaneRoadMark::RoadMarkWeight weight_         = LaneRoadMark::RoadMarkWeight::STANDARD;
+        Side                         side_           = Side::NONE;
+        std::vector<id_t>            corner_references_;  // referenced outline corner ids (>= 2 when outline based)
     };
 
     class Repeat
@@ -2611,6 +2675,18 @@ namespace roadmanager
         {
             outlines_.push_back(outline);
         }
+        void AddMarking(const ObjectMarking &marking)
+        {
+            markings_.push_back(marking);
+        }
+        unsigned int GetNumberOfMarkings() const
+        {
+            return static_cast<unsigned int>(markings_.size());
+        }
+        const ObjectMarking *GetMarking(unsigned int i) const
+        {
+            return (i < markings_.size()) ? &markings_[i] : nullptr;
+        }
         void SetRepeat(Repeat *repeat);
         void AddRepeat(Repeat *repeat)
         {
@@ -2633,6 +2709,18 @@ namespace roadmanager
         Outline *GetOutline(unsigned int i) const
         {
             return (i < outlines_.size()) ? outlines_[i] : 0;
+        }
+        OutlineCorner *GetOutlineCornerById(id_t id) const
+        {
+            for (Outline *outline : outlines_)
+            {
+                OutlineCorner *corner = outline->GetCornerById(id);
+                if (corner != nullptr)
+                {
+                    return corner;
+                }
+            }
+            return nullptr;
         }
         Repeat *GetRepeatByIdx(unsigned int i) const
         {
@@ -2664,27 +2752,28 @@ namespace roadmanager
         }
 
     private:
-        std::string            name_;
-        ObjectType             type_;
-        id_t                   id_;
-        id_t                   g_id_;
-        double                 s_;
-        double                 t_;
-        double                 z_offset_;
-        Orientation            orientation_;
-        double                 length_;
-        double                 height_;
-        double                 width_;
-        double                 heading_;
-        double                 pitch_;
-        double                 roll_;
-        std::vector<Outline *> outlines_;
-        Repeat                *repeat_ = nullptr;
-        std::vector<Repeat *>  repeats_;
-        ParkingSpace           parking_space_;
-        double                 color_[4]              = {0.0, 0.0, 0.0, 0.0};
-        TunnelComponentType    tunnel_component_type_ = TunnelComponentType::NO_TUNNEL;
-        std::string            model3d_full_path_;
+        std::string                name_;
+        ObjectType                 type_;
+        id_t                       id_;
+        id_t                       g_id_;
+        double                     s_;
+        double                     t_;
+        double                     z_offset_;
+        Orientation                orientation_;
+        double                     length_;
+        double                     height_;
+        double                     width_;
+        double                     heading_;
+        double                     pitch_;
+        double                     roll_;
+        std::vector<Outline *>     outlines_;
+        Repeat                    *repeat_ = nullptr;
+        std::vector<Repeat *>      repeats_;
+        ParkingSpace               parking_space_;
+        std::vector<ObjectMarking> markings_;
+        double                     color_[4]              = {0.0, 0.0, 0.0, 0.0};
+        TunnelComponentType        tunnel_component_type_ = TunnelComponentType::NO_TUNNEL;
+        std::string                model3d_full_path_;
     };
 
     enum class SpeedUnit

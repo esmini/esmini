@@ -1338,6 +1338,14 @@ namespace roadgeom
                     color[c] = object->GetColor()[c];
                 }
 
+                // View-mode handling (same as entities, toggled with the ',' key / --view_mode):
+                // The object's "volume" (3D model, stand-in box, outline or continuous geometry) is
+                // tagged NODE_MASK_ENTITY_MODEL. When the object carries markings, the volume is hidden
+                // by default (markings represent it instead); otherwise it is shown by default.
+                const bool         has_markings    = object->GetNumberOfMarkings() > 0;
+                const int          vol_mask        = has_markings ? NODE_MASK_NONE : NODE_MASK_ENTITY_MODEL;
+                const unsigned int vol_child_begin = objGroup->getNumChildren();
+
                 if (object->GetNumberOfOutlines() > 0 &&
                     object->GetNumberOfRepeats() == 0)  // if repeats are defined, wait and see if outline should replace failed 3D model or not
                 {
@@ -1354,6 +1362,15 @@ namespace roadgeom
                     LOG_INFO("Created outline geometry for object {}.", object->GetName());
                     LOG_DEBUG("  if it looks strange, e.g.faces too dark or light color, ");
                     LOG_DEBUG("  check that corners are defined counter-clockwise (as OpenGL default).");
+                }
+                else if (roadmanager::Repeat* outl_rep = object->GetRepeat(); object->GetNumberOfOutlines() > 0 && outl_rep != nullptr &&
+                                                                              outl_rep->GetDistance() > SMALL_NUMBER &&
+                                                                              outl_rep->GetLength() > SMALL_NUMBER)
+                {
+                    // Repeated object (separate copies) with outline(s): create curvature-aware geometry
+                    // per instance so cornerRoad outlines follow the road (e.g. distorted in curves).
+                    CreateRepeatedOutlineObjects(object, road, color, origin, objGroup.get(), obj_type);
+                    LOG_INFO("Created repeated outline geometry for object {}.", object->GetName());
                 }
                 else
                 {
@@ -1414,7 +1431,18 @@ namespace roadgeom
                                     if (olgroup != nullptr)
                                     {
                                         SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(j));
+                                        olgroup->setNodeMask(static_cast<unsigned int>(vol_mask));
                                         objGroup->addChild(olgroup);
+                                    }
+                                }
+                                CreateObjectBoundingBoxes(object, road, color, origin, objGroup.get());
+                                if (has_markings)
+                                {
+                                    osg::ref_ptr<osg::Group> markings_group = CreateObjectMarkings(object, road, origin);
+                                    if (markings_group != nullptr && markings_group->getNumChildren() > 0)
+                                    {
+                                        SetNodeName(*markings_group, prefix_road_object, object->GetId(), object->GetName() + "_markings");
+                                        objGroup->addChild(markings_group);
                                     }
                                 }
                                 continue;
@@ -1482,8 +1510,8 @@ namespace roadgeom
 
                     osg::ref_ptr<osg::PositionAttitudeTransform> clone = 0;
 
-                    for (; nCopies < 1 ||
-                           (rep && rep->length_ > SMALL_NUMBER && cur_s < rep->GetLength() + SMALL_NUMBER && cur_s + rep->GetS() < road->GetLength());
+                    for (;
+                         nCopies < 1 || (rep && rep->length_ > SMALL_NUMBER && cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength());
                          nCopies++)
                     {
                         double s;
@@ -1491,7 +1519,10 @@ namespace roadgeom
                         double scale_y = 1.0;
                         double scale_z = 1.0;
 
-                        if (rep && cur_s + rep->GetS() + (object->GetLength() * scale_x) * cos(object->GetHOffset()) > road->GetLength())
+                        // Count instances by accumulated length only; the repeat start s offset
+                        // compensates for the bounding box center, not the object border, so it must
+                        // not reduce the number of copies that fit along the road.
+                        if (rep && cur_s + (object->GetLength() * scale_x) * cos(object->GetHOffset()) > road->GetLength())
                         {
                             break;  // object would reach outside specified total length
                         }
@@ -1720,6 +1751,27 @@ namespace roadgeom
                         LOG_WARN("No tx");
                     }
                 }
+
+                // Tag this object's volume geometry for the entity view-mode toggle (',' / --view_mode).
+                // Hidden by default when the object carries markings, shown otherwise.
+                for (unsigned int ci = vol_child_begin; ci < objGroup->getNumChildren(); ci++)
+                {
+                    objGroup->getChild(ci)->setNodeMask(static_cast<unsigned int>(vol_mask));
+                }
+
+                // Wireframe and solid bounding box representations (toggle with the same view modes).
+                CreateObjectBoundingBoxes(object, road, color, origin, objGroup.get());
+
+                // Object markings (e.g. parking space lines, crosswalk stripes)
+                if (object->GetNumberOfMarkings() > 0)
+                {
+                    osg::ref_ptr<osg::Group> markings_group = CreateObjectMarkings(object, road, origin);
+                    if (markings_group != nullptr && markings_group->getNumChildren() > 0)
+                    {
+                        SetNodeName(*markings_group, prefix_road_object, object->GetId(), object->GetName() + "_markings");
+                        objGroup->addChild(markings_group);
+                    }
+                }
             }
         }
 
@@ -1753,12 +1805,169 @@ namespace roadgeom
         return xform;
     }
 
-    osg::ref_ptr<osg::Group> RoadGeom::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color, const osg::Vec3d& origin)
+    // Per-instance placement and size of a repeated road object at accumulated distance cur_s along
+    // the repeat span. Width/height/length fall back to the object's nominal values when the repeat
+    // does not specify a start/end. 'valid' is false when the instance would extend past the road
+    // end (iteration should then stop). When valid, 'pos' is set mode-relative with heading aligned
+    // to the repeat line, and the world position/heading fields are filled in.
+    struct RepeatInstance
+    {
+        double s        = 0.0;
+        double t        = 0.0;
+        double z_off    = 0.0;
+        double inst_len = 0.0;
+        double inst_wid = 0.0;
+        double inst_hgt = 0.0;
+        double inst_x   = 0.0;
+        double inst_y   = 0.0;
+        double inst_z   = 0.0;
+        double inst_h   = 0.0;
+        bool   valid    = false;
+    };
+
+    static RepeatInstance EvalRepeatInstance(roadmanager::RMObject* object,
+                                             roadmanager::Repeat*   rep,
+                                             roadmanager::Road*     road,
+                                             double                 cur_s,
+                                             roadmanager::Position& pos)
+    {
+        RepeatInstance ri;
+        const double   factor = cur_s / rep->GetLength();
+        ri.s                  = rep->GetS() + cur_s;
+        ri.t                  = rep->GetTStart() + factor * (rep->GetTEnd() - rep->GetTStart());
+        ri.z_off              = rep->GetZOffsetStart() + factor * (rep->GetZOffsetEnd() - rep->GetZOffsetStart());
+        ri.inst_len           = (rep->GetLengthStart() > SMALL_NUMBER || rep->GetLengthEnd() > SMALL_NUMBER)
+                                    ? rep->GetLengthStart() + factor * (rep->GetLengthEnd() - rep->GetLengthStart())
+                                    : object->GetLength();
+        ri.inst_wid           = (rep->GetWidthStart() > SMALL_NUMBER || rep->GetWidthEnd() > SMALL_NUMBER)
+                                    ? rep->GetWidthStart() + factor * (rep->GetWidthEnd() - rep->GetWidthStart())
+                                    : object->GetWidth();
+        ri.inst_hgt           = (rep->GetHeightStart() > SMALL_NUMBER || rep->GetHeightEnd() > SMALL_NUMBER)
+                                    ? rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())
+                                    : object->GetHeight();
+
+        // Count instances by accumulated length only; the repeat start s offset compensates for the
+        // bounding box center, not the object border, so it must not reduce how many copies fit.
+        ri.valid = (cur_s + ri.inst_len * cos(object->GetHOffset()) <= road->GetLength());
+        if (!ri.valid)
+        {
+            return ri;
+        }
+
+        const double h_offset = atan2(rep->GetTEnd() - rep->GetTStart(), rep->GetLength());
+        pos.SetTrackPosMode(road->GetId(),
+                            ri.s,
+                            ri.t,
+                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::P_REL |
+                                roadmanager::Position::PosMode::R_REL);
+        pos.SetHeadingRelative(h_offset);
+        ri.inst_x = pos.GetX();
+        ri.inst_y = pos.GetY();
+        ri.inst_z = pos.GetZ() + ri.z_off;
+        ri.inst_h = pos.GetH() + object->GetHOffset();
+        return ri;
+    }
+
+    // Build a per-instance corner position provider for a repeated outline object:
+    // - cornerRoad corners are re-evaluated on the road at the instance position (curvature aware)
+    // - cornerLocal corners keep their fixed local shape, rigidly placed in the instance frame
+    static std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>
+    MakeInstanceCornerPosFn(roadmanager::Road* road, double s, double t, double inst_x, double inst_y, double inst_z, double inst_h)
+    {
+        const double ch = cos(inst_h);
+        const double sh = sin(inst_h);
+        return [=](roadmanager::OutlineCorner* corner, double& x, double& y, double& z)
+        {
+            if (roadmanager::OutlineCornerRoad* cr = dynamic_cast<roadmanager::OutlineCornerRoad*>(corner))
+            {
+                const double          corner_s = s + (cr->s_ - cr->center_s_);
+                const double          corner_t = t + (cr->t_ - cr->center_t_);
+                roadmanager::Position cp;
+                cp.SetTrackPos(road->GetId(), corner_s, corner_t);
+                x = cp.GetX();
+                y = cp.GetY();
+                z = cp.GetZ() + cr->dz_;
+            }
+            else
+            {
+                double u, v, dummy_z;
+                corner->GetPosLocal(u, v, dummy_z);
+                double corner_local_z = 0.0;
+                if (roadmanager::OutlineCornerLocal* cl = dynamic_cast<roadmanager::OutlineCornerLocal*>(corner))
+                {
+                    corner_local_z = cl->zLocal_;
+                }
+                x = inst_x + u * ch - v * sh;
+                y = inst_y + u * sh + v * ch;
+                z = inst_z + corner_local_z;
+            }
+        };
+    }
+
+    void RoadGeom::CreateRepeatedOutlineObjects(roadmanager::RMObject* object,
+                                                roadmanager::Road*     road,
+                                                osg::Vec4              color,
+                                                const osg::Vec3d&      origin,
+                                                osg::Group*            objGroup,
+                                                const std::string&     obj_type)
+    {
+        roadmanager::Repeat* rep = object->GetRepeat();
+        if (rep == nullptr || objGroup == nullptr)
+        {
+            return;
+        }
+
+        // Angle of the repeat line relative to the road reference line (from delta t over the span)
+        roadmanager::Position pos;
+        int                   nCopies = 0;
+
+        for (double cur_s = 0.0; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength(); cur_s += rep->GetDistance(), nCopies++)
+        {
+            const RepeatInstance ri = EvalRepeatInstance(object, rep, road, cur_s, pos);
+            if (!ri.valid)
+            {
+                break;  // instance would reach outside the road
+            }
+
+            auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h);
+
+            for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
+            {
+                roadmanager::Outline*    outline = object->GetOutline(j);
+                osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin, corner_pos_fn);
+                if (olgroup != nullptr)
+                {
+                    SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(nCopies) + "_" + std::to_string(j));
+                    objGroup->addChild(olgroup);
+                }
+            }
+        }
+    }
+
+    osg::ref_ptr<osg::Group> RoadGeom::CreateOutlineObject(
+        roadmanager::Outline*                                                              outline,
+        osg::Vec4                                                                          color,
+        const osg::Vec3d&                                                                  origin,
+        const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn)
     {
         if (outline == 0)
         {
             return nullptr;
         }
+
+        // Resolve a corner world position, optionally via a caller provided function (e.g. per repeat
+        // instance placement). Falls back to the corner's own road based position.
+        auto getPos = [&](roadmanager::OutlineCorner* corner, double& x, double& y, double& z)
+        {
+            if (corner_pos_fn)
+            {
+                corner_pos_fn(corner, x, y, z);
+            }
+            else
+            {
+                corner->GetPos(x, y, z);
+            }
+        };
 
         bool roof = outline->roof_ ? true : false;
 
@@ -1782,7 +1991,7 @@ namespace roadgeom
         {
             double                      x, y, z;
             roadmanager::OutlineCorner* corner = outline->corner_[i];
-            corner->GetPos(x, y, z);
+            getPos(corner, x, y, z);
             (*vertices_sides)[i * 2 + 0].set(static_cast<float>(x - origin[0]),
                                              static_cast<float>(y - origin[1]),
                                              static_cast<float>(z + corner->GetHeight()));
@@ -1791,7 +2000,7 @@ namespace roadgeom
             if (i > 0)
             {
                 double x1, y1, z1;
-                outline->corner_[i - 1]->GetPos(x1, y1, z1);
+                getPos(outline->corner_[i - 1], x1, y1, z1);
                 float dx = x1 - x;
                 float dy = y1 - y;
                 cumulative_side_dist += std::sqrt(dx * dx + dy * dy);
@@ -1811,7 +2020,7 @@ namespace roadgeom
                                                                         static_cast<float>(z));
 
                 double x2, y2, z2;
-                outline->corner_[outline->corner_.size() - 1 - i]->GetPos(x2, y2, z2);
+                getPos(outline->corner_[outline->corner_.size() - 1 - i], x2, y2, z2);
                 float dx    = x2 - x;
                 float dy    = y2 - y;
                 float width = std::sqrt(dx * dx + dy * dy);
@@ -1833,8 +2042,8 @@ namespace roadgeom
                 unsigned left_index  = i / 2;
 
                 double xl, yl, zl, xr, yr, zr;
-                outline->corner_[left_index]->GetPos(xl, yl, zl);
-                outline->corner_[right_index]->GetPos(xr, yr, zr);
+                getPos(outline->corner_[left_index], xl, yl, zl);
+                getPos(outline->corner_[right_index], xr, yr, zr);
 
                 (*vertices_top)[i].set(static_cast<float>(xr - origin[0]),
                                        static_cast<float>(yr - origin[1]),
@@ -1855,8 +2064,8 @@ namespace roadgeom
                     unsigned right_index_prev = outline->corner_.size() - 1 - ((i - 2) / 2);
 
                     double xl_prev, yl_prev, zl_prev, xr_prev, yr_prev, zr_prev;
-                    outline->corner_[left_index_prev]->GetPos(xl_prev, yl_prev, zl_prev);
-                    outline->corner_[right_index_prev]->GetPos(xr_prev, yr_prev, zr_prev);
+                    getPos(outline->corner_[left_index_prev], xl_prev, yl_prev, zl_prev);
+                    getPos(outline->corner_[right_index_prev], xr_prev, yr_prev, zr_prev);
 
                     osg::Vec3f left_prev(xl_prev, yl_prev, zl_prev);
                     osg::Vec3f right_prev(xr_prev, yr_prev, zr_prev);
@@ -1941,6 +2150,803 @@ namespace roadgeom
         group->addChild(geode);
 
         return group;
+    }
+
+    void RoadGeom::CreateObjectBoundingBoxes(roadmanager::RMObject* object,
+                                             roadmanager::Road*     road,
+                                             osg::Vec4              color,
+                                             const osg::Vec3d&      origin,
+                                             osg::Group*            objGroup)
+    {
+        if (object == nullptr || road == nullptr || objGroup == nullptr)
+        {
+            return;
+        }
+
+        osg::ref_ptr<osg::Group> bb_wire = new osg::Group;  // wireframe boxes
+        osg::ref_ptr<osg::Group> bb_fill = new osg::Group;  // solid boxes
+
+        // Add one box (wireframe + solid) for a single object instance. The box is oriented by
+        // inst_h, positioned so its base rests at inst_z, and offset within the local frame by
+        // (loc_cx, loc_cy) so it can be centered on geometry that is not symmetric about the
+        // object reference (e.g. an outline whose corners are given by unique s/t coordinates).
+        auto emit_box = [&](double inst_x,
+                            double inst_y,
+                            double inst_z,
+                            double inst_h,
+                            double loc_cx,
+                            double loc_cy,
+                            double inst_len,
+                            double inst_wid,
+                            double inst_height)
+        {
+            const float len = MAX(0.05f, static_cast<float>(inst_len));
+            const float wid = MAX(0.05f, static_cast<float>(inst_wid));
+            const float hgt = MAX(0.05f, static_cast<float>(inst_height));
+
+            osg::ref_ptr<osg::Box> box = new osg::Box(osg::Vec3(static_cast<float>(loc_cx), static_cast<float>(loc_cy), 0.5f * hgt), len, wid, hgt);
+            osg::ref_ptr<osg::ShapeDrawable> wire_shape = new osg::ShapeDrawable(box.get());
+            osg::ref_ptr<osg::ShapeDrawable> fill_shape = new osg::ShapeDrawable(box.get());
+            wire_shape->setColor(color);
+            fill_shape->setColor(color);
+
+            osg::ref_ptr<osg::Geode> wire_geode = new osg::Geode;
+            osg::ref_ptr<osg::Geode> fill_geode = new osg::Geode;
+            wire_geode->addDrawable(wire_shape.get());
+            fill_geode->addDrawable(fill_shape.get());
+
+            osg::ref_ptr<osg::PositionAttitudeTransform> wire_tx = new osg::PositionAttitudeTransform;
+            osg::ref_ptr<osg::PositionAttitudeTransform> fill_tx = new osg::PositionAttitudeTransform;
+            const osg::Vec3 p(static_cast<float>(inst_x - origin[0]), static_cast<float>(inst_y - origin[1]), static_cast<float>(inst_z - origin[2]));
+            const osg::Quat q(inst_h, osg::Vec3(osg::Z_AXIS));
+            wire_tx->setPosition(p);
+            fill_tx->setPosition(p);
+            wire_tx->setAttitude(q);
+            fill_tx->setAttitude(q);
+            wire_tx->addChild(wire_geode.get());
+            fill_tx->addChild(fill_geode.get());
+
+            bb_wire->addChild(wire_tx.get());
+            bb_fill->addChild(fill_tx.get());
+        };
+
+        // Emit the actual outline based shape (not a simplified box) for a single instance. The same
+        // geometry is added to both the wireframe and the solid groups so the bounding box views show
+        // the true object shape. Each corner is resolved via corner_pos_fn so cornerRoad corners keep
+        // their unique s/t coordinates (and follow the road), matching the loaded outline model.
+        auto emit_outline_shape = [&](const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn)
+        {
+            for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
+            {
+                roadmanager::Outline* outline = object->GetOutline(j);
+                if (outline == nullptr)
+                {
+                    continue;
+                }
+                osg::ref_ptr<osg::Group> fill = CreateOutlineObject(outline, color, origin, corner_pos_fn);
+                osg::ref_ptr<osg::Group> wire = CreateOutlineObject(outline, color, origin, corner_pos_fn);
+                if (fill != nullptr)
+                {
+                    bb_fill->addChild(fill.get());
+                }
+                if (wire != nullptr)
+                {
+                    bb_wire->addChild(wire.get());
+                }
+            }
+        };
+
+        roadmanager::Repeat*  rep             = object->GetRepeat();
+        const bool            separate_copies = (rep != nullptr && rep->GetLength() > SMALL_NUMBER && rep->GetDistance() > SMALL_NUMBER);
+        const bool            has_outlines    = object->GetNumberOfOutlines() > 0;
+        roadmanager::Position pos;
+
+        if (!separate_copies)
+        {
+            pos.SetTrackPosMode(road->GetId(),
+                                object->GetS(),
+                                object->GetT(),
+                                roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
+                                    roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
+
+            const double inst_h = pos.GetH() + object->GetHOffset();
+            const double inst_z = pos.GetZ() + object->GetZOffset();
+
+            if (has_outlines)
+            {
+                // Actual outline shape (unique s/t per corner), placed via each corner's own road position.
+                auto corner_pos_fn = [](roadmanager::OutlineCorner* corner, double& x, double& y, double& z) { corner->GetPos(x, y, z); };
+                emit_outline_shape(corner_pos_fn);
+            }
+            else
+            {
+                emit_box(pos.GetX(), pos.GetY(), inst_z, inst_h, 0.0, 0.0, object->GetLength(), object->GetWidth(), object->GetHeight());
+            }
+        }
+        else
+        {
+            for (double cur_s = 0.0; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength(); cur_s += rep->GetDistance())
+            {
+                const RepeatInstance ri = EvalRepeatInstance(object, rep, road, cur_s, pos);
+                if (!ri.valid)
+                {
+                    break;  // instance would reach outside the road
+                }
+
+                if (has_outlines)
+                {
+                    // Per-instance corner placement, matching CreateRepeatedOutlineObjects:
+                    // cornerRoad corners are re-evaluated on the road (curvature aware) at this instance,
+                    // cornerLocal corners keep a fixed shape rigidly placed at the instance.
+                    auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h);
+                    emit_outline_shape(corner_pos_fn);
+                }
+                else
+                {
+                    emit_box(ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h, 0.0, 0.0, ri.inst_len, ri.inst_wid, ri.inst_hgt);
+                }
+            }
+        }
+
+        if (bb_wire->getNumChildren() == 0)
+        {
+            return;
+        }
+
+        // Wireframe rendering for the outline boxes
+        osg::ref_ptr<osg::PolygonMode> polygonMode = new osg::PolygonMode;
+        polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+        osg::StateSet* wire_ss = bb_wire->getOrCreateStateSet();
+        wire_ss->setAttributeAndModes(polygonMode.get(), osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+        wire_ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+        bb_wire->setNodeMask(NODE_MASK_ENTITY_BB);
+        bb_fill->setNodeMask(NODE_MASK_ENTITY_BB_FILLED);
+
+        SetNodeName(*bb_wire, prefix_road_object, object->GetId(), object->GetName() + "_bb");
+        SetNodeName(*bb_fill, prefix_road_object, object->GetId(), object->GetName() + "_bb_filled");
+
+        objGroup->addChild(bb_wire.get());
+        objGroup->addChild(bb_fill.get());
+    }
+
+    osg::ref_ptr<osg::Group> RoadGeom::CreateObjectMarkings(roadmanager::RMObject* object, roadmanager::Road* road, const osg::Vec3d& origin)
+    {
+        if (object == nullptr || object->GetNumberOfMarkings() == 0)
+        {
+            return nullptr;
+        }
+
+        osg::ref_ptr<osg::Group> group = new osg::Group();
+
+        // For each object instance, build marking geometry. Outline (cornerReference) markings are
+        // emitted directly and their interior corners are mitered (stitched) so consecutive edges
+        // meet cleanly. Bounding box "side" markings are collected per instance and chained together
+        // so that adjacent sides sharing a box corner are stitched, gated by their start/stop offsets.
+        // cornerRoad outline corners are evaluated on the road per instance (so they follow the road
+        // curvature); cornerLocal corners and side markings use the object local (u, v) frame.
+        struct SideEdge
+        {
+            osg::Vec3d                 p0, p1;
+            double                     half_w         = 0.0;
+            double                     line_length    = 0.0;
+            double                     space_length   = 0.0;
+            double                     start_offset   = 0.0;
+            double                     stop_offset    = 0.0;
+            double                     lateral_offset = 0.0;
+            roadmanager::RoadMarkColor color          = roadmanager::RoadMarkColor::WHITE;
+        };
+
+        auto emit_instance =
+            [&](double inst_base_s, double inst_base_t, double inst_x, double inst_y, double inst_z, double inst_h, double inst_len, double inst_wid)
+        {
+            const double ch = cos(inst_h);
+            const double sh = sin(inst_h);
+
+            std::vector<SideEdge> side_edges;
+
+            // Shift a centerline polyline sideways (custom "lateralOffset" userData feature). Positive
+            // moves to the left of the edge direction, negative to the right. seg_off holds the offset
+            // per edge (seg_off[i] applies to the segment verts[i]..verts[i+1]). Interior vertices are
+            // offset along their miter (bisector) so the line keeps a constant lateral distance, which
+            // preserves the corner stitching.
+            auto offset_polyline = [](std::vector<osg::Vec3d>& pl, const std::vector<double>& seg_off)
+            {
+                if (pl.size() < 2 || seg_off.size() + 1 != pl.size())
+                {
+                    return;
+                }
+                bool any = false;
+                for (double o : seg_off)
+                {
+                    if (fabs(o) > SMALL_NUMBER)
+                    {
+                        any = true;
+                        break;
+                    }
+                }
+                if (!any)
+                {
+                    return;
+                }
+                auto leftPerp = [](const osg::Vec3d& a, const osg::Vec3d& b) -> osg::Vec3d
+                {
+                    osg::Vec3d d     = b - a;
+                    d.z()            = 0.0;
+                    const double len = d.length();
+                    if (len < 1e-9)
+                    {
+                        return osg::Vec3d(0.0, 0.0, 0.0);
+                    }
+                    d /= len;
+                    return osg::Vec3d(-d.y(), d.x(), 0.0);
+                };
+                const size_t            n = pl.size();
+                std::vector<osg::Vec3d> result(n);
+                for (size_t i = 0; i < n; i++)
+                {
+                    if (i == 0)
+                    {
+                        result[i] = pl[i] + leftPerp(pl[0], pl[1]) * seg_off[0];
+                    }
+                    else if (i == n - 1)
+                    {
+                        result[i] = pl[i] + leftPerp(pl[n - 2], pl[n - 1]) * seg_off[n - 2];
+                    }
+                    else
+                    {
+                        const osg::Vec3d lp0 = leftPerp(pl[i - 1], pl[i]);
+                        const osg::Vec3d lp1 = leftPerp(pl[i], pl[i + 1]);
+                        const double     off = 0.5 * (seg_off[i - 1] + seg_off[i]);
+                        osg::Vec3d       m   = lp0 + lp1;
+                        const double     ml  = m.length();
+                        if (ml < 1e-6)
+                        {
+                            result[i] = pl[i] + lp0 * off;  // ~180 deg turn, fall back to edge perpendicular
+                        }
+                        else
+                        {
+                            m /= ml;
+                            const double cosHalf = m * lp0;
+                            const double scale   = (fabs(cosHalf) > 1e-3) ? off / cosHalf : off;
+                            result[i]            = pl[i] + m * scale;
+                        }
+                    }
+                }
+                pl = result;
+            };
+
+            for (unsigned int m = 0; m < object->GetNumberOfMarkings(); m++)
+            {
+                const roadmanager::ObjectMarking* marking = object->GetMarking(m);
+                const double                      z       = inst_z + marking->z_offset_;
+
+                if (marking->UsesOutline())
+                {
+                    std::vector<osg::Vec3d> polyline;  // world coordinates (origin subtracted later)
+                    roadmanager::Position   corner_pos;
+
+                    for (id_t corner_id : marking->corner_references_)
+                    {
+                        roadmanager::OutlineCorner* corner = object->GetOutlineCornerById(corner_id);
+                        if (corner == nullptr)
+                        {
+                            LOG_WARN("Object {} marking references unknown outline corner id {}, skipping point", object->GetName(), corner_id);
+                            continue;
+                        }
+                        if (roadmanager::OutlineCornerRoad* corner_road = dynamic_cast<roadmanager::OutlineCornerRoad*>(corner))
+                        {
+                            // Evaluate the corner on the road at the instance position, preserving curvature.
+                            double corner_s = inst_base_s + (corner_road->s_ - corner_road->center_s_);
+                            double corner_t = inst_base_t + (corner_road->t_ - corner_road->center_t_);
+                            corner_pos.SetTrackPos(road->GetId(), corner_s, corner_t);
+                            polyline.emplace_back(corner_pos.GetX(), corner_pos.GetY(), corner_pos.GetZ() + corner_road->dz_ + marking->z_offset_);
+                        }
+                        else
+                        {
+                            // cornerLocal: place in the object local (u, v) frame, then transform to the instance
+                            double u, v, dummy_z;
+                            corner->GetPosLocal(u, v, dummy_z);
+                            polyline.emplace_back(inst_x + u * ch - v * sh, inst_y + u * sh + v * ch, z);
+                        }
+                    }
+
+                    // Apply optional lateral shift (left +, right -) to the marking centerline.
+                    if (polyline.size() >= 2)
+                    {
+                        offset_polyline(polyline, std::vector<double>(polyline.size() - 1, marking->lateral_offset_));
+                    }
+
+                    if (polyline.size() >= 2)
+                    {
+                        // Within a single outline marking the interior corners are always stitched; the
+                        // start/stop offsets only trim the two open ends of the polyline.
+                        const size_t        edge_count = polyline.size() - 1;
+                        std::vector<double> half_w(edge_count, 0.5 * marking->width_);
+                        std::vector<double> line_len(edge_count, marking->line_length_);
+                        std::vector<double> space_len(edge_count, marking->space_length_);
+                        std::vector<bool>   miter(polyline.size(), false);
+                        for (size_t v = 1; v + 1 < polyline.size(); v++)
+                        {
+                            miter[v] = true;
+                        }
+                        CreateObjectMarkingChainGeom(polyline,
+                                                     half_w,
+                                                     line_len,
+                                                     space_len,
+                                                     miter,
+                                                     marking->start_offset_,
+                                                     marking->stop_offset_,
+                                                     marking->color_,
+                                                     origin,
+                                                     group.get());
+                    }
+                }
+                else if (marking->side_ != roadmanager::ObjectMarking::Side::NONE)
+                {
+                    // Marking attached to one side of the object bounding box (local u/v frame).
+                    // u points along object heading (length), v to the left (width).
+                    double half_l = 0.5 * inst_len;
+                    double half_w = 0.5 * inst_wid;
+                    double u0 = 0.0, v0 = 0.0, u1 = 0.0, v1 = 0.0;
+                    switch (marking->side_)
+                    {
+                        case roadmanager::ObjectMarking::Side::FRONT:
+                            u0 = half_l;
+                            v0 = -half_w;
+                            u1 = half_l;
+                            v1 = half_w;
+                            break;
+                        case roadmanager::ObjectMarking::Side::REAR:
+                            u0 = -half_l;
+                            v0 = -half_w;
+                            u1 = -half_l;
+                            v1 = half_w;
+                            break;
+                        case roadmanager::ObjectMarking::Side::LEFT:
+                            u0 = -half_l;
+                            v0 = half_w;
+                            u1 = half_l;
+                            v1 = half_w;
+                            break;
+                        case roadmanager::ObjectMarking::Side::RIGHT:
+                            u0 = -half_l;
+                            v0 = -half_w;
+                            u1 = half_l;
+                            v1 = -half_w;
+                            break;
+                        default:
+                            break;
+                    }
+                    SideEdge se;
+                    se.p0.set(inst_x + u0 * ch - v0 * sh, inst_y + u0 * sh + v0 * ch, z);
+                    se.p1.set(inst_x + u1 * ch - v1 * sh, inst_y + u1 * sh + v1 * ch, z);
+
+                    // Keep the un-offset edge endpoints so adjacent sides still share corners for
+                    // stitching; the lateral shift is applied to the assembled chain polyline below.
+                    se.half_w         = 0.5 * marking->width_;
+                    se.line_length    = marking->line_length_;
+                    se.space_length   = marking->space_length_;
+                    se.start_offset   = marking->start_offset_;
+                    se.stop_offset    = marking->stop_offset_;
+                    se.lateral_offset = marking->lateral_offset_;
+                    se.color          = marking->color_;
+                    side_edges.push_back(se);
+                }
+            }
+
+            // Chain the side markings: join edges that share a box corner into ordered polylines and
+            // stitch (miter) a shared corner only when the incoming edge has no stop offset and the
+            // outgoing edge has no start offset at that corner.
+            if (!side_edges.empty())
+            {
+                struct OEdge
+                {
+                    osg::Vec3d                 s, e;
+                    double                     half_w, line_length, space_length, start_off, end_off, lateral_off;
+                    roadmanager::RoadMarkColor color;
+                };
+                const double PT_EPS = 1e-3;
+                auto         samePt = [PT_EPS](const osg::Vec3d& a, const osg::Vec3d& b) { return (a - b).length() < PT_EPS; };
+                auto         toOE   = [](const SideEdge& se, bool rev)
+                {
+                    OEdge o;
+                    if (!rev)
+                    {
+                        o.s         = se.p0;
+                        o.e         = se.p1;
+                        o.start_off = se.start_offset;
+                        o.end_off   = se.stop_offset;
+                    }
+                    else
+                    {
+                        o.s         = se.p1;
+                        o.e         = se.p0;
+                        o.start_off = se.stop_offset;
+                        o.end_off   = se.start_offset;
+                    }
+                    o.half_w       = se.half_w;
+                    o.line_length  = se.line_length;
+                    o.space_length = se.space_length;
+                    o.lateral_off  = se.lateral_offset;
+                    o.color        = se.color;
+                    return o;
+                };
+
+                std::vector<bool> used(side_edges.size(), false);
+                for (size_t i = 0; i < side_edges.size(); i++)
+                {
+                    if (used[i])
+                    {
+                        continue;
+                    }
+                    std::vector<OEdge> chain;
+                    chain.push_back(toOE(side_edges[i], false));
+                    used[i] = true;
+
+                    // Extend the chain forward (matching the current end point) ...
+                    bool extended = true;
+                    while (extended)
+                    {
+                        extended = false;
+                        for (size_t j = 0; j < side_edges.size(); j++)
+                        {
+                            if (used[j])
+                            {
+                                continue;
+                            }
+                            if (samePt(side_edges[j].p0, chain.back().e))
+                            {
+                                chain.push_back(toOE(side_edges[j], false));
+                                used[j]  = true;
+                                extended = true;
+                                break;
+                            }
+                            if (samePt(side_edges[j].p1, chain.back().e))
+                            {
+                                chain.push_back(toOE(side_edges[j], true));
+                                used[j]  = true;
+                                extended = true;
+                                break;
+                            }
+                        }
+                    }
+                    // ... and backward (matching the current start point).
+                    extended = true;
+                    while (extended)
+                    {
+                        extended = false;
+                        for (size_t j = 0; j < side_edges.size(); j++)
+                        {
+                            if (used[j])
+                            {
+                                continue;
+                            }
+                            if (samePt(side_edges[j].p1, chain.front().s))
+                            {
+                                chain.insert(chain.begin(), toOE(side_edges[j], false));
+                                used[j]  = true;
+                                extended = true;
+                                break;
+                            }
+                            if (samePt(side_edges[j].p0, chain.front().s))
+                            {
+                                chain.insert(chain.begin(), toOE(side_edges[j], true));
+                                used[j]  = true;
+                                extended = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Enforce a consistent winding (counter-clockwise) on the assembled chain. The
+                    // greedy stitching above seeds from an arbitrary edge, so two otherwise identical
+                    // boxes (e.g. mirrored on opposite sides of the road) can come out traversed in
+                    // opposite directions. Since the lateral offset is applied along the left
+                    // perpendicular of the travel direction, an inconsistent winding would make the
+                    // same offset sign shift opposite physical ways. Forcing CCW ties the sign to a
+                    // consistent side (positive = toward the box interior) regardless of seed/mirroring.
+                    {
+                        double     area2 = 0.0;  // twice the signed area (shoelace), >0 => CCW
+                        osg::Vec3d prev  = chain.front().s;
+                        for (const OEdge& oe : chain)
+                        {
+                            area2 += prev.x() * oe.e.y() - oe.e.x() * prev.y();
+                            prev = oe.e;
+                        }
+                        area2 += prev.x() * chain.front().s.y() - chain.front().s.x() * prev.y();
+                        if (area2 < 0.0)  // clockwise -> reverse to make it CCW
+                        {
+                            std::reverse(chain.begin(), chain.end());
+                            for (OEdge& oe : chain)
+                            {
+                                std::swap(oe.s, oe.e);
+                                std::swap(oe.start_off, oe.end_off);
+                            }
+                        }
+                    }
+
+                    std::vector<osg::Vec3d> verts;
+                    std::vector<double>     chain_half_w, chain_line_len, chain_space_len, chain_lateral;
+                    verts.push_back(chain.front().s);
+                    for (const OEdge& oe : chain)
+                    {
+                        verts.push_back(oe.e);
+                        chain_half_w.push_back(oe.half_w);
+                        chain_line_len.push_back(oe.line_length);
+                        chain_space_len.push_back(oe.space_length);
+                        chain_lateral.push_back(oe.lateral_off);
+                    }
+                    // Apply the lateral shift on the assembled (still corner-sharing) chain so the
+                    // stitched corners move together and stay joined.
+                    offset_polyline(verts, chain_lateral);
+                    std::vector<bool> miter(verts.size(), false);
+                    for (size_t v = 1; v + 1 < verts.size(); v++)
+                    {
+                        miter[v] = (chain[v - 1].end_off < SMALL_NUMBER && chain[v].start_off < SMALL_NUMBER);
+                    }
+                    CreateObjectMarkingChainGeom(verts,
+                                                 chain_half_w,
+                                                 chain_line_len,
+                                                 chain_space_len,
+                                                 miter,
+                                                 chain.front().start_off,
+                                                 chain.back().end_off,
+                                                 chain.front().color,
+                                                 origin,
+                                                 group.get());
+                }
+            }
+        };
+
+        roadmanager::Repeat*  rep      = object->GetRepeat();
+        const bool            repeated = (rep != nullptr && rep->GetLength() > SMALL_NUMBER && rep->GetDistance() > SMALL_NUMBER);
+        roadmanager::Position pos;
+
+        if (!repeated)
+        {
+            // Single object instance placed at its own s/t
+            pos.SetTrackPosMode(road->GetId(),
+                                object->GetS(),
+                                object->GetT(),
+                                roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
+                                    roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
+
+            double inst_h = pos.GetH() + object->GetHOffset();
+            double inst_z = pos.GetZ() + object->GetZOffset();
+            emit_instance(object->GetS(), object->GetT(), pos.GetX(), pos.GetY(), inst_z, inst_h, object->GetLength(), object->GetWidth());
+        }
+        else
+        {
+            // Repeated object: replicate markings for each instance along the repeat span
+            for (double cur_s = 0.0; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength(); cur_s += rep->GetDistance())
+            {
+                const RepeatInstance ri = EvalRepeatInstance(object, rep, road, cur_s, pos);
+                if (!ri.valid)
+                {
+                    break;  // instance would reach outside the road
+                }
+                emit_instance(ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h, ri.inst_len, ri.inst_wid);
+            }
+        }
+
+        return group;
+    }
+
+    void RoadGeom::CreateObjectMarkingChainGeom(const std::vector<osg::Vec3d>& verts,
+                                                const std::vector<double>&     half_w,
+                                                const std::vector<double>&     line_length,
+                                                const std::vector<double>&     space_length,
+                                                const std::vector<bool>&       miter,
+                                                double                         start_offset,
+                                                double                         stop_offset,
+                                                roadmanager::RoadMarkColor     color,
+                                                const osg::Vec3d&              origin,
+                                                osg::Group*                    group)
+    {
+        const size_t N = verts.size();
+        if (N < 2 || group == nullptr)
+        {
+            return;
+        }
+        const size_t E = N - 1;
+
+        // Per-edge unit direction and left-hand perpendicular (the marking lies flat, so the
+        // perpendicular is horizontal).
+        std::vector<osg::Vec3d> dir(E), perp(E);
+        for (size_t e = 0; e < E; e++)
+        {
+            osg::Vec3d d = verts[e + 1] - verts[e];
+            double     l = d.length();
+            if (l < SMALL_NUMBER)
+            {
+                dir[e].set(0.0, 0.0, 0.0);
+                perp[e].set(0.0, 0.0, 0.0);
+            }
+            else
+            {
+                dir[e] = d / l;
+                perp[e].set(-dir[e].y(), dir[e].x(), 0.0);
+            }
+        }
+
+        // 2D line/line intersection (x/y plane). Returns false if the two lines are near-parallel.
+        auto intersect2D = [](const osg::Vec3d& p, const osg::Vec3d& d, const osg::Vec3d& q, const osg::Vec3d& e, osg::Vec3d& out) -> bool
+        {
+            double denom = d.x() * e.y() - d.y() * e.x();
+            if (fabs(denom) < SMALL_NUMBER)
+            {
+                return false;
+            }
+            double t = ((q.x() - p.x()) * e.y() - (q.y() - p.y()) * e.x()) / denom;
+            out.set(p.x() + t * d.x(), p.y() + t * d.y(), p.z());
+            return true;
+        };
+
+        // Miter points (left/right ribbon boundary) at the interior vertices that should be stitched:
+        // the outer offset lines are extrapolated and the inner ones trimmed to their intersection.
+        std::vector<osg::Vec3d> miter_l(N), miter_r(N);
+        std::vector<bool>       miter_ok(N, false);
+        const double            MITER_LIMIT = 6.0;  // cap miter length / half-width to avoid spikes
+        for (size_t v = 1; v + 1 < N; v++)
+        {
+            if (!miter[v] || dir[v - 1].length() < SMALL_NUMBER || dir[v].length() < SMALL_NUMBER)
+            {
+                continue;
+            }
+            const osg::Vec3d& d_in   = dir[v - 1];
+            const osg::Vec3d& p_in   = perp[v - 1];
+            const osg::Vec3d& d_out  = dir[v];
+            const osg::Vec3d& p_out  = perp[v];
+            const double      hw_in  = half_w[v - 1];
+            const double      hw_out = half_w[v];
+            osg::Vec3d        ml, mr;
+            const bool        ok_l = intersect2D(verts[v] + p_in * hw_in, d_in, verts[v] + p_out * hw_out, d_out, ml);
+            const bool        ok_r = intersect2D(verts[v] - p_in * hw_in, d_in, verts[v] - p_out * hw_out, d_out, mr);
+            const double      lim  = MITER_LIMIT * MAX(hw_in, hw_out);
+            if (ok_l && ok_r && (ml - verts[v]).length() < lim && (mr - verts[v]).length() < lim)
+            {
+                miter_l[v]  = ml;
+                miter_r[v]  = mr;
+                miter_ok[v] = true;
+            }
+        }
+
+        osg::ref_ptr<osg::Vec3Array>        vertices = new osg::Vec3Array;
+        osg::ref_ptr<osg::DrawElementsUInt> indices  = new osg::DrawElementsUInt(GL_TRIANGLES);
+
+        for (size_t e = 0; e < E; e++)
+        {
+            if (dir[e].length() < SMALL_NUMBER)
+            {
+                continue;
+            }
+            const osg::Vec3d& d  = dir[e];
+            const osg::Vec3d& p  = perp[e];
+            const double      hw = half_w[e];
+            const osg::Vec3d& P0 = verts[e];
+            const osg::Vec3d& P1 = verts[e + 1];
+
+            // Ribbon boundary (left/right) and centerline point at the two ends of this edge.
+            osg::Vec3d start_l, start_r, end_l, end_r, cstart, cend;
+
+            if (e > 0 && miter_ok[e])
+            {
+                start_l = miter_l[e];
+                start_r = miter_r[e];
+                cstart  = P0;
+            }
+            else if (e == 0)
+            {
+                cstart  = P0 + d * MAX(0.0, start_offset);
+                start_l = cstart + p * hw;
+                start_r = cstart - p * hw;
+            }
+            else
+            {
+                cstart  = P0;
+                start_l = P0 + p * hw;
+                start_r = P0 - p * hw;
+            }
+
+            if (e + 1 < N - 1 && miter_ok[e + 1])
+            {
+                end_l = miter_l[e + 1];
+                end_r = miter_r[e + 1];
+                cend  = P1;
+            }
+            else if (e == E - 1)
+            {
+                cend  = P1 - d * MAX(0.0, stop_offset);
+                end_l = cend + p * hw;
+                end_r = cend - p * hw;
+            }
+            else
+            {
+                cend  = P1;
+                end_l = P1 + p * hw;
+                end_r = P1 - p * hw;
+            }
+
+            const double seg_len = (cend - cstart).length();
+            if (seg_len < SMALL_NUMBER)
+            {
+                continue;
+            }
+
+            // Dash intervals along the edge centerline [0, seg_len].
+            std::vector<std::pair<double, double>> dashes;
+            if (space_length[e] < SMALL_NUMBER)
+            {
+                dashes.emplace_back(0.0, seg_len);  // solid
+            }
+            else if (line_length[e] >= SMALL_NUMBER)
+            {
+                const double period = line_length[e] + space_length[e];
+                for (double d0 = 0.0; d0 < seg_len - SMALL_NUMBER; d0 += period)
+                {
+                    double d1 = MIN(d0 + line_length[e], seg_len);
+                    if (d1 > d0 + SMALL_NUMBER)
+                    {
+                        dashes.emplace_back(d0, d1);
+                    }
+                }
+            }
+
+            for (const std::pair<double, double>& dash : dashes)
+            {
+                const double a_lo = dash.first / seg_len;
+                const double a_hi = dash.second / seg_len;
+                osg::Vec3d   qa_l = start_l + (end_l - start_l) * a_lo - origin;
+                osg::Vec3d   qa_r = start_r + (end_r - start_r) * a_lo - origin;
+                osg::Vec3d   qb_l = start_l + (end_l - start_l) * a_hi - origin;
+                osg::Vec3d   qb_r = start_r + (end_r - start_r) * a_hi - origin;
+
+                unsigned int base = static_cast<unsigned int>(vertices->size());
+                vertices->push_back(osg::Vec3(qa_l));
+                vertices->push_back(osg::Vec3(qa_r));
+                vertices->push_back(osg::Vec3(qb_r));
+                vertices->push_back(osg::Vec3(qb_l));
+
+                indices->push_back(base + 0);
+                indices->push_back(base + 1);
+                indices->push_back(base + 2);
+                indices->push_back(base + 0);
+                indices->push_back(base + 2);
+                indices->push_back(base + 3);
+            }
+        }
+
+        if (vertices->empty())
+        {
+            return;
+        }
+
+        osg::Vec4 osg_color = ODR2OSGColor(color);
+
+        osg::ref_ptr<osg::Vec4Array> color_array = new osg::Vec4Array;
+        color_array->push_back(osg_color);
+
+        osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+        geom->setUseDisplayList(true);
+        geom->setVertexArray(vertices.get());
+        geom->addPrimitiveSet(indices.get());
+        geom->setColorArray(color_array.get());
+        geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+        // Use PolygonOffset to avoid z-fighting with the road / object surface
+        geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_ROADMARKS, -SIGN(POLYGON_OFFSET_ROADMARKS)));
+
+        osgUtil::SmoothingVisitor::smooth(*geom, 0.0);
+
+        osg::ref_ptr<osg::Material> material = GetOrCreateMaterial("ObjectMarking_" + roadmanager::LaneRoadMark::RoadMarkColor2Str(color),
+                                                                   osg_color,
+                                                                   static_cast<uint8_t>(RoadGeom::MaterialType::ROADMARK));
+
+        osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+        geode->getOrCreateStateSet()->setAttributeAndModes(material.get());
+        geode->addDrawable(geom.get());
+        group->addChild(geode);
     }
 
     int RoadGeom::AddGroundSurface()

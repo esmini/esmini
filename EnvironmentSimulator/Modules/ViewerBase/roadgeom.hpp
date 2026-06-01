@@ -14,6 +14,7 @@
 #define ROADGEOM_HPP_
 
 #include <vector>
+#include <functional>
 #include <osg/PositionAttitudeTransform>
 #include <osg/Texture2D>
 #include <osg/Group>
@@ -103,11 +104,46 @@ namespace roadgeom
                                                                                osg::ref_ptr<osg::Group> parent,
                                                                                std::string              exe_path);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string file_path);
-        osg::ref_ptr<osg::Group>                     CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color, const osg::Vec3d& origin);
-        int                                          AddGroundSurface();
-        void                                         SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
-        int                                          SaveToFile(const std::string& filename);
-        TrafficLightModel*                           GetTrafficLightModel(int id);
+        osg::ref_ptr<osg::Group>                     CreateOutlineObject(
+                                roadmanager::Outline*                                                              outline,
+                                osg::Vec4                                                                          color,
+                                const osg::Vec3d&                                                                  origin,
+                                const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn = {});
+        // Create curvature-aware outline geometry for each instance of a repeated object (separate copies).
+        // cornerRoad corners are re-evaluated on the road per instance; cornerLocal corners keep a fixed shape.
+        void CreateRepeatedOutlineObjects(roadmanager::RMObject* object,
+                                          roadmanager::Road*     road,
+                                          osg::Vec4              color,
+                                          const osg::Vec3d&      origin,
+                                          osg::Group*            objGroup,
+                                          const std::string&     obj_type);
+        // Create wireframe (NODE_MASK_ENTITY_BB) and solid (NODE_MASK_ENTITY_BB_FILLED) bounding box
+        // representations for a road object, one box per repeated instance, sized from the object's
+        // length/width/height. These toggle together with entities via the ',' key / --view_mode option.
+        void                     CreateObjectBoundingBoxes(roadmanager::RMObject* object,
+                                                           roadmanager::Road*     road,
+                                                           osg::Vec4              color,
+                                                           const osg::Vec3d&      origin,
+                                                           osg::Group*            objGroup);
+        osg::ref_ptr<osg::Group> CreateObjectMarkings(roadmanager::RMObject* object, roadmanager::Road* road, const osg::Vec3d& origin);
+        // Emit a ribbon for a connected chain of marking edges. Consecutive edges whose shared vertex is
+        // flagged in 'miter' are joined with a mitered corner (outer lines extrapolated, inner lines
+        // trimmed to the intersection); otherwise the vertex is a plain butt joint. The two open ends of
+        // the chain are trimmed by start_offset / stop_offset. Per-edge arrays have size verts.size()-1.
+        void               CreateObjectMarkingChainGeom(const std::vector<osg::Vec3d>& verts,
+                                                        const std::vector<double>&     half_w,
+                                                        const std::vector<double>&     line_length,
+                                                        const std::vector<double>&     space_length,
+                                                        const std::vector<bool>&       miter,
+                                                        double                         start_offset,
+                                                        double                         stop_offset,
+                                                        roadmanager::RoadMarkColor     color,
+                                                        const osg::Vec3d&              origin,
+                                                        osg::Group*                    group);
+        int                AddGroundSurface();
+        void               SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
+        int                SaveToFile(const std::string& filename);
+        TrafficLightModel* GetTrafficLightModel(int id);
 
         std::unordered_map<int, TrafficLightModel> traffic_light_;
 

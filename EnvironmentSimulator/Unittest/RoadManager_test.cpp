@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>
 #include <vector>
 #include <stdexcept>
+#include <cmath>
 
 #include "RoadManager.hpp"
 
@@ -4533,6 +4534,187 @@ TEST(LaneOffset, TestGetClosestLaneIdxWithLaneOffsetAndLocKOnLane)
 
     EXPECT_EQ(pos.GetTrackId(), 1);
     EXPECT_EQ(pos.GetLaneId(), -2);
+}
+
+//////////////////////////////////////////////////////////////////////
+////////// TESTS FOR ROAD OBJECT MARKINGS / OUTLINES (parking_demo) ////////
+//////////////////////////////////////////////////////////////////////
+
+// Find a road object by its OpenDRIVE id within a road
+static RMObject *FindRoadObjectById(Road *road, id_t id)
+{
+    for (unsigned int i = 0; i < road->GetNumberOfObjects(); i++)
+    {
+        RMObject *obj = road->GetRoadObject(i);
+        if (obj != nullptr && obj->GetId() == id)
+        {
+            return obj;
+        }
+    }
+    return nullptr;
+}
+
+// Side-attached markings (parking1 / parking2) carry a lateral offset and a bounding box side.
+// The mirrored neighbour parking2 uses the same offset sign as parking1: the marking chain is
+// normalized to a consistent (CCW) winding before the offset is applied, so a single sign shifts
+// both objects' markings the intended way.
+TEST(RoadObjectMarkingTest, SideMarkingsLateralOffset)
+{
+    ASSERT_EQ(Position::LoadOpenDrive("../../../resources/xodr/parking_demo.xodr"), true);
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Road *road = odr->GetRoadById(3);
+    ASSERT_NE(road, nullptr);
+
+    // object id 11 "parking1": three side markings (rear, right, front), each shifted laterally
+    RMObject *parking1 = FindRoadObjectById(road, 11);
+    ASSERT_NE(parking1, nullptr);
+    EXPECT_EQ(parking1->GetNumberOfMarkings(), 3u);
+
+    const ObjectMarking::Side expected_sides_1[3] = {ObjectMarking::Side::REAR, ObjectMarking::Side::RIGHT, ObjectMarking::Side::FRONT};
+    for (unsigned int i = 0; i < parking1->GetNumberOfMarkings(); i++)
+    {
+        const ObjectMarking *m = parking1->GetMarking(i);
+        ASSERT_NE(m, nullptr);
+        EXPECT_EQ(m->side_, expected_sides_1[i]);
+        EXPECT_FALSE(m->UsesOutline());
+        EXPECT_NEAR(m->lateral_offset_, -0.05, 1e-9);
+        EXPECT_NEAR(m->width_, 0.1, 1e-9);
+        EXPECT_NEAR(m->line_length_, 5.5, 1e-9);
+    }
+
+    // object id 12 "parking2": mirrored neighbour, three side markings (front, left, rear)
+    RMObject *parking2 = FindRoadObjectById(road, 12);
+    ASSERT_NE(parking2, nullptr);
+    EXPECT_EQ(parking2->GetNumberOfMarkings(), 3u);
+
+    const ObjectMarking::Side expected_sides_2[3] = {ObjectMarking::Side::FRONT, ObjectMarking::Side::LEFT, ObjectMarking::Side::REAR};
+    for (unsigned int i = 0; i < parking2->GetNumberOfMarkings(); i++)
+    {
+        const ObjectMarking *m = parking2->GetMarking(i);
+        ASSERT_NE(m, nullptr);
+        EXPECT_EQ(m->side_, expected_sides_2[i]);
+        EXPECT_FALSE(m->UsesOutline());
+        // same offset sign as parking1 thanks to consistent winding of the assembled chain
+        EXPECT_NEAR(m->lateral_offset_, -0.05, 1e-9);
+    }
+
+    odr->Clear();
+}
+
+// Outline (cornerReference) markings stitch along outline edges; they have no bounding box side
+// and reference two or more outline corners each.
+TEST(RoadObjectMarkingTest, OutlineCornerReferenceMarkings)
+{
+    ASSERT_EQ(Position::LoadOpenDrive("../../../resources/xodr/parking_demo.xodr"), true);
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Road *road = odr->GetRoadById(1);
+    ASSERT_NE(road, nullptr);
+
+    // object id 1 "crosswalk": two outline-edge markings, each referencing two outline corners
+    RMObject *crosswalk = FindRoadObjectById(road, 1);
+    ASSERT_NE(crosswalk, nullptr);
+    EXPECT_EQ(crosswalk->GetNumberOfMarkings(), 2u);
+
+    for (unsigned int i = 0; i < crosswalk->GetNumberOfMarkings(); i++)
+    {
+        const ObjectMarking *m = crosswalk->GetMarking(i);
+        ASSERT_NE(m, nullptr);
+        EXPECT_TRUE(m->UsesOutline());
+        EXPECT_EQ(m->side_, ObjectMarking::Side::NONE);
+        EXPECT_EQ(m->corner_references_.size(), 2u);
+        EXPECT_NEAR(m->lateral_offset_, 0.0, 1e-9);
+    }
+
+    // first marking references corners 0 and 1, second references corners 2 and 3
+    EXPECT_EQ(crosswalk->GetMarking(0)->corner_references_[0], static_cast<id_t>(0));
+    EXPECT_EQ(crosswalk->GetMarking(0)->corner_references_[1], static_cast<id_t>(1));
+    EXPECT_EQ(crosswalk->GetMarking(1)->corner_references_[0], static_cast<id_t>(2));
+    EXPECT_EQ(crosswalk->GetMarking(1)->corner_references_[1], static_cast<id_t>(3));
+
+    odr->Clear();
+}
+
+// The crosswalk outline is defined in the road (s, t) coordinate system. Each corner sits at its
+// own (s, t) and therefore maps to a distinct world position - the basis for individually placed
+// outline corners.
+TEST(RoadObjectOutlineTest, CornerRoadUniqueST)
+{
+    ASSERT_EQ(Position::LoadOpenDrive("../../../resources/xodr/parking_demo.xodr"), true);
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Road *road = odr->GetRoadById(1);
+    ASSERT_NE(road, nullptr);
+
+    RMObject *crosswalk = FindRoadObjectById(road, 1);
+    ASSERT_NE(crosswalk, nullptr);
+    ASSERT_EQ(crosswalk->GetNumberOfOutlines(), 1u);
+
+    Outline *outline = crosswalk->GetOutline(0);
+    ASSERT_NE(outline, nullptr);
+    EXPECT_TRUE(outline->closed_);
+    ASSERT_EQ(outline->corner_.size(), 4u);
+
+    const double expected_s[4] = {7.0, 8.0, 11.0, 12.0};
+    const double expected_t[4] = {3.2, -3.2, -3.2, 3.2};
+
+    std::vector<double> xs, ys;
+    for (size_t i = 0; i < outline->corner_.size(); i++)
+    {
+        OutlineCornerRoad *corner = dynamic_cast<OutlineCornerRoad *>(outline->corner_[i]);
+        ASSERT_NE(corner, nullptr);
+        EXPECT_NEAR(corner->s_, expected_s[i], 1e-9);
+        EXPECT_NEAR(corner->t_, expected_t[i], 1e-9);
+
+        double x = 0.0, y = 0.0, z = 0.0;
+        corner->GetPos(x, y, z);
+        xs.push_back(x);
+        ys.push_back(y);
+    }
+
+    // the four corners map to four distinct world positions
+    for (size_t i = 0; i < xs.size(); i++)
+    {
+        for (size_t j = i + 1; j < xs.size(); j++)
+        {
+            EXPECT_GT(std::hypot(xs[i] - xs[j], ys[i] - ys[j]), 1e-3);
+        }
+    }
+
+    odr->Clear();
+}
+
+// The repeat block lays out one object instance every 'distance' metres along its length, each at
+// its own s (and interpolated t) - producing individually unique repeat instances.
+TEST(RoadObjectRepeatTest, RepeatParametersParkingDemo)
+{
+    ASSERT_EQ(Position::LoadOpenDrive("../../../resources/xodr/parking_demo.xodr"), true);
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Road *road = odr->GetRoadById(3);
+    ASSERT_NE(road, nullptr);
+
+    RMObject *parking1 = FindRoadObjectById(road, 11);
+    ASSERT_NE(parking1, nullptr);
+
+    Repeat *rep = parking1->GetRepeat();
+    ASSERT_NE(rep, nullptr);
+    EXPECT_NEAR(rep->GetS(), 1.3, 1e-9);
+    EXPECT_NEAR(rep->GetLength(), 30.0, 1e-9);
+    EXPECT_NEAR(rep->GetDistance(), 2.5, 1e-9);
+    EXPECT_NEAR(rep->GetTStart(), -12.7, 1e-9);
+    EXPECT_NEAR(rep->GetTEnd(), -12.7, 1e-9);
+
+    // instances placed every 'distance' metres along the repeat length (inclusive of the start)
+    const int expected_instances = static_cast<int>(rep->GetLength() / rep->GetDistance()) + 1;
+    EXPECT_EQ(expected_instances, 13);
+
+    odr->Clear();
 }
 
 int main(int argc, char **argv)

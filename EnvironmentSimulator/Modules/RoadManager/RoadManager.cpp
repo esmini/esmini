@@ -5176,7 +5176,11 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                 corner = static_cast<OutlineCorner*>(
                                     new OutlineCornerLocal(r->GetId(), obj->GetS(), obj->GetT(), u, v, zLocal, heightc, heading));
                             }
-                            outline->AddCorner(corner);
+                            if (corner != nullptr)
+                            {
+                                corner->SetId(corner_node.attribute("id").as_uint());
+                                outline->AddCorner(corner);
+                            }
                         }
                         obj->AddOutline(outline);
                     }
@@ -5229,6 +5233,56 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     std::string restrictions = parking_space_node.attribute("restrictions").value();
 
                     obj->SetParkingSpace(roadmanager::ParkingSpace(access, restrictions));
+                }
+
+                pugi::xml_node markings_node = object.child("markings");
+                if (!markings_node.empty())
+                {
+                    for (pugi::xml_node marking_node = markings_node.child("marking"); marking_node;
+                         marking_node                = marking_node.next_sibling("marking"))
+                    {
+                        ObjectMarking marking;
+
+                        marking.color_        = LaneRoadMark::ParseColor(marking_node);
+                        marking.line_length_  = marking_node.attribute("lineLength").as_double();
+                        marking.space_length_ = marking_node.attribute("spaceLength").as_double();
+                        marking.start_offset_ = marking_node.attribute("startOffset").as_double();
+                        marking.stop_offset_  = marking_node.attribute("stopOffset").as_double();
+                        marking.side_         = ObjectMarking::Str2Side(marking_node.attribute("side").value());
+
+                        // Custom esmini feature (OpenDRIVE userData): shift the marking sideways from the
+                        // edge/side center, positive to the left, negative to the right [m].
+                        marking.lateral_offset_ = atof(ReadUserData(marking_node, "lateralOffset", "0.0"));
+
+                        if (!marking_node.attribute("width").empty())
+                        {
+                            marking.width_ = marking_node.attribute("width").as_double();
+                        }
+                        if (!marking_node.attribute("zOffset").empty())
+                        {
+                            marking.z_offset_ = marking_node.attribute("zOffset").as_double();
+                        }
+                        if (!strcmp(marking_node.attribute("weight").value(), "bold"))
+                        {
+                            marking.weight_ = LaneRoadMark::RoadMarkWeight::BOLD;
+                        }
+
+                        for (pugi::xml_node corner_ref_node = marking_node.child("cornerReference"); corner_ref_node;
+                             corner_ref_node                = corner_ref_node.next_sibling("cornerReference"))
+                        {
+                            marking.corner_references_.push_back(corner_ref_node.attribute("id").as_uint());
+                        }
+
+                        if (marking.side_ == ObjectMarking::Side::NONE && marking.corner_references_.size() < 2)
+                        {
+                            LOG_WARN("Object {} marking ignored: needs a valid 'side' or at least two cornerReference points (road id={})",
+                                     name,
+                                     r->GetId());
+                            continue;
+                        }
+
+                        obj->AddMarking(marking);
+                    }
                 }
 
                 for (pugi::xml_node validity_node = object.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))

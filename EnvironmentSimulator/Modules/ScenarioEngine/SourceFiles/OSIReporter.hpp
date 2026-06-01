@@ -99,6 +99,10 @@ public:
     */
     int UpdateOSIStationaryObjectODR(roadmanager::RMObject* object);
     /**
+    Fills up the osi message with Road Markings of an OpenDRIVE road object (e.g. parking space lines)
+    */
+    int UpdateOSIRoadMarkingsODR(roadmanager::RMObject* object, roadmanager::Road* road);
+    /**
     Fills up the osi message with Stationary Object
     @return -1 on error, 0 on no updates performed, else 1
     */

@@ -438,6 +438,11 @@ int OSIReporter::CreateOSIStaticGroundTruthFromODR()
                     {
                         retval++;
                     }
+
+                    if (object->GetNumberOfMarkings() > 0)
+                    {
+                        UpdateOSIRoadMarkingsODR(object, road);
+                    }
                 }
             }
         }
@@ -764,6 +769,223 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
     {
         // Set 3D model file as OSI model reference
         obj_osi_internal.sobj->set_model_reference(object->GetModel3DFullPath());
+    }
+
+    return 0;
+}
+
+static osi3::RoadMarking_Classification_Color ODRColor2OSIMarkingColor(roadmanager::RoadMarkColor color)
+{
+    switch (color)
+    {
+        case roadmanager::RoadMarkColor::WHITE:
+        case roadmanager::RoadMarkColor::STANDARD:
+            return osi3::RoadMarking_Classification_Color_COLOR_WHITE;
+        case roadmanager::RoadMarkColor::YELLOW:
+            return osi3::RoadMarking_Classification_Color_COLOR_YELLOW;
+        case roadmanager::RoadMarkColor::BLUE:
+            return osi3::RoadMarking_Classification_Color_COLOR_BLUE;
+        case roadmanager::RoadMarkColor::RED:
+            return osi3::RoadMarking_Classification_Color_COLOR_RED;
+        case roadmanager::RoadMarkColor::GREEN:
+            return osi3::RoadMarking_Classification_Color_COLOR_GREEN;
+        case roadmanager::RoadMarkColor::VIOLET:
+            return osi3::RoadMarking_Classification_Color_COLOR_VIOLET;
+        case roadmanager::RoadMarkColor::ORANGE:
+            return osi3::RoadMarking_Classification_Color_COLOR_ORANGE;
+        default:
+            return osi3::RoadMarking_Classification_Color_COLOR_OTHER;
+    }
+}
+
+int OSIReporter::UpdateOSIRoadMarkingsODR(roadmanager::RMObject *object, roadmanager::Road *road)
+{
+    // Build and report one osi3::RoadMarking for the given marking, placed at a single object instance.
+    // cornerRoad outline corners are evaluated directly on the road at the instance's road position
+    // (offset by the corner's s/t relative to the object reference), so they follow road curvature.
+    // cornerLocal corners and bounding box side markings are placed in the object local frame and
+    // rigidly transformed to the instance.
+    auto emit_marking = [&](const roadmanager::ObjectMarking *marking,
+                            unsigned int                      marking_index,
+                            double                            inst_base_s,
+                            double                            inst_base_t,
+                            double                            inst_x,
+                            double                            inst_y,
+                            double                            inst_z,
+                            double                            inst_h,
+                            double                            inst_len,
+                            double                            inst_wid)
+    {
+        std::vector<std::array<double, 3>> points;
+
+        const double cosh = cos(inst_h);
+        const double sinh = sin(inst_h);
+        const double z    = inst_z + marking->z_offset_;
+
+        if (marking->UsesOutline())
+        {
+            roadmanager::Position corner_pos;
+
+            // Outline based marking: resolve each referenced outline corner
+            for (size_t c = 0; c < marking->corner_references_.size(); c++)
+            {
+                roadmanager::OutlineCorner *corner = object->GetOutlineCornerById(marking->corner_references_[c]);
+                if (corner != nullptr)
+                {
+                    if (roadmanager::OutlineCornerRoad *corner_road = dynamic_cast<roadmanager::OutlineCornerRoad *>(corner))
+                    {
+                        // Evaluate the corner on the road at the instance position, preserving curvature
+                        double corner_s = inst_base_s + (corner_road->s_ - corner_road->center_s_);
+                        double corner_t = inst_base_t + (corner_road->t_ - corner_road->center_t_);
+                        corner_pos.SetTrackPos(road->GetId(), corner_s, corner_t);
+                        points.push_back({corner_pos.GetX(), corner_pos.GetY(), corner_pos.GetZ() + corner_road->dz_ + marking->z_offset_});
+                    }
+                    else
+                    {
+                        // cornerLocal: place in the object local frame, then transform to the instance
+                        double u, v, dummy_z;
+                        corner->GetPosLocal(u, v, dummy_z);
+                        points.push_back({inst_x + u * cosh - v * sinh, inst_y + u * sinh + v * cosh, z});
+                    }
+                }
+            }
+        }
+        else if (marking->side_ != roadmanager::ObjectMarking::Side::NONE)
+        {
+            // Bounding box side based marking: build the two endpoints of the selected side
+            double half_l = inst_len / 2.0;
+            double half_w = inst_wid / 2.0;
+
+            // local endpoints (u along heading, v to the left)
+            double u0, v0, u1, v1;
+            switch (marking->side_)
+            {
+                case roadmanager::ObjectMarking::Side::FRONT:
+                    u0 = half_l, v0 = half_w, u1 = half_l, v1 = -half_w;
+                    break;
+                case roadmanager::ObjectMarking::Side::REAR:
+                    u0 = -half_l, v0 = half_w, u1 = -half_l, v1 = -half_w;
+                    break;
+                case roadmanager::ObjectMarking::Side::LEFT:
+                    u0 = half_l, v0 = half_w, u1 = -half_l, v1 = half_w;
+                    break;
+                case roadmanager::ObjectMarking::Side::RIGHT:
+                    u0 = half_l, v0 = -half_w, u1 = -half_l, v1 = -half_w;
+                    break;
+                default:
+                    return;
+            }
+
+            points.push_back({inst_x + u0 * cosh - v0 * sinh, inst_y + u0 * sinh + v0 * cosh, z});
+            points.push_back({inst_x + u1 * cosh - v1 * sinh, inst_y + u1 * sinh + v1 * cosh, z});
+        }
+
+        if (points.size() < 2)
+        {
+            return;
+        }
+
+        osi3::RoadMarking *road_marking = obj_osi_internal.static_gt->add_road_marking();
+        road_marking->mutable_id()->set_value(GetNewGlobalId());
+
+        // Classification
+        road_marking->mutable_classification()->set_type(osi3::RoadMarking_Classification_Type_TYPE_OTHER);
+        road_marking->mutable_classification()->set_monochrome_color(ODRColor2OSIMarkingColor(marking->color_));
+
+        // Source reference back to the OpenDRIVE object and marking index
+        auto source_reference = road_marking->add_source_reference();
+        source_reference->set_type(SOURCE_REF_TYPE_ODR);
+        source_reference->add_identifier(fmt::format("object_id:{}", object->GetId()));
+        source_reference->add_identifier(fmt::format("marking_index:{}", marking_index));
+
+        // Compute centroid for the base position and report the polyline relative to it
+        double cx = 0.0, cy = 0.0, cz = 0.0;
+        for (const auto &p : points)
+        {
+            cx += p[0];
+            cy += p[1];
+            cz += p[2];
+        }
+        cx /= static_cast<double>(points.size());
+        cy /= static_cast<double>(points.size());
+        cz /= static_cast<double>(points.size());
+
+        road_marking->mutable_base()->mutable_position()->set_x(cx);
+        road_marking->mutable_base()->mutable_position()->set_y(cy);
+        road_marking->mutable_base()->mutable_position()->set_z(cz);
+        road_marking->mutable_base()->mutable_dimension()->set_width(marking->width_);
+
+        for (const auto &p : points)
+        {
+            osi3::Vector2d *vec = road_marking->mutable_base()->add_base_polygon();
+            vec->set_x(p[0] - cx);
+            vec->set_y(p[1] - cy);
+        }
+    };
+
+    roadmanager::Repeat *rep      = object->GetRepeat();
+    const bool           repeated = (rep != nullptr && rep->GetLength() > SMALL_NUMBER && rep->GetDistance() > SMALL_NUMBER);
+
+    if (!repeated || road == nullptr)
+    {
+        // Single object instance placed at its resolved world position
+        double inst_x = object->GetX();
+        double inst_y = object->GetY();
+        double inst_z = object->GetZ() + object->GetZOffset();
+        double inst_h = object->GetH() + object->GetHOffset();
+        for (unsigned int m = 0; m < object->GetNumberOfMarkings(); m++)
+        {
+            emit_marking(object->GetMarking(m),
+                         m,
+                         object->GetS(),
+                         object->GetT(),
+                         inst_x,
+                         inst_y,
+                         inst_z,
+                         inst_h,
+                         object->GetLength(),
+                         object->GetWidth());
+        }
+    }
+    else
+    {
+        // Repeated object: replicate markings for each instance along the repeat span
+        const double          h_offset = atan2(rep->GetTEnd() - rep->GetTStart(), rep->GetLength());
+        double                cur_s    = 0.0;
+        roadmanager::Position pos;
+        for (; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s + rep->GetS() < road->GetLength(); cur_s += rep->GetDistance())
+        {
+            const double factor = cur_s / rep->GetLength();
+            const double s      = rep->GetS() + cur_s;
+            const double t      = rep->GetTStart() + factor * (rep->GetTEnd() - rep->GetTStart());
+            const double z_off  = rep->GetZOffsetStart() + factor * (rep->GetZOffsetEnd() - rep->GetZOffsetStart());
+
+            const double inst_len = (rep->GetLengthStart() > SMALL_NUMBER || rep->GetLengthEnd() > SMALL_NUMBER)
+                                        ? rep->GetLengthStart() + factor * (rep->GetLengthEnd() - rep->GetLengthStart())
+                                        : object->GetLength();
+            const double inst_wid = (rep->GetWidthStart() > SMALL_NUMBER || rep->GetWidthEnd() > SMALL_NUMBER)
+                                        ? rep->GetWidthStart() + factor * (rep->GetWidthEnd() - rep->GetWidthStart())
+                                        : object->GetWidth();
+
+            if (s + inst_len * cos(object->GetHOffset()) > road->GetLength())
+            {
+                break;  // instance would reach outside the road
+            }
+
+            pos.SetTrackPosMode(road->GetId(),
+                                s,
+                                t,
+                                roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
+                                    roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
+            pos.SetHeadingRelative(h_offset);
+
+            double inst_h = pos.GetH() + object->GetHOffset();
+            double inst_z = pos.GetZ() + z_off;
+            for (unsigned int m = 0; m < object->GetNumberOfMarkings(); m++)
+            {
+                emit_marking(object->GetMarking(m), m, s, t, pos.GetX(), pos.GetY(), inst_z, inst_h, inst_len, inst_wid);
+            }
+        }
     }
 
     return 0;
