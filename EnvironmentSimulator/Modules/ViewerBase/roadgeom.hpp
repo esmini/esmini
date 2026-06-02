@@ -108,7 +108,8 @@ namespace roadgeom
                                 roadmanager::Outline*                                                              outline,
                                 osg::Vec4                                                                          color,
                                 const osg::Vec3d&                                                                  origin,
-                                const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn = {});
+                                const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn = {},
+                                double                                                                             height_scale  = 1.0);
         // Create curvature-aware outline geometry for each instance of a repeated object (separate copies).
         // cornerRoad corners are re-evaluated on the road per instance; cornerLocal corners keep a fixed shape.
         void CreateRepeatedOutlineObjects(roadmanager::RMObject* object,

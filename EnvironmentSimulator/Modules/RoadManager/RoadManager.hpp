@@ -2444,6 +2444,14 @@ namespace roadmanager
         {
             lengthEnd_ = lengthEnd;
         }
+        void SetRadiusStart(double radiusStart)
+        {
+            radiusStart_ = radiusStart;
+        }
+        void SetRadiusEnd(double radiusEnd)
+        {
+            radiusEnd_ = radiusEnd;
+        }
         void SetHeightStart(double heightStart)
         {
             heightStart_ = heightStart;
@@ -2651,6 +2659,10 @@ namespace roadmanager
         {
             return width_;
         }
+        double GetRadius() const
+        {
+            return radius_;
+        }
         void SetHeight(double height)
         {
             height_ = height;
@@ -2662,6 +2674,10 @@ namespace roadmanager
         void SetWidth(double width)
         {
             width_ = width;
+        }
+        void SetRadius(double radius)
+        {
+            radius_ = radius;
         }
         void SetParkingSpace(ParkingSpace parking_space)
         {
@@ -2763,6 +2779,7 @@ namespace roadmanager
         double                     length_;
         double                     height_;
         double                     width_;
+        double                     radius_ = 0.0;  // optional radius (ASAM OpenDRIVE 13.8): if > 0 the object is a cylinder
         double                     heading_;
         double                     pitch_;
         double                     roll_;

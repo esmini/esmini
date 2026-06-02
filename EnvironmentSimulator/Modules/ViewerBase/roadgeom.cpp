@@ -1463,11 +1463,25 @@ namespace roadgeom
                             tx = new osg::PositionAttitudeTransform;
 
                             // avoid zero width, length and width - set to a minimum value of 0.05m
-                            osg::ref_ptr<osg::ShapeDrawable> shape =
-                                new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * MAX(0.05f, static_cast<float>(object->GetHeight()))),
-                                                                    MAX(0.05f, static_cast<float>(object->GetLength())),
-                                                                    MAX(0.05f, static_cast<float>(object->GetWidth())),
-                                                                    MAX(0.05f, static_cast<float>(object->GetHeight()))));
+                            const float                      obj_hgt = MAX(0.05f, static_cast<float>(object->GetHeight()));
+                            osg::ref_ptr<osg::ShapeDrawable> shape;
+                            if (object->GetRadius() > SMALL_NUMBER)
+                            {
+                                // Circular object (ASAM OpenDRIVE 13.8): represent as a cylinder, base resting at z = 0
+                                osg::ref_ptr<osg::TessellationHints> th = new osg::TessellationHints();
+                                th->setDetailRatio(0.4f);
+                                shape = new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0f, 0.0f, 0.5f * obj_hgt),
+                                                                                 MAX(0.05f, static_cast<float>(object->GetRadius())),
+                                                                                 obj_hgt),
+                                                               th.get());
+                            }
+                            else
+                            {
+                                shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * obj_hgt),
+                                                                            MAX(0.05f, static_cast<float>(object->GetLength())),
+                                                                            MAX(0.05f, static_cast<float>(object->GetWidth())),
+                                                                            obj_hgt));
+                            }
 
                             shape->setColor(color);
                             tx->addChild(shape);
@@ -1642,6 +1656,13 @@ namespace roadgeom
                                 {
                                     scale_z = (rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())) / dim_z;
                                 }
+                                if (rep->GetRadiusStart() > SMALL_NUMBER || rep->GetRadiusEnd() > SMALL_NUMBER)
+                                {
+                                    // Circular object: scale both x and y by the interpolated diameter
+                                    double diameter = 2.0 * (rep->GetRadiusStart() + factor * (rep->GetRadiusEnd() - rep->GetRadiusStart()));
+                                    scale_x         = diameter / dim_x;
+                                    scale_y         = diameter / dim_y;
+                                }
 
                                 clone->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
                                 clone->setScale(osg::Vec3(static_cast<float>(scale_x), static_cast<float>(scale_y), static_cast<float>(scale_z)));
@@ -1812,17 +1833,20 @@ namespace roadgeom
     // to the repeat line, and the world position/heading fields are filled in.
     struct RepeatInstance
     {
-        double s        = 0.0;
-        double t        = 0.0;
-        double z_off    = 0.0;
-        double inst_len = 0.0;
-        double inst_wid = 0.0;
-        double inst_hgt = 0.0;
-        double inst_x   = 0.0;
-        double inst_y   = 0.0;
-        double inst_z   = 0.0;
-        double inst_h   = 0.0;
-        bool   valid    = false;
+        double s         = 0.0;
+        double t         = 0.0;
+        double z_off     = 0.0;
+        double inst_len  = 0.0;
+        double inst_wid  = 0.0;
+        double inst_hgt  = 0.0;
+        double inst_x    = 0.0;
+        double inst_y    = 0.0;
+        double inst_z    = 0.0;
+        double inst_h    = 0.0;
+        double scale_len = 1.0;  // instance length / object nominal length (1.0 when not scaled)
+        double scale_wid = 1.0;  // instance width  / object nominal width
+        double scale_hgt = 1.0;  // instance height / object nominal height
+        bool   valid     = false;
     };
 
     static RepeatInstance EvalRepeatInstance(roadmanager::RMObject* object,
@@ -1845,6 +1869,17 @@ namespace roadgeom
         ri.inst_hgt           = (rep->GetHeightStart() > SMALL_NUMBER || rep->GetHeightEnd() > SMALL_NUMBER)
                                     ? rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())
                                     : object->GetHeight();
+
+        // Scale factors for outline geometry: the authored outline represents the object at the start of
+        // the repeat span, so scale relative to the repeat start dimension (lengthStart/widthStart/
+        // heightStart) when given, otherwise relative to the object's nominal dimension. The result grows
+        // linearly from 1.0 (start) to end/start, matching how the bounding box grows from start to end.
+        const double ref_len = (rep->GetLengthStart() > SMALL_NUMBER) ? rep->GetLengthStart() : object->GetLength();
+        const double ref_wid = (rep->GetWidthStart() > SMALL_NUMBER) ? rep->GetWidthStart() : object->GetWidth();
+        const double ref_hgt = (rep->GetHeightStart() > SMALL_NUMBER) ? rep->GetHeightStart() : object->GetHeight();
+        ri.scale_len         = (ref_len > SMALL_NUMBER) ? ri.inst_len / ref_len : 1.0;
+        ri.scale_wid         = (ref_wid > SMALL_NUMBER) ? ri.inst_wid / ref_wid : 1.0;
+        ri.scale_hgt         = (ref_hgt > SMALL_NUMBER) ? ri.inst_hgt / ref_hgt : 1.0;
 
         // Count instances by accumulated length only; the repeat start s offset compensates for the
         // bounding box center, not the object border, so it must not reduce how many copies fit.
@@ -1871,8 +1906,18 @@ namespace roadgeom
     // Build a per-instance corner position provider for a repeated outline object:
     // - cornerRoad corners are re-evaluated on the road at the instance position (curvature aware)
     // - cornerLocal corners keep their fixed local shape, rigidly placed in the instance frame
-    static std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>
-    MakeInstanceCornerPosFn(roadmanager::Road* road, double s, double t, double inst_x, double inst_y, double inst_z, double inst_h)
+    // The scale factors (along the object length/width and the height) are applied about the corner's
+    // own reference so the outline shape is scaled by the repeat parameters, like the bounding box.
+    static std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)> MakeInstanceCornerPosFn(roadmanager::Road* road,
+                                                                                                               double             s,
+                                                                                                               double             t,
+                                                                                                               double             inst_x,
+                                                                                                               double             inst_y,
+                                                                                                               double             inst_z,
+                                                                                                               double             inst_h,
+                                                                                                               double             scale_u = 1.0,
+                                                                                                               double             scale_v = 1.0,
+                                                                                                               double             scale_h = 1.0)
     {
         const double ch = cos(inst_h);
         const double sh = sin(inst_h);
@@ -1880,13 +1925,13 @@ namespace roadgeom
         {
             if (roadmanager::OutlineCornerRoad* cr = dynamic_cast<roadmanager::OutlineCornerRoad*>(corner))
             {
-                const double          corner_s = s + (cr->s_ - cr->center_s_);
-                const double          corner_t = t + (cr->t_ - cr->center_t_);
+                const double          corner_s = s + (cr->s_ - cr->center_s_) * scale_u;
+                const double          corner_t = t + (cr->t_ - cr->center_t_) * scale_v;
                 roadmanager::Position cp;
                 cp.SetTrackPos(road->GetId(), corner_s, corner_t);
                 x = cp.GetX();
                 y = cp.GetY();
-                z = cp.GetZ() + cr->dz_;
+                z = cp.GetZ() + cr->dz_ * scale_h;
             }
             else
             {
@@ -1897,9 +1942,11 @@ namespace roadgeom
                 {
                     corner_local_z = cl->zLocal_;
                 }
-                x = inst_x + u * ch - v * sh;
-                y = inst_y + u * sh + v * ch;
-                z = inst_z + corner_local_z;
+                const double su = u * scale_u;
+                const double sv = v * scale_v;
+                x               = inst_x + su * ch - sv * sh;
+                y               = inst_y + su * sh + sv * ch;
+                z               = inst_z + corner_local_z * scale_h;
             }
         };
     }
@@ -1929,12 +1976,13 @@ namespace roadgeom
                 break;  // instance would reach outside the road
             }
 
-            auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h);
+            auto corner_pos_fn =
+                MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h, ri.scale_len, ri.scale_wid, ri.scale_hgt);
 
             for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
             {
                 roadmanager::Outline*    outline = object->GetOutline(j);
-                osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin, corner_pos_fn);
+                osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin, corner_pos_fn, ri.scale_hgt);
                 if (olgroup != nullptr)
                 {
                     SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(nCopies) + "_" + std::to_string(j));
@@ -1948,12 +1996,16 @@ namespace roadgeom
         roadmanager::Outline*                                                              outline,
         osg::Vec4                                                                          color,
         const osg::Vec3d&                                                                  origin,
-        const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn)
+        const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn,
+        double                                                                             height_scale)
     {
         if (outline == 0)
         {
             return nullptr;
         }
+
+        // Per-corner extrusion height, scaled by the repeat height factor (1.0 when not repeated/scaled).
+        auto cornerHeight = [&](roadmanager::OutlineCorner* corner) { return corner->GetHeight() * height_scale; };
 
         // Resolve a corner world position, optionally via a caller provided function (e.g. per repeat
         // instance placement). Falls back to the corner's own road based position.
@@ -1994,7 +2046,7 @@ namespace roadgeom
             getPos(corner, x, y, z);
             (*vertices_sides)[i * 2 + 0].set(static_cast<float>(x - origin[0]),
                                              static_cast<float>(y - origin[1]),
-                                             static_cast<float>(z + corner->GetHeight()));
+                                             static_cast<float>(z + cornerHeight(corner)));
             (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin[0]), static_cast<float>(y - origin[1]), static_cast<float>(z));
 
             if (i > 0)
@@ -2006,7 +2058,7 @@ namespace roadgeom
                 cumulative_side_dist += std::sqrt(dx * dx + dy * dy);
             }
 
-            (*tex_coords_sides)[i * 2 + 0].set(cumulative_side_dist, corner->GetHeight());
+            (*tex_coords_sides)[i * 2 + 0].set(cumulative_side_dist, cornerHeight(corner));
             (*tex_coords_sides)[i * 2 + 1].set(cumulative_side_dist, 0.0f);
 
             // top and bottom shapes
@@ -2014,7 +2066,7 @@ namespace roadgeom
             {
                 (*vertices_top)[i].set(static_cast<float>(x - origin[0]),
                                        static_cast<float>(y - origin[1]),
-                                       static_cast<float>(z + corner->GetHeight()));
+                                       static_cast<float>(z + cornerHeight(corner)));
                 (*vertices_bottom)[outline->corner_.size() - 1 - i].set(static_cast<float>(x - origin[0]),
                                                                         static_cast<float>(y - origin[1]),
                                                                         static_cast<float>(z));
@@ -2047,10 +2099,10 @@ namespace roadgeom
 
                 (*vertices_top)[i].set(static_cast<float>(xr - origin[0]),
                                        static_cast<float>(yr - origin[1]),
-                                       static_cast<float>(zr + outline->corner_[right_index]->GetHeight()));
+                                       static_cast<float>(zr + cornerHeight(outline->corner_[right_index])));
                 (*vertices_top)[i + 1].set(static_cast<float>(xl - origin[0]),
                                            static_cast<float>(yl - origin[1]),
-                                           static_cast<float>(zl + outline->corner_[right_index]->GetHeight()));
+                                           static_cast<float>(zl + cornerHeight(outline->corner_[right_index])));
                 (*vertices_bottom)[i].set(static_cast<float>(xl - origin[0]), static_cast<float>(yl - origin[1]), static_cast<float>(zl));
                 (*vertices_bottom)[i + 1].set(static_cast<float>(xr - origin[0]), static_cast<float>(yr - origin[1]), static_cast<float>(zr));
 
@@ -2214,7 +2266,8 @@ namespace roadgeom
         // geometry is added to both the wireframe and the solid groups so the bounding box views show
         // the true object shape. Each corner is resolved via corner_pos_fn so cornerRoad corners keep
         // their unique s/t coordinates (and follow the road), matching the loaded outline model.
-        auto emit_outline_shape = [&](const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn)
+        auto emit_outline_shape =
+            [&](const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn, double height_scale = 1.0)
         {
             for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
             {
@@ -2223,8 +2276,8 @@ namespace roadgeom
                 {
                     continue;
                 }
-                osg::ref_ptr<osg::Group> fill = CreateOutlineObject(outline, color, origin, corner_pos_fn);
-                osg::ref_ptr<osg::Group> wire = CreateOutlineObject(outline, color, origin, corner_pos_fn);
+                osg::ref_ptr<osg::Group> fill = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale);
+                osg::ref_ptr<osg::Group> wire = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale);
                 if (fill != nullptr)
                 {
                     bb_fill->addChild(fill.get());
@@ -2278,8 +2331,17 @@ namespace roadgeom
                     // Per-instance corner placement, matching CreateRepeatedOutlineObjects:
                     // cornerRoad corners are re-evaluated on the road (curvature aware) at this instance,
                     // cornerLocal corners keep a fixed shape rigidly placed at the instance.
-                    auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h);
-                    emit_outline_shape(corner_pos_fn);
+                    auto corner_pos_fn = MakeInstanceCornerPosFn(road,
+                                                                 ri.s,
+                                                                 ri.t,
+                                                                 ri.inst_x,
+                                                                 ri.inst_y,
+                                                                 ri.inst_z,
+                                                                 ri.inst_h,
+                                                                 ri.scale_len,
+                                                                 ri.scale_wid,
+                                                                 ri.scale_hgt);
+                    emit_outline_shape(corner_pos_fn, ri.scale_hgt);
                 }
                 else
                 {

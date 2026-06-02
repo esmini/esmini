@@ -4998,17 +4998,13 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                 {
                     if (!object.attribute("length").empty() || !object.attribute("width").empty())
                     {
-                        LOG_WARN("Found object {} radius {:.2f}. Circular objects not supported yet. Using length and width attributes instead",
-                                 name,
-                                 radius);
+                        LOG_WARN("Found object {} radius {:.2f} together with length/width. Using length and width attributes instead", name, radius);
+                        radius = 0.0;
                     }
                     else
                     {
-                        LOG_WARN(
-                            "Found object {} radius {:.2f}. Circular objects not supported yet. Setting length and width attributes to 2 * radius = {:.2f}",
-                            name,
-                            radius,
-                            2 * radius);
+                        // Circular (cylinder) object: keep the radius for visualization and set the
+                        // bounding box length/width to the diameter so downstream box based logic still works.
                         width  = 2 * radius;
                         length = 2 * radius;
                     }
@@ -5106,9 +5102,9 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     if (fabs(rlengthEnd) > SMALL_NUMBER)
                         repeat->SetLengthEnd(rlengthEnd);
                     if (fabs(rradiusStart) > SMALL_NUMBER)
-                        printf("Attribute object/repeat/radiusStart not supported yet\n");
+                        repeat->SetRadiusStart(rradiusStart);
                     if (fabs(rradiusEnd) > SMALL_NUMBER)
-                        printf("Attribute object/repeat/radiusEnd not supported yet\n");
+                        repeat->SetRadiusEnd(rradiusEnd);
                 }
 
                 if (obj == nullptr)
@@ -5142,6 +5138,11 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         obj->AddRepeat(rp);
                     }
                     obj->SetRepeat(Repeats[0]);
+                }
+
+                if (radius > SMALL_NUMBER)
+                {
+                    obj->SetRadius(radius);
                 }
 
                 pugi::xml_node outlines_node = object.child("outlines");
