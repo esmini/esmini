@@ -1499,7 +1499,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().height(), 2.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().x(), 20.9076, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().y(), 3.4454, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().z(), 8.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().z(), 4.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().yaw(), 0.7, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().pitch(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().roll(), 0.0, 1e-3);
@@ -1521,7 +1521,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().height(), 2.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().position().x(), 20.9076, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().position().y(), 3.4454, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().position().z(), 8.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().position().z(), 4.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().yaw(), 1.7, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().pitch(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().roll(), 0.0, 1e-3);

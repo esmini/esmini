@@ -217,7 +217,7 @@
                   <Condition name="LightsOnWhenBraking1" delay="0" conditionEdge="rising">
                      <ByEntityCondition>
                         <EntityCondition>
-                           <AccelerationCondition value="-0.25" rule="lessThan" />
+                           <AccelerationCondition value="-0.9" rule="lessOrEqual" direction="longitudinal"/>
                         </EntityCondition>
                         <TriggeringEntities triggeringEntitiesRule="any">
                            <EntityRef entityRef="$EntityName" />
@@ -256,7 +256,7 @@
                      conditionEdge="rising">
                      <ByEntityCondition>
                         <EntityCondition>
-                           <AccelerationCondition value="-0.05" rule="greaterThan" />
+                           <AccelerationCondition value="-0.9" rule="greaterOrEqual" direction="longitudinal"/>
                         </EntityCondition>
                         <TriggeringEntities triggeringEntitiesRule="any">
                            <EntityRef entityRef="$EntityName" />

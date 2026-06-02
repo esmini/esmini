@@ -706,6 +706,9 @@ class View:
             for bp in bps:
                 vertices.append((bp.x, bp.y))
             patch = self.ax.add_patch(patches.Polygon(vertices, label="road_marking".format(rm.id.value, index), facecolor='#FFFFFF', edgecolor='black', linewidth=1, picker=5))
+            # base_polygon is given relative to base.position (and orientation), so place it accordingly
+            hdg = rm.base.orientation.yaw
+            patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(hdg)).translate(rm.base.position.x, rm.base.position.y) + self.ax.transData)
             self.osi_ids_by_stationary[patch] = rm.id.value
             self.osi_idx_by_stationary[patch] = i
 

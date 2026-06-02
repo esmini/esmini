@@ -25,7 +25,6 @@
                 </BoundingBox>
                 <Properties>
                     <Property name="scaleMode" value="ModelToBB"/>
-                    <Property name="model_id" value="15"/>
                 </Properties>
             </MiscObject>
         </ScenarioObject>
@@ -38,7 +37,6 @@
                 </BoundingBox>
                 <Properties>
                     <Property name="scaleMode" value="ModelToBB"/>
-                    <Property name="model_id" value="15"/>
                 </Properties>
             </MiscObject>
         </ScenarioObject>
@@ -51,7 +49,6 @@
                 </BoundingBox>
                 <Properties>
                     <Property name="scaleMode" value="ModelToBB"/>
-                    <Property name="model_id" value="15"/>
                 </Properties>
             </MiscObject>
         </ScenarioObject>

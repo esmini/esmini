@@ -1,75 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="3"
-               date="2025-01-14T10:00:00"
-               description="demo scenario for marking and parking"
-               author="esmini-team"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="WhiteCar" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="RedCar" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="BlueCar" parameterType="string" value="car_blue"/>
-      <ParameterDeclaration name="Man" parameterType="string" value="pedestrian_adult"/>
-      <ParameterDeclaration name="Speed" parameterType="double" value="30"/>
-   </ParameterDeclarations>
+    <FileHeader revMajor="1" revMinor="3" date="2026-06-02T10:00:00" description="demo scenario for road object parking and markings modeling"
+        author="esmini team" />
+    <ParameterDeclarations>
+        <ParameterDeclaration name="WhiteCar" parameterType="string" value="car_white" />
+        <ParameterDeclaration name="RedCar" parameterType="string" value="car_red" />
+        <ParameterDeclaration name="BlueCar" parameterType="string" value="car_blue" />
+        <ParameterDeclaration name="Man" parameterType="string" value="pedestrian_adult" />
+        <ParameterDeclaration name="Speed" parameterType="double" value="30" />
+        <ParameterDeclaration name="CameraStartTime" parameterType="double" value="5" />
+    </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
-            <Directory path="../xosc/Catalogs/Vehicles"/>
+            <Directory path="../xosc/Catalogs/Vehicles" />
         </VehicleCatalog>
         <PedestrianCatalog>
-            <Directory path="../xosc/Catalogs/Pedestrians"/>
+            <Directory path="../xosc/Catalogs/Pedestrians" />
         </PedestrianCatalog>
+        <ManeuverCatalog>
+            <Directory path="../xosc/Catalogs/Maneuvers" />
+        </ManeuverCatalog>
     </CatalogLocations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/markings_demo_final.xodr"/>
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Target0">
-        <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target1">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$RedCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target2">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target3">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$RedCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target4">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target5">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target6">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target6">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target7">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target8">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target9">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target10">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Target11">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar"/>
-      </ScenarioObject>
-      <ScenarioObject name="Man1">
-         <CatalogReference catalogName="PedestrianCatalog" entryName="$Man"/>
-      </ScenarioObject>
-   </Entities>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/parking_demo.xodr" />
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Target0">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$RedCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target3">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$RedCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target4">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target5">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target6">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target7">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target8">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target9">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$BlueCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target10">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Target11">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$WhiteCar" />
+        </ScenarioObject>
+        <ScenarioObject name="Man1">
+            <CatalogReference catalogName="PedestrianCatalog" entryName="$Man" />
+        </ScenarioObject>
+        <ScenarioObject name="Camera">
+            <MiscObject name="camera_object" miscObjectCategory="none" mass="200.0">
+                <ParameterDeclarations />
+                <BoundingBox>
+                    <Center x="0.0" y="0.0" z="0.25" />
+                    <Dimensions width="0.5" length="0.5" height="0.5" />
+                </BoundingBox>
+            </MiscObject>
+        </ScenarioObject>
+    </Entities>
     <Storyboard>
         <Init>
             <Actions>
@@ -77,67 +84,67 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <WorldPosition x="20.2" y="4.8" z="0" h="2.35" p="0" r="0"/>
+                                <WorldPosition x="20.8" y="4.7" z="0" h="2.35" p="0" r="0" />
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target">
                     <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <WorldPosition x="45.0" y="4.8" z="0" h="2.35" p="0" r="0"/>
-                     </Position>
-                  </TeleportAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="45.2" y="4.9" z="0" h="2.35" p="0" r="0" />
+                            </Position>
+                        </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target1">
                     <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <WorldPosition x="93.75" y="4.45" z="0" h="1.57" p="0" r="0"/>
-                     </Position>
-                  </TeleportAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="93.75" y="4.1" z="0" h="1.57" p="0" r="0" />
+                            </Position>
+                        </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target2">
                     <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <WorldPosition x="104.0" y="4.45" z="0" h="1.47" p="0" r="0"/>
-                     </Position>
-                  </TeleportAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="104.0" y="4.2" z="0" h="1.5" p="0" r="0" />
+                            </Position>
+                        </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target3">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1" laneId="1" s="110.0"/>
+                                <LanePosition roadId="1" laneId="1" s="130.4" />
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                     <PrivateAction>
                         <LongitudinalAction>
                             <SpeedAction>
-                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0" />
                                 <SpeedActionTarget>
-                                <AbsoluteTargetSpeed value="${$Speed / 3.6}"/>
+                                    <AbsoluteTargetSpeed value="${$Speed / 3.6}" />
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -147,19 +154,19 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1" laneId="-1" s="0.0"/>
+                                <LanePosition roadId="1" laneId="-1" s="0.3" />
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                     <PrivateAction>
                         <LongitudinalAction>
                             <SpeedAction>
-                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0" />
                                 <SpeedActionTarget>
-                                <AbsoluteTargetSpeed value="${$Speed / 3.6}"/>
+                                    <AbsoluteTargetSpeed value="${$Speed / 3.6}" />
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -167,169 +174,142 @@
                 </Private>
                 <Private entityRef="Target5">
                     <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                       <LanePosition roadId="2" laneId="-1" s="0.0"/>
-                     </Position>
-                  </TeleportAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="133.7" offset="5.9">
+                                    <Orientation type="relative" h="1.57" />
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
-                    </PrivateAction>
-                    <PrivateAction>
-                        <LongitudinalAction>
-                            <SpeedAction>
-                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                                <SpeedActionTarget>
-                                <AbsoluteTargetSpeed value="${$Speed / 3.6}"/>
-                                </SpeedActionTarget>
-                            </SpeedAction>
-                        </LongitudinalAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="Target5_route" closed="false">
+                                    <ParameterDeclarations />
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="2" laneId="-1" s="0.0" offset="0.0" />
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="100" laneId="-1" s="00.0" offset="0.0" />
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="fastest">
+                                        <Position>
+                                            <LanePosition roadId="3" laneId="-1" s="00.0" offset="0.0" />
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target6">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="3" s="24.25" t="14">
-                                    <Orientation type="relative" h="-1.57"/>
+                                <RoadPosition roadId="3" s="11.3" t="14">
+                                    <Orientation type="relative" h="-1.57" />
                                 </RoadPosition>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target7">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="3" s="24.25" t="-14">
-                                    <Orientation type="relative" h="1.57"/>
+                                <RoadPosition roadId="3" s="23.8" t="-14">
+                                    <Orientation type="relative" h="1.57" />
                                 </RoadPosition>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target8">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="3" s="14.0" t="-14">
-                                    <Orientation type="relative" h="1.57"/>
+                                <RoadPosition roadId="3" s="13.8" t="-14">
+                                    <Orientation type="relative" h="1.57" />
                                 </RoadPosition>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target9">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="3" s="4.0" t="-11">
-                                    <Orientation type="relative" h="-1.57"/>
+                                <RoadPosition roadId="3" s="3.8" t="-11.4">
+                                    <Orientation type="relative" h="-1.57" />
                                 </RoadPosition>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target10">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="3" s="11.5" t="14">
-                                    <Orientation type="relative" h="-1.57"/>
+                                <RoadPosition roadId="3" s="23.8" t="14">
+                                    <Orientation type="relative" h="-1.57" />
                                 </RoadPosition>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Target11">
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <RoadPosition roadId="1" s="178" t="4.35">
-                                    <Orientation type="relative" h="-0.028"/>
-                                </RoadPosition>
+                                <LanePosition roadId="1" laneId="2" s="184">
+                                    <Orientation h="0.02" type="relative" />
+                                </LanePosition>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        <ActivateControllerAction longitudinal="true" lateral="true" />
                     </PrivateAction>
                 </Private>
                 <Private entityRef="Man1">
                     <PrivateAction>
-                        <RoutingAction>
-                            <FollowTrajectoryAction>
-                                <TimeReference>
-                                    <None/>
-                                </TimeReference>
-                                <TrajectoryFollowingMode followingMode="position"/>
-                                <TrajectoryRef>
-                                    <Trajectory name="trajectory_man" closed="false">
-                                        <Shape>
-                                            <Polyline>
-                                                <Vertex>
-                                                    <Position>
-                                                        <RoadPosition roadId="1" s="20.0" t="-8">
-                                                            <Orientation type="relative" h="3.14"/>
-                                                        </RoadPosition>
-                                                    </Position>
-                                                </Vertex>
-                                                <Vertex>
-                                                    <Position>
-                                                        <RoadPosition roadId="1" s="8.0" t="-8">
-                                                            <Orientation type="relative" h="1.57"/>
-                                                        </RoadPosition>
-                                                    </Position>
-                                                </Vertex>
-                                                <Vertex>
-                                                    <Position>
-                                                        <RoadPosition roadId="1" s="8.0" t="8">
-                                                            <Orientation type="relative" h="0"/>
-                                                        </RoadPosition>
-                                                    </Position>
-                                                </Vertex>
-                                                <Vertex>
-                                                    <Position>
-                                                        <RoadPosition roadId="1" s="17.0" t="6">
-                                                            <Orientation type="relative" h="0"/>
-                                                        </RoadPosition>
-                                                    </Position>
-                                                </Vertex>
-                                            </Polyline>
-                                        </Shape>
-                                    </Trajectory>
-                                </TrajectoryRef>
-                            </FollowTrajectoryAction>
-                        </RoutingAction>
-                    </PrivateAction>
-                    <PrivateAction>
-                        <ActivateControllerAction longitudinal="true" lateral="true"/>
-                    </PrivateAction>
-                    <PrivateAction>
                         <LongitudinalAction>
                             <SpeedAction>
-                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0" />
                                 <SpeedActionTarget>
-                                <AbsoluteTargetSpeed value="${10 / 3.6}"/>
+                                    <AbsoluteTargetSpeed value="${10 / 3.6}" />
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Camera">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-10.0" y="-13.0" z="10.0" h="0.4" p="0.33" />
+                            </Position>
+                        </TeleportAction>
                     </PrivateAction>
                 </Private>
             </Actions>
@@ -338,17 +318,22 @@
             <Act name="Act">
                 <ManeuverGroup name="Target3ManeuverGroup" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target3"/>
+                        <EntityRef entityRef="Target3" />
                     </Actors>
+                    <CatalogReference catalogName="LightStateManeuvers" entryName="LightsOnWhenDrivingManeuver">
+                        <ParameterAssignments>
+                            <ParameterAssignment parameterRef="EntityName" value="Target3" />
+                        </ParameterAssignments>
+                    </CatalogReference>
                     <Maneuver name="Target3SpeedManeuver">
-                        <Event name="Target3SpeedEvent" priority="override">
+                        <Event name="Target3SpeedEvent" priority="parallel">
                             <Action name="Target3Action">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="7" />
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
+                                                <AbsoluteTargetSpeed value="0" />
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -356,36 +341,58 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Target3StartTrigger" delay="0" conditionEdge="none">
+                                    <Condition name="Target3TrajStartTrigger" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Target3" />
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <TraveledDistanceCondition value="39.2" />
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Target3IndicatorEvent" priority="parallel">
+                            <Action name="Target3IndicatorAction">
+                                <PrivateAction>
+                                    <AppearanceAction>
+                                        <LightStateAction>
+                                            <LightType>
+                                                <VehicleLight vehicleLightType="indicatorRight" />
+                                            </LightType>
+                                            <LightState mode="flashing" luminousIntensity="600" />
+                                        </LightStateAction>
+                                    </AppearanceAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Target3IndicatorStartTrigger" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="6.7" rule="greaterOrEqual"/>
+                                            <StoryboardElementStateCondition storyboardElementRef="Target3SpeedEvent" state="startTransition"
+                                                storyboardElementType="event" />
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target3TrajManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target3"/>
-                    </Actors>
-                    <Maneuver name="Target3TrajManeuver">
-                        <Event name="Target3TrajEvent" priority="override">
+                        <Event name="Target3TrajEvent" priority="parallel">
                             <Action name="Target3TrajAction">
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
                                             <TimeReference>
-                                                <None/>
+                                                <None />
                                             </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <TrajectoryFollowingMode followingMode="position" />
                                             <TrajectoryRef>
                                                 <Trajectory name="trajectory_car" closed="false">
                                                     <Shape>
-                                                        <Clothoid curvature="0.0" curvatureDot="-0.01" length="15">
+                                                        <Clothoid curvature="0.0" curvatureDot="-0.011" length="12">
                                                             <Position>
-                                                                <LanePosition roadId="1" laneId="1" s="60.15"/>
+                                                                <RelativeWorldPosition dx="0" dy="0" entityRef="Target3" />
                                                             </Position>
                                                         </Clothoid>
                                                     </Shape>
@@ -397,15 +404,11 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Target3TrajStartTrigger" delay="0" conditionEdge="none">
-                                        <ByEntityCondition>
-                                            <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Target3"/>
-                                            </TriggeringEntities>
-                                            <EntityCondition>
-                                                <TraveledDistanceCondition value="49.85"/>
-                                            </EntityCondition>
-                                        </ByEntityCondition>
+                                    <Condition name="Target3TrajStartTrigger" delay="2.5" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementRef="Target3SpeedEvent" state="startTransition"
+                                                storyboardElementType="event" />
+                                        </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
@@ -414,63 +417,50 @@
                 </ManeuverGroup>
                 <ManeuverGroup name="Target4Traj1ManeuverGroup" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target4"/>
+                        <EntityRef entityRef="Target4" />
                     </Actors>
+                    <CatalogReference catalogName="LightStateManeuvers" entryName="LightsOnWhenDrivingManeuver">
+                        <ParameterAssignments>
+                            <ParameterAssignment parameterRef="EntityName" value="Target4" />
+                        </ParameterAssignments>
+                    </CatalogReference>
                     <Maneuver name="Target4Traj1Maneuver">
-                        <Event name="Target4Traj1Event" priority="override">
-                            <Action name="Target4Traj1Action">
+                        <Event name="Target3IndicatorEvent" priority="parallel">
+                            <Action name="Target3IndicatorAction">
                                 <PrivateAction>
-                                    <RoutingAction>
-                                        <FollowTrajectoryAction>
-                                            <TimeReference>
-                                                <None/>
-                                            </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="position"/>
-                                            <TrajectoryRef>
-                                                <Trajectory name="trajectory_car" closed="false">
-                                                    <Shape>
-                                                        <Clothoid curvature="0.0" curvatureDot="0.0210" length="15.0">
-                                                            <Position>
-                                                                <LanePosition roadId="1" laneId="-1" s="110.0"/>
-                                                            </Position>
-                                                        </Clothoid>
-                                                    </Shape>
-                                                </Trajectory>
-                                            </TrajectoryRef>
-                                        </FollowTrajectoryAction>
-                                    </RoutingAction>
+                                    <AppearanceAction>
+                                        <LightStateAction>
+                                            <LightType>
+                                                <VehicleLight vehicleLightType="indicatorLeft" />
+                                            </LightType>
+                                            <LightState mode="flashing" luminousIntensity="600" />
+                                        </LightStateAction>
+                                    </AppearanceAction>
                                 </PrivateAction>
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Target4Traj1StartTrigger" delay="0" conditionEdge="none">
+                                    <Condition name="Target3IndicatorStartTrigger" delay="0.0" conditionEdge="none">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Target4"/>
+                                                <EntityRef entityRef="Target4" />
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <TraveledDistanceCondition value="110"/>
+                                                <TraveledDistanceCondition value="80.0" />
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target4StopManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target4"/>
-                    </Actors>
-                    <Maneuver name="Target4StopSpeedManeuver">
-                        <Event name="Target4StopSpeedEvent" priority="override">
+                        <Event name="Target4Traj1Event" priority="parallel">
                             <Action name="Target4StopAction">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.25"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="1.2" />
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
+                                                <AbsoluteTargetSpeed value="0" />
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -478,126 +468,35 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Target4StartTrigger" delay="0" conditionEdge="none">
+                                    <Condition name="Target4StopStartTrigger" delay="0" conditionEdge="none">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Target4"/>
+                                                <EntityRef entityRef="Target4" />
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <TraveledDistanceCondition value="115"/>
+                                                <TraveledDistanceCondition value="92.0" />
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target4Traj2ManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target4"/>
-                    </Actors>
-                    <Maneuver name="Target4Traj2Maneuver">
-                        <Event name="Target4Traj2Event" priority="override">
-                            <Action name="Target4Traj2Action">
+                        <Event name="Target4TrajEvent" priority="parallel">
+                            <Action name="Target4TrajAction">
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
                                             <TimeReference>
-                                                <None/>
+                                                <None />
                                             </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <TrajectoryFollowingMode followingMode="position" />
                                             <TrajectoryRef>
                                                 <Trajectory name="trajectory_car" closed="false">
                                                     <Shape>
-                                                        <Clothoid curvature="0.0" curvatureDot="0.0" length="5.0">
-                                                            <Position>
-                                                                <WorldPosition x="119.83" y="0.11" z="0" h="1.20" p="0" r="0"/>
-                                                            </Position>
-                                                        </Clothoid>
-                                                    </Shape>
-                                                </Trajectory>
-                                            </TrajectoryRef>
-                                        </FollowTrajectoryAction>
-                                    </RoutingAction>
-                                </PrivateAction>
-                            </Action>
-                            <Action name="Targe4SpeedAction2">
-                                <PrivateAction>
-                                    <LongitudinalAction>
-                                        <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
-                                            <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="2"/>
-                                            </SpeedActionTarget>
-                                        </SpeedAction>
-                                    </LongitudinalAction>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="Target4Traj2StartTrigger" delay="0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="17" rule="greaterOrEqual"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target4Stop2ManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target4"/>
-                    </Actors>
-                    <Maneuver name="Target4Stop2SpeedManeuver">
-                        <Event name="Target4Stop2SpeedEvent" priority="override">
-                            <Action name="Target4Stop2Action">
-                                <PrivateAction>
-                                    <LongitudinalAction>
-                                        <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
-                                            <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
-                                            </SpeedActionTarget>
-                                        </SpeedAction>
-                                    </LongitudinalAction>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="Target4Traj2StartTrigger" delay="0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="17.3" rule="greaterOrEqual"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target5Traj1ManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target5"/>
-                    </Actors>
-                    <Maneuver name="Target5Traj1Maneuver">
-                        <Event name="Target5Traj1Event" priority="override">
-                            <Action name="Target5Traj1Action">
-                                <PrivateAction>
-                                    <RoutingAction>
-                                        <FollowTrajectoryAction>
-                                            <TimeReference>
-                                                <None/>
-                                            </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="position"/>
-                                            <TrajectoryRef>
-                                                <Trajectory name="trajectory_car" closed="false">
-                                                    <Shape>
-                                                        <Clothoid curvature="0.0" curvatureDot="0.0041" length="30.0">
-                                                            <Position>
-                                                                <LanePosition roadId="3" laneId="-1" s="0.15"/>
-                                                            </Position>
-                                                        </Clothoid>
+                                                        <ClothoidSpline>
+                                                            <ClothoidSplineSegment curvatureStart="-0.05" curvatureEnd="0.25" length="12.5"></ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.25" curvatureEnd="0.0" length="1.0"></ClothoidSplineSegment>
+                                                        </ClothoidSpline>
                                                     </Shape>
                                                 </Trajectory>
                                             </TrajectoryRef>
@@ -607,61 +506,227 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="Target5Traj1trigger" delay="0" conditionEdge="none">
+                                    <Condition name="Target4StartTrigger" delay="2.25" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementRef="Target4Traj1Event" state="startTransition"
+                                                storyboardElementType="event" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Target3IndicatorStopEvent" priority="parallel">
+                            <Action name="Target3IndicatorStopAction">
+                                <PrivateAction>
+                                    <AppearanceAction>
+                                        <LightStateAction>
+                                            <LightType>
+                                                <VehicleLight vehicleLightType="indicatorLeft" />
+                                            </LightType>
+                                            <LightState mode="off" />
+                                        </LightStateAction>
+                                    </AppearanceAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Target3IndicatorStopTrigger" delay="3.5" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementRef="Target4TrajEvent" state="startTransition"
+                                                storyboardElementType="event" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Target5ManeuverGroup" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target5" />
+                    </Actors>
+                    <CatalogReference catalogName="LightStateManeuvers" entryName="LightsOnWhenDrivingManeuver">
+                        <ParameterAssignments>
+                            <ParameterAssignment parameterRef="EntityName" value="Target5" />
+                        </ParameterAssignments>
+                    </CatalogReference>
+                    <Maneuver name="Target5LightManeuver">
+                        <Event name="Target5IndicatorOnEvent" priority="parallel">
+                            <Action name="Target5IndicatorOnAction">
+                                <PrivateAction>
+                                    <AppearanceAction>
+                                        <LightStateAction>
+                                            <LightType>
+                                                <VehicleLight vehicleLightType="indicatorRight" />
+                                            </LightType>
+                                            <LightState mode="flashing" luminousIntensity="600" />
+                                        </LightStateAction>
+                                    </AppearanceAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Target6ManStopStartTrigger" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="29" rule="greaterOrEqual" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Target5IndicatorOffEvent" priority="parallel">
+                            <Action name="Target5IndicatorOffAction">
+                                <PrivateAction>
+                                    <AppearanceAction>
+                                        <LightStateAction>
+                                            <LightType>
+                                                <VehicleLight vehicleLightType="indicatorRight" />
+                                            </LightType>
+                                            <LightState mode="off" />
+                                        </LightStateAction>
+                                    </AppearanceAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Target6ManStopStartTrigger" delay="7" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementRef="Target5SlowDownEvent" state="startTransition"
+                                                storyboardElementType="event" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="Target5UnparkManuever">
+                        <Event name="Target5UnparkEvent" priority="parallel">
+                            <Action name="ReverseActionToEstablishDirection">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="-0.01" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="ReverseAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="1" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="-5" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="Target5UnparkTrajAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position" />
+                                            <TrajectoryRef>
+                                                <Trajectory name="trajectory_car" closed="false">
+                                                    <Shape>
+                                                        <ClothoidSpline>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="-0.3" length="5.0">
+                                                                <PositionStart>
+                                                                    <RelativeWorldPosition entityRef="Target5" dx="0" dy="0">
+                                                                        <Orientation type="relative" h="${pi}" />
+                                                                    </RelativeWorldPosition>
+                                                                </PositionStart>
+                                                            </ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="-0.3" curvatureEnd="0.0" length="5"></ClothoidSplineSegment>
+                                                        </ClothoidSpline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0.1" name="">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition rule="greaterOrEqual" value="15" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Target5DriveForwardEvent" priority="override">
+                            <Action name="ReverseAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="4" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="${30/3.6}" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0.1" name="">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementRef="Target5UnparkEvent" state="completeState"
+                                                storyboardElementType="event" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Target5SlowDownEvent" priority="override">
+                            <Action name="Target5SlowDownAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="1.0" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="5" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Target5lowDownStartTrigger" delay="0" conditionEdge="none">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Target5"/>
+                                                <EntityRef entityRef="Target5" />
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <ReachPositionCondition tolerance="2">
+                                                <DistanceCondition freespace="false" rule="lessOrEqual" value="2">
                                                     <Position>
-                                                        <LanePosition roadId="3" laneId="-1" s="0.15" offset="0"/>
+                                                        <LanePosition laneId="-1" roadId="2" s="5"></LanePosition>
                                                     </Position>
-                                                </ReachPositionCondition>
+                                                </DistanceCondition>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target5Traj2ManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target5"/>
-                    </Actors>
-                    <Maneuver name="Target5Traj2Maneuver">
-                        <Event name="Target5Traj2Event" priority="override">
-                            <Action name="Target5Traj2Action">
-                                <PrivateAction>
-                                    <RoutingAction>
-                                        <FollowTrajectoryAction>
-                                            <TimeReference>
-                                                <None/>
-                                            </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="position"/>
-                                            <TrajectoryRef>
-                                                <Trajectory name="trajectory_car" closed="false">
-                                                    <Shape>
-                                                        <Clothoid curvature="0.0" curvatureDot="0.00" length="10.0">
-                                                            <Position>
-                                                                <WorldPosition x="98.83" y="-102.46" z="0" h="4.29" p="0" r="0"/>
-                                                            </Position>
-                                                        </Clothoid>
-                                                    </Shape>
-                                                </Trajectory>
-                                            </TrajectoryRef>
-                                        </FollowTrajectoryAction>
-                                    </RoutingAction>
-                                </PrivateAction>
-                            </Action>
-                            <Action name="Targe5SpeedAction2">
+                        <Event name="Target5StopEvent" priority="override">
+                            <Action name="Target5StopAction">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="0.5" />
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="2"/>
+                                                <AbsoluteTargetSpeed value="0" />
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -670,112 +735,52 @@
                             <StartTrigger>
                                 <ConditionGroup>
                                     <Condition name="Target5StopStartTrigger" delay="0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="10" rule="greaterOrEqual"/>
-                                        </ByValueCondition>
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Target5" />
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <DistanceCondition freespace="false" rule="lessOrEqual" value="2">
+                                                    <Position>
+                                                        <LanePosition laneId="-1" roadId="3" s="7.2"></LanePosition>
+                                                    </Position>
+                                                </DistanceCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target5RouteManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target5"/>
-                    </Actors>
-                    <Maneuver name="Target5RouteEvent">
-                        <Event name="Target5RouteEvent" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="Target5RouteAction">
+                        <Event name="Target5TrajEvent" priority="parallel">
+                            <Action name="Target5TrajAction">
                                 <PrivateAction>
                                     <RoutingAction>
-                                        <AssignRouteAction>
-                                            <Route name="Target5_route" closed="false">
-                                                <ParameterDeclarations/>
-                                                <Waypoint routeStrategy="fastest">
-                                                    <Position>
-                                                        <LanePosition roadId="2" laneId="-1" s="0.0" offset="0.0"/>
-                                                    </Position>
-                                                </Waypoint>
-                                                <Waypoint routeStrategy="fastest">
-                                                    <Position>
-                                                        <LanePosition roadId="100" laneId="-1" s="00.0" offset="0.0"/>
-                                                    </Position>
-                                                </Waypoint>
-                                                <Waypoint routeStrategy="fastest">
-                                                    <Position>
-                                                        <LanePosition roadId="3" laneId="-1" s="00.0" offset="0.0"/>
-                                                    </Position>
-                                                </Waypoint>
-                                            </Route>
-                                        </AssignRouteAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position" />
+                                            <TrajectoryRef>
+                                                <Trajectory name="trajectory_car" closed="false">
+                                                    <Shape>
+                                                        <ClothoidSpline>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="0.15" length="15.0"></ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.15" curvatureEnd="0.0" length="7.0"></ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="0.0" length="3.0"></ClothoidSplineSegment>
+                                                        </ClothoidSpline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                        </FollowTrajectoryAction>
                                     </RoutingAction>
                                 </PrivateAction>
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="target2_route start" delay="0" conditionEdge="none">
+                                    <Condition name="Target5TrajStartTrigger" delay="0.3" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="0" rule="greaterThan"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target5Stop1ManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target5"/>
-                    </Actors>
-                    <Maneuver name="Target5Stop1">
-                        <Event name="Target5Stop1Event" priority="override">
-                            <Action name="Target5Stop1Action">
-                                <PrivateAction>
-                                    <LongitudinalAction>
-                                        <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
-                                            <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
-                                            </SpeedActionTarget>
-                                        </SpeedAction>
-                                    </LongitudinalAction>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="Target5Stop1StartTrigger" delay="0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="10.4" rule="greaterOrEqual"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <ManeuverGroup name="Target5Stop2ManeuverGroup" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target5"/>
-                    </Actors>
-                    <Maneuver name="Target5Stop2">
-                        <Event name="Target5Stop2Event" priority="override">
-                            <Action name="Target5Stop2Action">
-                                <PrivateAction>
-                                    <LongitudinalAction>
-                                        <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
-                                            <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
-                                            </SpeedActionTarget>
-                                        </SpeedAction>
-                                    </LongitudinalAction>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="Target5Stop2StartTrigger" delay="0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="7.0725" rule="greaterOrEqual"/>
+                                            <StoryboardElementStateCondition storyboardElementRef="Target5StopEvent" state="startTransition"
+                                                storyboardElementType="event" />
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -785,26 +790,29 @@
                 </ManeuverGroup>
                 <ManeuverGroup name="Target6ManeuverGroup" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target6"/>
+                        <EntityRef entityRef="Target6" />
                     </Actors>
+                    <CatalogReference catalogName="LightStateManeuvers" entryName="LightsOnWhenDrivingManeuver">
+                        <ParameterAssignments>
+                            <ParameterAssignment parameterRef="EntityName" value="Target6" />
+                        </ParameterAssignments>
+                    </CatalogReference>
                     <Maneuver name="Target6Man">
                         <Event name="Target6ManEvent" priority="override">
-                            <Action name="Target6TajAction">
+                            <Action name="Target6TrajAction">
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
                                             <TimeReference>
-                                                <None/>
+                                                <None />
                                             </TimeReference>
-                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <TrajectoryFollowingMode followingMode="position" />
                                             <TrajectoryRef>
                                                 <Trajectory name="trajectory_car" closed="false">
                                                     <Shape>
                                                         <Clothoid curvature="0.0" curvatureDot="-0.0135" length="15.0">
                                                             <Position>
-                                                                <LanePosition roadId="3" laneId="2" s="24.25" offset="4.5">
-                                                                    <Orientation type="relative" h="1.57"/>
-                                                                </LanePosition>
+                                                                <RelativeWorldPosition dx="0" dy="0" entityRef="Target6" />
                                                             </Position>
                                                         </Clothoid>
                                                     </Shape>
@@ -818,9 +826,9 @@
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="3.0" />
                                             <SpeedActionTarget>
-                                            <AbsoluteTargetSpeed value="${$Speed / 3.6}"/>
+                                                <AbsoluteTargetSpeed value="${10 / 3.6}" />
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -830,7 +838,87 @@
                                 <ConditionGroup>
                                     <Condition name="Target6ManStopStartTrigger" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="10" rule="greaterOrEqual"/>
+                                            <SimulationTimeCondition value="33" rule="greaterOrEqual" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="Target11ManeuverGroup" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Target11" />
+                    </Actors>
+                    <CatalogReference catalogName="LightStateManeuvers" entryName="LightsOnWhenDrivingManeuver">
+                        <ParameterAssignments>
+                            <ParameterAssignment parameterRef="EntityName" value="Target11" />
+                        </ParameterAssignments>
+                    </CatalogReference>
+                    <Maneuver name="Target11Man">
+                        <Event name="Target11IndicatorEvent" priority="parallel">
+                            <Action name="Target11IndicatorAction">
+                                <PrivateAction>
+                                    <AppearanceAction>
+                                        <LightStateAction>
+                                            <LightType>
+                                                <VehicleLight vehicleLightType="indicatorLeft" />
+                                            </LightType>
+                                            <LightState mode="flashing" luminousIntensity="600" />
+                                        </LightStateAction>
+                                    </AppearanceAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Target11ManStopStartTrigger" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="23" rule="greaterOrEqual" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="Target11ManEvent" priority="parallel">
+                            <Action name="Target11TrajAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position" />
+                                            <TrajectoryRef>
+                                                <Trajectory name="trajectory_target11" closed="false">
+                                                    <Shape>
+                                                        <ClothoidSpline>
+                                                            <ClothoidSplineSegment curvatureStart="0.1" curvatureEnd="0.0" length="8"></ClothoidSplineSegment>
+                                                            <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="-0.02" length="8.0"></ClothoidSplineSegment>
+                                                        </ClothoidSpline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="Target6SpeedAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="3.0" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="${$Speed / 3.6}" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Target6ManStopStartTrigger" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="27" rule="greaterOrEqual" />
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -840,17 +928,75 @@
                 </ManeuverGroup>
                 <ManeuverGroup name="ManManeuverGroup" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Man1"/>
+                        <EntityRef entityRef="Man1" />
                     </Actors>
-                    <Maneuver name="ManStop">
+                    <Maneuver name="ManMoveManeuver">
+                        <Event name="ManMoveEvent" priority="overwrite">
+                            <Action name="ManMovementAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position" />
+                                            <TrajectoryRef>
+                                                <Trajectory name="trajectory_man" closed="false">
+                                                    <Shape>
+                                                        <Polyline>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RoadPosition roadId="1" s="20.0" t="-7">
+                                                                    </RoadPosition>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RoadPosition roadId="1" s="10.0" t="-7">
+                                                                    </RoadPosition>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RoadPosition roadId="1" s="9.5" t="-6.5">
+                                                                    </RoadPosition>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RoadPosition roadId="1" s="9.5" t="5.5">
+                                                                    </RoadPosition>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RoadPosition roadId="1" s="10.0" t="6.0">
+                                                                    </RoadPosition>
+                                                                </Position>
+                                                            </Vertex>
+                                                            <Vertex>
+                                                                <Position>
+                                                                    <RoadPosition roadId="1" s="16.0" t="6.0">
+                                                                    </RoadPosition>
+                                                                </Position>
+                                                            </Vertex>
+                                                        </Polyline>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
                         <Event name="ManStopEvent" priority="override">
                             <Action name="ManStopAction">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0" />
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
+                                                <AbsoluteTargetSpeed value="0" />
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -860,7 +1006,92 @@
                                 <ConditionGroup>
                                     <Condition name="ManStopStartTrigger" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="13.0" rule="greaterOrEqual"/>
+                                            <StoryboardElementStateCondition storyboardElementRef="ManMovementAction" state="endTransition"
+                                                storyboardElementType="action" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup name="CameraManeuverGroup" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Camera" />
+                    </Actors>
+                    <Maneuver name="cameraMotion">
+                        <Event name="cameraMotionEvent" priority="override">
+                            <Action name="cameraMotionAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory closed="true" name="TrajectoryPLine">
+                                                    <ParameterDeclarations />
+                                                    <Shape>
+                                                        <Nurbs order="3">
+                                                            <ControlPoint time="0" weight="1">
+                                                                <Position>
+                                                                    <WorldPosition x="-10.0" y="-13.0" z="10.0" h="0.4" p="0.33" />
+                                                                </Position>
+                                                            </ControlPoint>
+                                                            <ControlPoint time="20" weight="1">
+                                                                <Position>
+                                                                    <WorldPosition x="150.0" y="40.0" z="15.0" h="0.3" p="0.5" />
+                                                                </Position>
+                                                            </ControlPoint>
+                                                            <ControlPoint time="35" weight="1">
+                                                                <Position>
+                                                                    <WorldPosition x="140.0" y="-80.0" z="11" h="-2.65" p="0.4" />
+                                                                </Position>
+                                                            </ControlPoint>
+                                                            <Knot value="0.0" />
+                                                            <Knot value="0.0" />
+                                                            <Knot value="0.0" />
+                                                            <Knot value="1.0" />
+                                                            <Knot value="1.0" />
+                                                            <Knot value="1.0" />
+                                                        </Nurbs>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <Timing domainAbsoluteRelative="relative" offset="0" scale="1" />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position" />
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="StartCamera">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition rule="greaterOrEqual" value="$CameraStartTime" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="cameraStopEvent" priority="override">
+                            <Action name="cameraStopAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="0" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="StartCamera">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementRef="cameraMotionAction" state="endTransition"
+                                                storyboardElementType="action" />
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -870,6 +1101,14 @@
                 </ManeuverGroup>
             </Act>
         </Story>
-        <StopTrigger/>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="ScenarioStopTrigger" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="50" rule="greaterOrEqual" />
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

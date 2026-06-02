@@ -2156,7 +2156,7 @@ id_t LaneSection::GetLaneGlobalIdByIdx(idx_t idx) const
 {
     if (idx >= lane_.size())
     {
-        LOG_ERROR("LaneSection::GetLaneIdByIdx Error: index {}, only {} lanes", idx, lane_.size());
+        LOG_ERROR("LaneSection::GetLaneGlobalIdByIdx Error: index {}, only {} lanes", idx, lane_.size());
         return ID_UNDEFINED;
     }
     else
@@ -5514,6 +5514,89 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 void RMObject::SetRepeat(Repeat* repeat)
 {
     repeat_ = repeat;
+}
+
+std::vector<RepeatInstance> RMObject::GetRepeatInstances(Road* road) const
+{
+    std::vector<RepeatInstance> instances;
+
+    Repeat*    rep      = GetRepeat();
+    const bool repeated = (rep != nullptr && rep->GetLength() > SMALL_NUMBER && rep->GetDistance() > SMALL_NUMBER && road != nullptr);
+
+    if (!repeated)
+    {
+        // Single instance placed at the object's own resolved position
+        RepeatInstance ri;
+        ri.s        = GetS();
+        ri.t        = GetT();
+        ri.z_off    = GetZOffset();
+        ri.inst_len = GetLength();
+        ri.inst_wid = GetWidth();
+        ri.inst_hgt = GetHeight();
+        ri.x        = GetX();
+        ri.y        = GetY();
+        ri.z        = GetZ() + GetZOffset();
+        ri.h        = GetH() + GetHOffset();
+        ri.p        = GetPitch();
+        ri.r        = GetRoll();
+        instances.push_back(ri);
+        return instances;
+    }
+
+    // Angle of the repeat line relative to the road reference line (from delta t over the span)
+    const double h_offset = atan2(rep->GetTEnd() - rep->GetTStart(), rep->GetLength());
+    Position     pos;
+
+    for (double cur_s = 0.0; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength(); cur_s += rep->GetDistance())
+    {
+        RepeatInstance ri;
+        const double   factor = cur_s / rep->GetLength();
+        ri.s                  = rep->GetS() + cur_s;
+        ri.t                  = rep->GetTStart() + factor * (rep->GetTEnd() - rep->GetTStart());
+        ri.z_off              = rep->GetZOffsetStart() + factor * (rep->GetZOffsetEnd() - rep->GetZOffsetStart());
+        ri.inst_len           = (rep->GetLengthStart() > SMALL_NUMBER || rep->GetLengthEnd() > SMALL_NUMBER)
+                                    ? rep->GetLengthStart() + factor * (rep->GetLengthEnd() - rep->GetLengthStart())
+                                    : GetLength();
+        ri.inst_wid           = (rep->GetWidthStart() > SMALL_NUMBER || rep->GetWidthEnd() > SMALL_NUMBER)
+                                    ? rep->GetWidthStart() + factor * (rep->GetWidthEnd() - rep->GetWidthStart())
+                                    : GetWidth();
+        ri.inst_hgt           = (rep->GetHeightStart() > SMALL_NUMBER || rep->GetHeightEnd() > SMALL_NUMBER)
+                                    ? rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())
+                                    : GetHeight();
+
+        // Scale factors for outline geometry: the authored outline represents the object at the start of
+        // the repeat span, so scale relative to the repeat start dimension (lengthStart/widthStart/
+        // heightStart) when given, otherwise relative to the object's nominal dimension. The result grows
+        // linearly from 1.0 (start) to end/start, matching how the bounding box grows from start to end.
+        const double ref_len = (rep->GetLengthStart() > SMALL_NUMBER) ? rep->GetLengthStart() : GetLength();
+        const double ref_wid = (rep->GetWidthStart() > SMALL_NUMBER) ? rep->GetWidthStart() : GetWidth();
+        const double ref_hgt = (rep->GetHeightStart() > SMALL_NUMBER) ? rep->GetHeightStart() : GetHeight();
+        ri.scale_len         = (ref_len > SMALL_NUMBER) ? ri.inst_len / ref_len : 1.0;
+        ri.scale_wid         = (ref_wid > SMALL_NUMBER) ? ri.inst_wid / ref_wid : 1.0;
+        ri.scale_hgt         = (ref_hgt > SMALL_NUMBER) ? ri.inst_hgt / ref_hgt : 1.0;
+
+        // Count instances by accumulated length only; the repeat start s offset compensates for the
+        // bounding box center, not the object border, so it must not reduce how many copies fit.
+        if (cur_s + ri.inst_len * cos(GetHOffset()) > road->GetLength())
+        {
+            break;  // instance would reach outside the road
+        }
+
+        pos.SetTrackPosMode(road->GetId(),
+                            ri.s,
+                            ri.t,
+                            Position::PosMode::H_REL | Position::PosMode::Z_REL | Position::PosMode::P_REL | Position::PosMode::R_REL);
+        pos.SetHeadingRelative(h_offset);
+        ri.x = pos.GetX();
+        ri.y = pos.GetY();
+        ri.z = pos.GetZ() + ri.z_off;
+        ri.h = pos.GetH() + GetHOffset();
+        ri.p = pos.GetP();
+        ri.r = pos.GetR();
+        instances.push_back(ri);
+    }
+
+    return instances;
 }
 
 Connection::Connection(Road* incoming_road, Road* connecting_road, ContactPointType contact_point)

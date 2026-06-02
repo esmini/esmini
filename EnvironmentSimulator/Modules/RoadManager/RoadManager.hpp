@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <algorithm>
 #include <sstream>
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
@@ -2522,6 +2523,32 @@ namespace roadmanager
         }
     };
 
+    // One resolved placement of a road object. A non-repeated object yields a single instance at its
+    // own position; a repeated object (<repeat>) yields one instance per copy along the repeat span.
+    // The world position (x, y, z), heading (h) and per-instance dimensions are filled in, together
+    // with the road s/t of the instance and the outline scale factors (instance dimension relative to
+    // the dimension the outline geometry was authored at, i.e. the repeat start or the nominal value).
+    // This is the single source of truth shared by the 3D viewer and the OSI reporter so both place
+    // repeated objects, outlines and markings identically.
+    struct RepeatInstance
+    {
+        double s         = 0.0;  // road s of the instance reference
+        double t         = 0.0;  // road t of the instance reference
+        double z_off     = 0.0;  // z offset applied on top of the road elevation
+        double inst_len  = 0.0;  // instance bounding box length
+        double inst_wid  = 0.0;  // instance bounding box width
+        double inst_hgt  = 0.0;  // instance bounding box height
+        double x         = 0.0;  // world x of the instance reference
+        double y         = 0.0;  // world y of the instance reference
+        double z         = 0.0;  // world z of the instance reference (road elevation + z_off)
+        double h         = 0.0;  // world heading of the instance (incl. object heading offset)
+        double p         = 0.0;  // world pitch of the instance
+        double r         = 0.0;  // world roll of the instance
+        double scale_len = 1.0;  // instance length / authored outline length (1.0 when not scaled)
+        double scale_wid = 1.0;  // instance width  / authored outline width
+        double scale_hgt = 1.0;  // instance height / authored outline height
+    };
+
     class RMObject : public RoadObject
     {
     public:
@@ -2712,6 +2739,12 @@ namespace roadmanager
         {
             return repeat_;
         }
+
+        // Resolve the object into one or more placed instances. For a non-repeated object a single
+        // instance at the object's own position is returned. For a repeated object one instance is
+        // returned per copy that fits along the repeat span on 'road'. Shared by the viewer and the
+        // OSI reporter so repeated objects, outlines and markings are placed identically by both.
+        std::vector<RepeatInstance> GetRepeatInstances(Road *road) const;
 
         unsigned int GetNumberOfOutlines() const
         {

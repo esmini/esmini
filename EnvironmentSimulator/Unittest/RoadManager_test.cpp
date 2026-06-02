@@ -4619,21 +4619,25 @@ TEST(RoadObjectMarkingTest, OutlineCornerReferenceMarkings)
     ASSERT_NE(crosswalk, nullptr);
     EXPECT_EQ(crosswalk->GetNumberOfMarkings(), 2u);
 
-    for (unsigned int i = 0; i < crosswalk->GetNumberOfMarkings(); i++)
-    {
-        const ObjectMarking *m = crosswalk->GetMarking(i);
-        ASSERT_NE(m, nullptr);
-        EXPECT_TRUE(m->UsesOutline());
-        EXPECT_EQ(m->side_, ObjectMarking::Side::NONE);
-        EXPECT_EQ(m->corner_references_.size(), 2u);
-        EXPECT_NEAR(m->lateral_offset_, 0.0, 1e-9);
-    }
+    const ObjectMarking *m = crosswalk->GetMarking(0);
+    ASSERT_NE(m, nullptr);
+    EXPECT_TRUE(m->UsesOutline());
+    EXPECT_EQ(m->side_, ObjectMarking::Side::NONE);
+    EXPECT_EQ(m->corner_references_.size(), 2u);
+    EXPECT_NEAR(m->lateral_offset_, 0.0, 1e-9);
+    // first marking references corners 0 and 1
+    EXPECT_EQ(m->corner_references_[0], static_cast<id_t>(0));
+    EXPECT_EQ(m->corner_references_[1], static_cast<id_t>(1));
 
-    // first marking references corners 0 and 1, second references corners 2 and 3
-    EXPECT_EQ(crosswalk->GetMarking(0)->corner_references_[0], static_cast<id_t>(0));
-    EXPECT_EQ(crosswalk->GetMarking(0)->corner_references_[1], static_cast<id_t>(1));
-    EXPECT_EQ(crosswalk->GetMarking(1)->corner_references_[0], static_cast<id_t>(2));
-    EXPECT_EQ(crosswalk->GetMarking(1)->corner_references_[1], static_cast<id_t>(3));
+    m = crosswalk->GetMarking(1);
+    ASSERT_NE(m, nullptr);
+    EXPECT_TRUE(m->UsesOutline());
+    EXPECT_EQ(m->side_, ObjectMarking::Side::NONE);
+    EXPECT_EQ(m->corner_references_.size(), 2u);
+    EXPECT_NEAR(m->lateral_offset_, 0.0, 1e-9);
+    // second references corners 2 and 3
+    EXPECT_EQ(m->corner_references_[0], static_cast<id_t>(2));
+    EXPECT_EQ(m->corner_references_[1], static_cast<id_t>(3));
 
     odr->Clear();
 }

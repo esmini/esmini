@@ -1826,83 +1826,6 @@ namespace roadgeom
         return xform;
     }
 
-    // Per-instance placement and size of a repeated road object at accumulated distance cur_s along
-    // the repeat span. Width/height/length fall back to the object's nominal values when the repeat
-    // does not specify a start/end. 'valid' is false when the instance would extend past the road
-    // end (iteration should then stop). When valid, 'pos' is set mode-relative with heading aligned
-    // to the repeat line, and the world position/heading fields are filled in.
-    struct RepeatInstance
-    {
-        double s         = 0.0;
-        double t         = 0.0;
-        double z_off     = 0.0;
-        double inst_len  = 0.0;
-        double inst_wid  = 0.0;
-        double inst_hgt  = 0.0;
-        double inst_x    = 0.0;
-        double inst_y    = 0.0;
-        double inst_z    = 0.0;
-        double inst_h    = 0.0;
-        double scale_len = 1.0;  // instance length / object nominal length (1.0 when not scaled)
-        double scale_wid = 1.0;  // instance width  / object nominal width
-        double scale_hgt = 1.0;  // instance height / object nominal height
-        bool   valid     = false;
-    };
-
-    static RepeatInstance EvalRepeatInstance(roadmanager::RMObject* object,
-                                             roadmanager::Repeat*   rep,
-                                             roadmanager::Road*     road,
-                                             double                 cur_s,
-                                             roadmanager::Position& pos)
-    {
-        RepeatInstance ri;
-        const double   factor = cur_s / rep->GetLength();
-        ri.s                  = rep->GetS() + cur_s;
-        ri.t                  = rep->GetTStart() + factor * (rep->GetTEnd() - rep->GetTStart());
-        ri.z_off              = rep->GetZOffsetStart() + factor * (rep->GetZOffsetEnd() - rep->GetZOffsetStart());
-        ri.inst_len           = (rep->GetLengthStart() > SMALL_NUMBER || rep->GetLengthEnd() > SMALL_NUMBER)
-                                    ? rep->GetLengthStart() + factor * (rep->GetLengthEnd() - rep->GetLengthStart())
-                                    : object->GetLength();
-        ri.inst_wid           = (rep->GetWidthStart() > SMALL_NUMBER || rep->GetWidthEnd() > SMALL_NUMBER)
-                                    ? rep->GetWidthStart() + factor * (rep->GetWidthEnd() - rep->GetWidthStart())
-                                    : object->GetWidth();
-        ri.inst_hgt           = (rep->GetHeightStart() > SMALL_NUMBER || rep->GetHeightEnd() > SMALL_NUMBER)
-                                    ? rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())
-                                    : object->GetHeight();
-
-        // Scale factors for outline geometry: the authored outline represents the object at the start of
-        // the repeat span, so scale relative to the repeat start dimension (lengthStart/widthStart/
-        // heightStart) when given, otherwise relative to the object's nominal dimension. The result grows
-        // linearly from 1.0 (start) to end/start, matching how the bounding box grows from start to end.
-        const double ref_len = (rep->GetLengthStart() > SMALL_NUMBER) ? rep->GetLengthStart() : object->GetLength();
-        const double ref_wid = (rep->GetWidthStart() > SMALL_NUMBER) ? rep->GetWidthStart() : object->GetWidth();
-        const double ref_hgt = (rep->GetHeightStart() > SMALL_NUMBER) ? rep->GetHeightStart() : object->GetHeight();
-        ri.scale_len         = (ref_len > SMALL_NUMBER) ? ri.inst_len / ref_len : 1.0;
-        ri.scale_wid         = (ref_wid > SMALL_NUMBER) ? ri.inst_wid / ref_wid : 1.0;
-        ri.scale_hgt         = (ref_hgt > SMALL_NUMBER) ? ri.inst_hgt / ref_hgt : 1.0;
-
-        // Count instances by accumulated length only; the repeat start s offset compensates for the
-        // bounding box center, not the object border, so it must not reduce how many copies fit.
-        ri.valid = (cur_s + ri.inst_len * cos(object->GetHOffset()) <= road->GetLength());
-        if (!ri.valid)
-        {
-            return ri;
-        }
-
-        const double h_offset = atan2(rep->GetTEnd() - rep->GetTStart(), rep->GetLength());
-        pos.SetTrackPosMode(road->GetId(),
-                            ri.s,
-                            ri.t,
-                            roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::P_REL |
-                                roadmanager::Position::PosMode::R_REL);
-        pos.SetHeadingRelative(h_offset);
-        ri.inst_x = pos.GetX();
-        ri.inst_y = pos.GetY();
-        ri.inst_z = pos.GetZ() + ri.z_off;
-        ri.inst_h = pos.GetH() + object->GetHOffset();
-        return ri;
-    }
-
     // Build a per-instance corner position provider for a repeated outline object:
     // - cornerRoad corners are re-evaluated on the road at the instance position (curvature aware)
     // - cornerLocal corners keep their fixed local shape, rigidly placed in the instance frame
@@ -1964,20 +1887,11 @@ namespace roadgeom
             return;
         }
 
-        // Angle of the repeat line relative to the road reference line (from delta t over the span)
-        roadmanager::Position pos;
-        int                   nCopies = 0;
-
-        for (double cur_s = 0.0; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength(); cur_s += rep->GetDistance(), nCopies++)
+        // Placement of every repeat copy is computed once in RoadManager (shared with the OSI reporter).
+        int nCopies = 0;
+        for (const roadmanager::RepeatInstance& ri : object->GetRepeatInstances(road))
         {
-            const RepeatInstance ri = EvalRepeatInstance(object, rep, road, cur_s, pos);
-            if (!ri.valid)
-            {
-                break;  // instance would reach outside the road
-            }
-
-            auto corner_pos_fn =
-                MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h, ri.scale_len, ri.scale_wid, ri.scale_hgt);
+            auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.x, ri.y, ri.z, ri.h, ri.scale_len, ri.scale_wid, ri.scale_hgt);
 
             for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
             {
@@ -1989,6 +1903,7 @@ namespace roadgeom
                     objGroup->addChild(olgroup);
                 }
             }
+            nCopies++;
         }
     }
 
@@ -2318,34 +2233,19 @@ namespace roadgeom
         }
         else
         {
-            for (double cur_s = 0.0; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength(); cur_s += rep->GetDistance())
+            for (const roadmanager::RepeatInstance& ri : object->GetRepeatInstances(road))
             {
-                const RepeatInstance ri = EvalRepeatInstance(object, rep, road, cur_s, pos);
-                if (!ri.valid)
-                {
-                    break;  // instance would reach outside the road
-                }
-
                 if (has_outlines)
                 {
                     // Per-instance corner placement, matching CreateRepeatedOutlineObjects:
                     // cornerRoad corners are re-evaluated on the road (curvature aware) at this instance,
                     // cornerLocal corners keep a fixed shape rigidly placed at the instance.
-                    auto corner_pos_fn = MakeInstanceCornerPosFn(road,
-                                                                 ri.s,
-                                                                 ri.t,
-                                                                 ri.inst_x,
-                                                                 ri.inst_y,
-                                                                 ri.inst_z,
-                                                                 ri.inst_h,
-                                                                 ri.scale_len,
-                                                                 ri.scale_wid,
-                                                                 ri.scale_hgt);
+                    auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.x, ri.y, ri.z, ri.h, ri.scale_len, ri.scale_wid, ri.scale_hgt);
                     emit_outline_shape(corner_pos_fn, ri.scale_hgt);
                 }
                 else
                 {
-                    emit_box(ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h, 0.0, 0.0, ri.inst_len, ri.inst_wid, ri.inst_hgt);
+                    emit_box(ri.x, ri.y, ri.z, ri.h, 0.0, 0.0, ri.inst_len, ri.inst_wid, ri.inst_hgt);
                 }
             }
         }
@@ -2781,14 +2681,9 @@ namespace roadgeom
         else
         {
             // Repeated object: replicate markings for each instance along the repeat span
-            for (double cur_s = 0.0; cur_s < rep->GetLength() + SMALL_NUMBER && cur_s < road->GetLength(); cur_s += rep->GetDistance())
+            for (const roadmanager::RepeatInstance& ri : object->GetRepeatInstances(road))
             {
-                const RepeatInstance ri = EvalRepeatInstance(object, rep, road, cur_s, pos);
-                if (!ri.valid)
-                {
-                    break;  // instance would reach outside the road
-                }
-                emit_instance(ri.s, ri.t, ri.inst_x, ri.inst_y, ri.inst_z, ri.inst_h, ri.inst_len, ri.inst_wid);
+                emit_instance(ri.s, ri.t, ri.x, ri.y, ri.z, ri.h, ri.inst_len, ri.inst_wid);
             }
         }
 
