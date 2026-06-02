@@ -550,7 +550,7 @@ void ScenarioPlayer::ViewerFrame()
         // on screen text following each entity
         snprintf(entity->on_screen_info_.string_,
                  sizeof(entity->on_screen_info_.string_),
-                 " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
+                 " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi gid %u x %.2f y %.2f \n|",
                  obj->name_.c_str(),
                  obj->GetId(),
                  obj->odometer_,
@@ -562,6 +562,7 @@ void ScenarioPlayer::ViewerFrame()
                  obj->pos_.GetX(),
                  obj->pos_.GetY(),
                  obj->pos_.GetH(),
+                 obj->g_id_,
                  obj->pos_.GetX() + obj->boundingbox_.center_.x_ * cos(obj->pos_.GetH()),
                  obj->pos_.GetY() + obj->boundingbox_.center_.x_ * sin(obj->pos_.GetH()));
         entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);

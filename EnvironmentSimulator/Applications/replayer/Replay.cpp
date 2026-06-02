@@ -450,6 +450,17 @@ int Replay::ParsePackets()
                     current_object_timeline_->pose_.values.emplace_back(timestamp_, pose);
                     break;
                 }
+                case static_cast<id_t>(Dat::PacketId::OBJ_GID):
+                {
+                    int obj_gid;
+                    if (dat_reader_->ReadPacket(gp, obj_gid) != 0)
+                    {
+                        LOG_ERROR("Failed reading object GID.");
+                        return -1;
+                    }
+                    current_object_timeline_->obj_gid_.values.emplace_back(timestamp_, obj_gid);
+                    break;
+                }
                 case static_cast<id_t>(Dat::PacketId::MODEL_ID):
                 {
                     int model_id;
@@ -1353,6 +1364,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
 
     entry.state.info.id             = id;
     entry.state.info.timeStamp      = t;
+    entry.state.info.gid            = timeline.obj_gid_.get_value_incremental(t).value_or(ID_UNDEFINED);
     entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t).value_or(-1);
     entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t).value();
     entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t).value();

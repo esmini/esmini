@@ -1325,7 +1325,7 @@ int main(int argc, char** argv)
                     // on screen text following each entity
                     snprintf(sc->entityModel->on_screen_info_.string_,
                              sizeof(sc->entityModel->on_screen_info_.string_),
-                             " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
+                             " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi gid %u x %.2f y %.2f \n|",
                              state->info.name.c_str(),
                              state->info.id,
                              entry.odometer,
@@ -1337,6 +1337,7 @@ int main(int argc, char** argv)
                              sc->pos.x,
                              sc->pos.y,
                              sc->pos.h,
+                             state->info.gid,
                              sc->pos.x + sc->bounding_box.center_.x_ * cos(sc->pos.h),
                              sc->pos.y + sc->bounding_box.center_.x_ * sin(sc->pos.h));
                     sc->entityModel->on_screen_info_.osg_text_->setText(sc->entityModel->on_screen_info_.string_);

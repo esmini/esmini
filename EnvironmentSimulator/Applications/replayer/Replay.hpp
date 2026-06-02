@@ -297,6 +297,7 @@ namespace scenarioengine
     struct PropertyTimeline
     {
         Timeline<int>                     model_id_;
+        Timeline<id_t>                    obj_gid_;
         Timeline<int>                     obj_type_;
         Timeline<int>                     obj_category_;
         Timeline<int>                     ctrl_type_;
@@ -342,6 +343,7 @@ namespace scenarioengine
     struct ObjectInfoStructDat
     {
         int                        id;
+        id_t                       gid;  // global ID, used for OSI
         int                        model_id;
         int                        obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
         int                        obj_category;  // sub type for vehicle, pedestrian and miscobj

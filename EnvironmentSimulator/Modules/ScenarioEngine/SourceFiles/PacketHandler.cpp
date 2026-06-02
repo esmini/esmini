@@ -174,6 +174,13 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
                   cache_it->second.pose_.r);
         }
 
+        // PacketId::OBJ_GID
+        if (cache_it->second.obj_gid_ != obj->g_id_)
+        {
+            cache_it->second.obj_gid_ = obj->g_id_;
+            Write(PacketId::OBJ_GID, cache_it->second.obj_gid_);
+        }
+
         // PacketId::MODEL_ID
         if (cache_it->second.model_id_ != obj->model_id_)
         {

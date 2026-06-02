@@ -6,7 +6,7 @@
 #include "ScenarioEngine.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 5
-#define DAT_FILE_FORMAT_VERSION_MINOR 2
+#define DAT_FILE_FORMAT_VERSION_MINOR 3
 
 namespace scenarioengine
 {
@@ -50,7 +50,8 @@ namespace Dat
         ENVIRONMENT       = 29,
         BB_COLOR          = 30,
         LIGHT_STATE       = 31,
-        PACKET_ID_SIZE    = 32  // Keep this last
+        OBJ_GID           = 32,
+        PACKET_ID_SIZE    = 33  // Keep this last
     };
 
     struct PacketString
@@ -137,6 +138,7 @@ namespace Dat
     struct ObjState  // Could this be ObjectStateStruct with some additional fields?
     {
         int                     obj_id_            = -1;
+        id_t                    obj_gid_           = ID_UNDEFINED;
         bool                    active_            = false;
         double                  speed_             = std::nan("");
         Pose                    pose_              = {};
