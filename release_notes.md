@@ -1,5 +1,27 @@
 ## esmini release notes
 
+### 2026-06-02 Version 3.2.0
+
+New features and behaviors:
+
+- Implement going straight policy and RandomRouteAction
+  - from osc v1.2 policy is straight instead of random in junctions
+  - random is optional via new RandomRouteAction
+-  Add precision argument `--precision <nr of decimals>` to dat2csv
+- Implement first version of three.js based viewer ([PR #814](https://github.com/esmini/esmini/issues/814))
+- Add OSI global ID (gid) to per-object overlay info text (`--info_text 3` / key 'i' )
+
+Improvements and fixes:
+
+- Fix issue with instant activation of assigned controller ([issue #786](https://github.com/esmini/esmini/issues/786))
+- Clear unknown args between sessions ([PR #807](https://github.com/esmini/esmini/issues/807))
+- Guard against null Route::GetWaypoint() in route-relative motion ([PR #809](https://github.com/esmini/esmini/issues/809))
+- Add SE_ObjectCanChangeLanes() checking road for allowed lane changes ([PR #776](https://github.com/esmini/esmini/issues/776))
+- Adapt default orientation type to OpenSCENARIO XML version
+- Add key:value to parkingspace restrictions in OSI source reference
+- Add brief info on editor tips to [User guide - Scenario construction tips](https://esmini.github.io/scenario-construction-tips.html#_editing)
+
+
 ### 2026-05-13 Version 3.1.0
 
 New features:
