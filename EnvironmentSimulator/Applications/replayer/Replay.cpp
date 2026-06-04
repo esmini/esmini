@@ -750,10 +750,10 @@ int Replay::ParsePackets()
 
                     if (static_cast<size_t>(current_object_id_) >= lightstate_entities_.size())
                     {
-                        lightstate_entities_.resize(static_cast<size_t>(current_object_id_) + 1, 1);
+                        lightstate_entities_.resize(static_cast<size_t>(current_object_id_) + 1, 0);
                     }
 
-                    has_lightstates_ = true;
+                    lightstate_entities_[static_cast<size_t>(current_object_id_)] = 1;
                     break;
                 }
                 case static_cast<id_t>(Dat::PacketId::DT):

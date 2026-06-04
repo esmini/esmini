@@ -468,7 +468,7 @@ namespace scenarioengine
         }
         bool HasLightStates() const
         {
-            return has_lightstates_;
+            return lightstate_entities_.size() > 0;
         }
         bool EntityHasLightState(int id) const
         {
@@ -488,7 +488,6 @@ namespace scenarioengine
         std::string              create_datfile_;
         std::vector<id_t>        skipped_pids_;
         bool                     eos_received_        = false;  // end of scenario packet
-        bool                     has_lightstates_     = false;
         std::vector<uint8_t>     lightstate_entities_ = {};
 
         /* PacketHandler stuff */
