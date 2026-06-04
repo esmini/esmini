@@ -1,9 +1,16 @@
 ## esmini release notes
 
+### 2026-06-04 Version 3.2.1
+
+Improvements and fixes:
+- Fix a few LightStateAction issues
+  - light not always switched off
+  - reset states for any action restart
+- Add experimental light maneuver catalog and auto-light scenario
+
 ### 2026-06-02 Version 3.2.0
 
 New features and behaviors:
-
 - Implement going straight policy and RandomRouteAction
   - from osc v1.2 policy is straight instead of random in junctions
   - random is optional via new RandomRouteAction
@@ -12,7 +19,6 @@ New features and behaviors:
 - Add OSI global ID (gid) to per-object overlay info text (`--info_text 3` / key 'i' )
 
 Improvements and fixes:
-
 - Fix issue with instant activation of assigned controller ([issue #786](https://github.com/esmini/esmini/issues/786))
 - Clear unknown args between sessions ([PR #807](https://github.com/esmini/esmini/issues/807))
 - Guard against null Route::GetWaypoint() in route-relative motion ([PR #809](https://github.com/esmini/esmini/issues/809))
@@ -32,7 +38,6 @@ New features:
   - see [User guide - Vehicle light states](https://esmini.github.io/scenario-features.html#_vehicle_light_states) for more info
 
 Improvements and fixes:
-
 - Restructure [esmini User guide](https://esmini.github.io)
   - from single to multi-page layout
   - solving issue reading on mobile devices
@@ -48,7 +53,6 @@ Improvements and fixes:
 ### 2026-05-06 Version 3.0.4
 
 Improvements and fixes:
-
 - Fix 3D object not removed on entity deletion (bug introduced in v3.0.3)
 - Fix misc object 3D model not showing up in replayer
   - by removing deprecated model_ids, using model filename instead
@@ -60,7 +64,6 @@ Improvements and fixes:
 ### 2026-04-24 Version 3.0.3
 
 Improvements and fixes:
-
 - Improve road vertical tesselation based on road pitch change rate
   - slightly increase OSI points and polygons when needed
 - Lower roadmarks z offset (4cm -> 1cm)
@@ -75,7 +78,6 @@ Improvements and fixes:
 ### 2026-04-16 Version 3.0.2
 
 Improvements and fixes:
-
 - Fix wrong dz in relative positions with elevated roads
 - Fix viewer crash (in some environments) at end of scenario
   - by expanding viewer destruction
