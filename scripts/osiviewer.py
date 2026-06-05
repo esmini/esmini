@@ -193,8 +193,16 @@ class View:
         fontsizes = [self.font_size]*len(labels)
         for l in labels:
             colors.append(self.plot_colors[l])
-        self.check = mw.CheckButtons(self.cbax, labels, [True]*len(labels), label_props={'color': colors, 'fontsize': fontsizes})
+        visibility_states = [l != "RoadMarking" for l in labels]
+        self.check = mw.CheckButtons(self.cbax, labels, visibility_states, label_props={'color': colors, 'fontsize': fontsizes})
+
+        # Apply initial visibility so plots match the default checkbox states.
+        for label, is_visible in zip(labels, visibility_states):
+            for plot in self.static_plots_by_type[label]:
+                plot.set_visible(is_visible)
+                plot.set_picker(True if is_visible else None)
         self.check.on_clicked(self.toggle_visibility)
+
 
         # grid toggle button
         self.gbax = plt.axes([0.05, 0.05, 0.2, 0.075])
@@ -711,6 +719,11 @@ class View:
             patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(hdg)).translate(rm.base.position.x, rm.base.position.y) + self.ax.transData)
             self.osi_ids_by_stationary[patch] = rm.id.value
             self.osi_idx_by_stationary[patch] = i
+
+            if not "RoadMarking" in self.static_plots_by_type:
+                self.plot_colors["RoadMarking"] = '#222222'
+                self.static_plots_by_type["RoadMarking"] = []
+            self.static_plots_by_type["RoadMarking"].append(patch)
 
         # stationary objects
         if len(gt.stationary_object) > 0:
