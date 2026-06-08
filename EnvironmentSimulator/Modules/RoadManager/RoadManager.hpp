@@ -708,7 +708,8 @@ namespace roadmanager
             BROKEN_BROKEN = 7,
             BOTTS_DOTS    = 8,
             GRASS         = 9,
-            CURB          = 10
+            CURB          = 10,
+            EDGE          = 11,
         };
 
         enum RoadMarkWeight

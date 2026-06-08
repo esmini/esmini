@@ -2073,6 +2073,9 @@ int OSIReporter::UpdateOSILaneBoundary()
                                         case roadmanager::LaneRoadMark::RoadMarkType::BOTTS_DOTS:
                                             classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_BOTTS_DOTS;
                                             break;
+                                        case roadmanager::LaneRoadMark::RoadMarkType::EDGE:
+                                            classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_ROAD_EDGE;
+                                            break;
                                         default:
                                             classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
                                     }

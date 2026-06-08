@@ -385,6 +385,15 @@
                             <predecessor id="-6"/>
                         </link>
                         <width a="2.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="2" type="solid" weight="standard" color="standard" height="0.02" width="0.3"/>
+                        <roadMark sOffset="4" type="solid" weight="standard" color="standard" height="0.02" width="0.0"/>
+                        <roadMark sOffset="6" type="solid" weight="standard" color="standard" height="0.02"/>
+                        <roadMark sOffset="8" type="none" weight="standard" color="standard" height="0.02" width="0.3"/>
+                        <roadMark sOffset="10" type="none" weight="standard" color="standard" height="0.02" width="0.0"/>
+                        <roadMark sOffset="12" type="none" weight="standard" color="standard" height="0.02"/>
+                        <roadMark sOffset="14" type="edge" weight="standard" color="standard" height="0.02" width="0.3"/>
+                        <roadMark sOffset="16" type="edge" weight="standard" color="standard" height="0.02" width="0.0"/>
+                        <roadMark sOffset="18" type="edge" weight="standard" color="standard" height="0.02"/>
                     </lane>
                 </right>
             </laneSection>

@@ -1589,6 +1589,8 @@ std::string LaneRoadMark::RoadMarkType2Str(RoadMarkType type)
             return "grass";
         case RoadMarkType::CURB:
             return "curb";
+        case RoadMarkType::EDGE:
+            return "edge";
         default:
             LOG_ERROR("Unexpected roadmark type id: {}", type);
     }
@@ -4320,6 +4322,10 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                 {
                                     roadMark_type = LaneRoadMark::CURB;
                                 }
+                                else if (!strcmp(roadMark.attribute("type").value(), "edge"))
+                                {
+                                    roadMark_type = LaneRoadMark::EDGE;
+                                }
                                 else
                                 {
                                     LOG_ERROR("unknown lane road mark type: {} (road id={})", roadMark.attribute("type").value(), r->GetId());
@@ -4397,7 +4403,14 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                 double roadMark_width;
                                 if (roadMark.attribute("width").empty())
                                 {
-                                    roadMark_width = (roadMark_weight == LaneRoadMark::BOLD) ? ROADMARK_WIDTH_BOLD : ROADMARK_WIDTH_STANDARD;
+                                    if (roadMark_type == LaneRoadMark::NONE_TYPE || roadMark_type == LaneRoadMark::EDGE)
+                                    {
+                                        roadMark_width = 0.0;  // no visible roadmark
+                                    }
+                                    else
+                                    {
+                                        roadMark_width = (roadMark_weight == LaneRoadMark::BOLD) ? ROADMARK_WIDTH_BOLD : ROADMARK_WIDTH_STANDARD;
+                                    }
                                 }
                                 else
                                 {
@@ -4541,11 +4554,11 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                 {
                                     // no type or explicit elements - create standin type according to the specified roadMark type
                                     int side = lane->GetId() < 1 ? -1 : 1;
-                                    if (roadMark_type == LaneRoadMark::NONE_TYPE)
+                                    if (roadMark_type == LaneRoadMark::NONE_TYPE || roadMark_type == LaneRoadMark::EDGE)
                                     {
                                         lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
                                         lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
-                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::RoadMarkTypeLineRule::NONE;
                                         LaneRoadMarkTypeLine*                      lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width, roadMark_color);
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
@@ -4554,7 +4567,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                     {
                                         lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
                                         lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
-                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::RoadMarkTypeLineRule::NONE;
                                         LaneRoadMarkTypeLine*                      lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width, roadMark_color);
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
@@ -4563,7 +4576,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                     {
                                         lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
                                         lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
-                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::RoadMarkTypeLineRule::NONE;
                                         LaneRoadMarkTypeLine*                      lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(0, 0, -roadMark_width * side, 0, rule, roadMark_width, roadMark_color);
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
@@ -4575,7 +4588,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                     {
                                         lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
                                         lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
-                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::RoadMarkTypeLineRule::NONE;
                                         LaneRoadMarkTypeLine*                      lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, roadMark_width, roadMark_color);
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
@@ -4584,7 +4597,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                     {
                                         lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
                                         lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
-                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::RoadMarkTypeLineRule::NONE;
                                         LaneRoadMarkTypeLine*                      lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(4, 8, -roadMark_width * side, 0, rule, roadMark_width, roadMark_color);
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
@@ -4596,7 +4609,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                     {
                                         lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
                                         lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
-                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::RoadMarkTypeLineRule::NONE;
                                         LaneRoadMarkTypeLine*                      lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(4, 8, -roadMark_width * side, 0, rule, roadMark_width, roadMark_color);
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});
@@ -4608,7 +4621,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                     {
                                         lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
                                         lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
-                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::RoadMarkTypeLineRule::NONE;
                                         LaneRoadMarkTypeLine*                      lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(0, 0, -roadMark_width * side, 0, rule, roadMark_width, roadMark_color);
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>{lane_roadMarkTypeLine});

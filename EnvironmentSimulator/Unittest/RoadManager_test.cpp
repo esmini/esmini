@@ -3873,11 +3873,130 @@ TEST(ExplicitLineTest, TestRoadMark)
     roadmark = lane->GetLaneRoadMarkByIdx(0);
     EXPECT_EQ(roadmark, nullptr);
 
+    // Last lane has some entries for checking edge cases of type and width combinations
     lane = lane_section->GetLaneByIdx(12);
     EXPECT_EQ(lane->GetId(), -6);
-    EXPECT_EQ(lane->GetNumberOfRoadMarks(), 0);
+    EXPECT_EQ(lane->GetNumberOfRoadMarks(), 9);
+
+    // check combinations roadmark type solid and with=0.3, with=0.0 and missing width attribute
     roadmark = lane->GetLaneRoadMarkByIdx(0);
-    EXPECT_EQ(roadmark, nullptr);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::SOLID);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.3);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.3);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 60.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 62.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    roadmark = lane->GetLaneRoadMarkByIdx(1);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::SOLID);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.0);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.0);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 62.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 64.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    roadmark = lane->GetLaneRoadMarkByIdx(2);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::SOLID);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.15);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.15);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 64.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 66.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    // check combinations roadmark type none and with=0.3, with=0.0 and missing width attribute
+    roadmark = lane->GetLaneRoadMarkByIdx(3);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.3);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.3);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 66.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 68.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    roadmark = lane->GetLaneRoadMarkByIdx(4);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.0);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.0);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 68.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 70.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    roadmark = lane->GetLaneRoadMarkByIdx(5);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.0);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.0);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 70.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 72.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    // check combinations roadmark type edge and with=0.3, with=0.0 and missing width attribute
+    roadmark = lane->GetLaneRoadMarkByIdx(6);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::EDGE);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.3);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.3);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 72.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 74.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    roadmark = lane->GetLaneRoadMarkByIdx(7);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::EDGE);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.0);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.0);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 74.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 76.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
+
+    roadmark = lane->GetLaneRoadMarkByIdx(8);
+    EXPECT_EQ(roadmark->GetType(), roadmanager::LaneRoadMark::RoadMarkType::EDGE);
+    EXPECT_DOUBLE_EQ(roadmark->GetWidth(), 0.0);
+    EXPECT_DOUBLE_EQ(roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetWidth(), 0.0);
+    osipoints = roadmark->GetLaneRoadMarkTypeByIdx(0)->GetLaneRoadMarkTypeLineByIdx(0)->GetOSIPoints();
+    EXPECT_EQ(osipoints->GetNumOfOSIPoints(), 2);
+    EXPECT_NEAR(osipoints->GetPoint(0).x, 76.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(0).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(0).endpoint, false);
+    EXPECT_NEAR(osipoints->GetPoint(1).x, 80.0000, 1e-3);
+    EXPECT_NEAR(osipoints->GetPoint(1).y, -12.0000, 1e-3);
+    EXPECT_EQ(osipoints->GetPoint(1).endpoint, true);
 
     odr->Clear();
 }
