@@ -2530,6 +2530,20 @@ namespace roadmanager
     // the dimension the outline geometry was authored at, i.e. the repeat start or the nominal value).
     // This is the single source of truth shared by the 3D viewer and the OSI reporter so both place
     // repeated objects, outlines and markings identically.
+    // A single outline corner resolved for one repeat instance. x/y are in the instance local frame
+    // (relative to the instance position and heading); z is world elevation; height is the (scaled)
+    // extrusion height of the corner. Computed once in RMObject::GetRepeatInstances and shared by the
+    // viewer and the OSI reporter.
+    struct ResolvedOutlineCorner
+    {
+        id_t   id        = ID_UNDEFINED;  // outline corner id (matches OutlineCorner::id_)
+        double x         = 0.0;           // instance local x (along instance heading), scaled by the instance size
+        double y         = 0.0;           // instance local y (to the left of instance heading), scaled by the instance size
+        double z         = 0.0;           // world z (incl. scaled base extrusion offset)
+        double height    = 0.0;           // scaled corner extrusion height
+        double marking_z = 0.0;           // world z for markings: object floor (no height scaling). x/y are shared with the outline edge.
+    };
+
     struct RepeatInstance
     {
         double s         = 0.0;  // road s of the instance reference
@@ -2547,6 +2561,27 @@ namespace roadmanager
         double scale_len = 1.0;  // instance length / authored outline length (1.0 when not scaled)
         double scale_wid = 1.0;  // instance width  / authored outline width
         double scale_hgt = 1.0;  // instance height / authored outline height
+
+        // Outline corner positions resolved once for this instance and reused by both the viewer and
+        // the OSI reporter. Grouped per outline (outline_corners[outline_index][corner_index]). The x/y
+        // are expressed in the instance local frame (relative to the instance position/heading), so the
+        // OSI reporter can use them as-is for base_polygon, while the viewer rotates/translates them by
+        // the instance pose to obtain world coordinates.
+        std::vector<std::vector<ResolvedOutlineCorner>> outline_corners;
+
+        // Look up a resolved corner by its outline corner id (used by markings that reference corners).
+        const ResolvedOutlineCorner *FindCorner(id_t id) const
+        {
+            for (const std::vector<ResolvedOutlineCorner> &group : outline_corners)
+            {
+                auto it = std::find_if(group.begin(), group.end(), [id](const ResolvedOutlineCorner &corner) { return corner.id == id; });
+                if (it != group.end())
+                {
+                    return &(*it);
+                }
+            }
+            return nullptr;
+        }
     };
 
     class RMObject : public RoadObject

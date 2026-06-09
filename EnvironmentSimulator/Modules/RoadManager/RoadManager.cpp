@@ -5523,6 +5523,96 @@ std::vector<RepeatInstance> RMObject::GetRepeatInstances(Road* road) const
     Repeat*    rep      = GetRepeat();
     const bool repeated = (rep != nullptr && rep->GetLength() > SMALL_NUMBER && rep->GetDistance() > SMALL_NUMBER && road != nullptr);
 
+    // Resolve every outline corner once for the given instance and cache the result on the instance.
+    // The corner position is computed here (the single source of truth) and reused by both the viewer
+    // and the OSI reporter. cornerRoad corners are re-evaluated on the road at the instance position so
+    // they follow the road curvature; cornerLocal corners keep a fixed local shape. The result is stored
+    // in the instance local frame so OSI can use it directly for base_polygon, while the viewer rotates
+    // and translates it by the instance pose to obtain world coordinates.
+    auto resolve_corners = [this, road](RepeatInstance& ri)
+    {
+        const double ch = cos(ri.h);
+        const double sh = sin(ri.h);
+
+        // Resolve a single corner to world coordinates. The lateral position (wx, wy) is scaled by the
+        // instance length/width. The world z is split into a base part (independent of the height scale)
+        // and a unit extrusion offset (z_unit) that is multiplied by scale_hgt, so the caller can form
+        // both the scaled outline z (z_base + z_unit * scale_hgt) and the marking floor z (z_base +
+        // z_unit), which only differ in height scaling.
+        auto resolve_one = [this,
+                            road,
+                            &ri,
+                            ch,
+                            sh](OutlineCorner* corner, double scale_len, double scale_wid, double& wx, double& wy, double& z_base, double& z_unit)
+        {
+            if (OutlineCornerRoad* cr = dynamic_cast<OutlineCornerRoad*>(corner))
+            {
+                // cornerRoad: re-evaluate on the road at the instance position (curvature aware)
+                const double corner_s = ri.s + (cr->s_ - cr->center_s_) * scale_len;
+                const double corner_t = ri.t + (cr->t_ - cr->center_t_) * scale_wid;
+                Position     cp;
+                cp.SetTrackPos(road != nullptr ? road->GetId() : cr->roadId_, corner_s, corner_t);
+                wx     = cp.GetX();
+                wy     = cp.GetY();
+                z_base = cp.GetZ();
+                z_unit = cr->dz_;
+            }
+            else
+            {
+                // cornerLocal: fixed local (u, v) shape rigidly placed in the instance frame
+                double u, v, dummy_z;
+                corner->GetPosLocal(u, v, dummy_z);
+                double zloc = 0.0;
+                if (OutlineCornerLocal* cl = dynamic_cast<OutlineCornerLocal*>(corner))
+                {
+                    zloc = cl->zLocal_;
+                }
+                const double su = u * scale_len;
+                const double sv = v * scale_wid;
+                wx              = ri.x + su * ch - sv * sh;
+                wy              = ri.y + su * sh + sv * ch;
+                z_base          = ri.z;
+                z_unit          = zloc;
+            }
+        };
+
+        for (unsigned int k = 0; k < GetNumberOfOutlines(); k++)
+        {
+            Outline* outline = GetOutline(k);
+            if (outline == nullptr)
+            {
+                continue;
+            }
+
+            std::vector<ResolvedOutlineCorner> group;
+            group.reserve(outline->corner_.size());
+
+            for (OutlineCorner* corner : outline->corner_)
+            {
+                // Lateral position follows the (scaled) outline edge - shared by the outline mesh, the
+                // OSI outline polygon and the markings. Only z differs: the outline mesh scales the base
+                // extrusion offset by scale_hgt, while markings stay at the object floor (scale_hgt = 1)
+                // so they extend/shrink with the edge but do not move up/down with the height scaling.
+                double wx, wy, z_base, z_unit;
+                resolve_one(corner, ri.scale_len, ri.scale_wid, wx, wy, z_base, z_unit);
+
+                // Store in the instance local frame: R(-h) * (world - instance position)
+                ResolvedOutlineCorner rc;
+                rc.id           = corner->GetId();
+                const double dx = wx - ri.x;
+                const double dy = wy - ri.y;
+                rc.x            = dx * ch + dy * sh;
+                rc.y            = -dx * sh + dy * ch;
+                rc.z            = z_base + z_unit * ri.scale_hgt;
+                rc.height       = corner->GetHeight() * ri.scale_hgt;
+                rc.marking_z    = z_base + z_unit;
+                group.push_back(rc);
+            }
+
+            ri.outline_corners.push_back(std::move(group));
+        }
+    };
+
     if (!repeated)
     {
         // Single instance placed at the object's own resolved position
@@ -5539,6 +5629,7 @@ std::vector<RepeatInstance> RMObject::GetRepeatInstances(Road* road) const
         ri.h        = GetH() + GetHOffset();
         ri.p        = GetPitch();
         ri.r        = GetRoll();
+        resolve_corners(ri);
         instances.push_back(ri);
         return instances;
     }
@@ -5593,6 +5684,7 @@ std::vector<RepeatInstance> RMObject::GetRepeatInstances(Road* road) const
         ri.h = pos.GetH() + GetHOffset();
         ri.p = pos.GetP();
         ri.r = pos.GetR();
+        resolve_corners(ri);
         instances.push_back(ri);
     }
 

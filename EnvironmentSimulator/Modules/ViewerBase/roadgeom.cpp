@@ -1831,45 +1831,41 @@ namespace roadgeom
     // - cornerLocal corners keep their fixed local shape, rigidly placed in the instance frame
     // The scale factors (along the object length/width and the height) are applied about the corner's
     // own reference so the outline shape is scaled by the repeat parameters, like the bounding box.
-    static std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)> MakeInstanceCornerPosFn(roadmanager::Road* road,
-                                                                                                               double             s,
-                                                                                                               double             t,
-                                                                                                               double             inst_x,
-                                                                                                               double             inst_y,
-                                                                                                               double             inst_z,
-                                                                                                               double             inst_h,
-                                                                                                               double             scale_u = 1.0,
-                                                                                                               double             scale_v = 1.0,
-                                                                                                               double             scale_h = 1.0)
+    // Build a corner placement function for one repeat instance. The corner positions were resolved once
+    // in RMObject::GetRepeatInstances and stored on the instance in its local frame (shared with the OSI
+    // reporter); here they are rotated and translated by the instance pose to obtain world coordinates.
+    // The corner is matched by its index within the outline (outline corner ids are not guaranteed to be
+    // unique - e.g. tree crown outlines omit ids, so they all default to 0 - hence an id based lookup
+    // would collapse the whole outline onto a single corner).
+    static std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>
+    MakeInstanceOutlineCornerPosFn(const roadmanager::RepeatInstance& ri, roadmanager::Outline* outline, unsigned int outline_index)
     {
-        const double ch = cos(inst_h);
-        const double sh = sin(inst_h);
-        return [=](roadmanager::OutlineCorner* corner, double& x, double& y, double& z)
+        const double ch = cos(ri.h);
+        const double sh = sin(ri.h);
+        return [ri, outline, outline_index, ch, sh](roadmanager::OutlineCorner* corner, double& x, double& y, double& z)
         {
-            if (roadmanager::OutlineCornerRoad* cr = dynamic_cast<roadmanager::OutlineCornerRoad*>(corner))
+            const roadmanager::ResolvedOutlineCorner* rc = nullptr;
+            if (outline != nullptr && outline_index < ri.outline_corners.size())
             {
-                const double          corner_s = s + (cr->s_ - cr->center_s_) * scale_u;
-                const double          corner_t = t + (cr->t_ - cr->center_t_) * scale_v;
-                roadmanager::Position cp;
-                cp.SetTrackPos(road->GetId(), corner_s, corner_t);
-                x = cp.GetX();
-                y = cp.GetY();
-                z = cp.GetZ() + cr->dz_ * scale_h;
+                const std::vector<roadmanager::ResolvedOutlineCorner>& group = ri.outline_corners[outline_index];
+                for (size_t k = 0; k < outline->corner_.size() && k < group.size(); k++)
+                {
+                    if (outline->corner_[k] == corner)
+                    {
+                        rc = &group[k];
+                        break;
+                    }
+                }
+            }
+            if (rc != nullptr)
+            {
+                x = ri.x + rc->x * ch - rc->y * sh;
+                y = ri.y + rc->x * sh + rc->y * ch;
+                z = rc->z;
             }
             else
             {
-                double u, v, dummy_z;
-                corner->GetPosLocal(u, v, dummy_z);
-                double corner_local_z = 0.0;
-                if (roadmanager::OutlineCornerLocal* cl = dynamic_cast<roadmanager::OutlineCornerLocal*>(corner))
-                {
-                    corner_local_z = cl->zLocal_;
-                }
-                const double su = u * scale_u;
-                const double sv = v * scale_v;
-                x               = inst_x + su * ch - sv * sh;
-                y               = inst_y + su * sh + sv * ch;
-                z               = inst_z + corner_local_z * scale_h;
+                corner->GetPos(x, y, z);
             }
         };
     }
@@ -1891,12 +1887,11 @@ namespace roadgeom
         int nCopies = 0;
         for (const roadmanager::RepeatInstance& ri : object->GetRepeatInstances(road))
         {
-            auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.x, ri.y, ri.z, ri.h, ri.scale_len, ri.scale_wid, ri.scale_hgt);
-
             for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
             {
-                roadmanager::Outline*    outline = object->GetOutline(j);
-                osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin, corner_pos_fn, ri.scale_hgt);
+                roadmanager::Outline*    outline       = object->GetOutline(j);
+                auto                     corner_pos_fn = MakeInstanceOutlineCornerPosFn(ri, outline, j);
+                osg::ref_ptr<osg::Group> olgroup       = CreateOutlineObject(outline, color, origin, corner_pos_fn, ri.scale_hgt);
                 if (olgroup != nullptr)
                 {
                     SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(nCopies) + "_" + std::to_string(j));
@@ -2179,17 +2174,27 @@ namespace roadgeom
 
         // Emit the actual outline based shape (not a simplified box) for a single instance. The same
         // geometry is added to both the wireframe and the solid groups so the bounding box views show
-        // the true object shape. Each corner is resolved via corner_pos_fn so cornerRoad corners keep
-        // their unique s/t coordinates (and follow the road), matching the loaded outline model.
-        auto emit_outline_shape =
-            [&](const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn, double height_scale = 1.0)
+        // the true object shape. When a repeat instance is given, each corner is resolved from the
+        // pre-computed instance corners (matched by index within the outline); otherwise the corner's
+        // own road position is used. cornerRoad corners keep their unique s/t (and follow the road).
+        auto emit_outline_shape = [&](const roadmanager::RepeatInstance* ri_ptr)
         {
+            const double height_scale = (ri_ptr != nullptr) ? ri_ptr->scale_hgt : 1.0;
             for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
             {
                 roadmanager::Outline* outline = object->GetOutline(j);
                 if (outline == nullptr)
                 {
                     continue;
+                }
+                std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)> corner_pos_fn;
+                if (ri_ptr != nullptr)
+                {
+                    corner_pos_fn = MakeInstanceOutlineCornerPosFn(*ri_ptr, outline, j);
+                }
+                else
+                {
+                    corner_pos_fn = [](roadmanager::OutlineCorner* corner, double& x, double& y, double& z) { corner->GetPos(x, y, z); };
                 }
                 osg::ref_ptr<osg::Group> fill = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale);
                 osg::ref_ptr<osg::Group> wire = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale);
@@ -2223,8 +2228,7 @@ namespace roadgeom
             if (has_outlines)
             {
                 // Actual outline shape (unique s/t per corner), placed via each corner's own road position.
-                auto corner_pos_fn = [](roadmanager::OutlineCorner* corner, double& x, double& y, double& z) { corner->GetPos(x, y, z); };
-                emit_outline_shape(corner_pos_fn);
+                emit_outline_shape(nullptr);
             }
             else
             {
@@ -2238,10 +2242,9 @@ namespace roadgeom
                 if (has_outlines)
                 {
                     // Per-instance corner placement, matching CreateRepeatedOutlineObjects:
-                    // cornerRoad corners are re-evaluated on the road (curvature aware) at this instance,
-                    // cornerLocal corners keep a fixed shape rigidly placed at the instance.
-                    auto corner_pos_fn = MakeInstanceCornerPosFn(road, ri.s, ri.t, ri.x, ri.y, ri.z, ri.h, ri.scale_len, ri.scale_wid, ri.scale_hgt);
-                    emit_outline_shape(corner_pos_fn, ri.scale_hgt);
+                    // the corner positions resolved once in RoadManager are reused (cornerRoad follows
+                    // the road curvature, cornerLocal keeps a fixed shape).
+                    emit_outline_shape(&ri);
                 }
                 else
                 {
@@ -2299,11 +2302,16 @@ namespace roadgeom
             roadmanager::RoadMarkColor color          = roadmanager::RoadMarkColor::WHITE;
         };
 
-        auto emit_instance =
-            [&](double inst_base_s, double inst_base_t, double inst_x, double inst_y, double inst_z, double inst_h, double inst_len, double inst_wid)
+        auto emit_instance = [&](const roadmanager::RepeatInstance& ri)
         {
-            const double ch = cos(inst_h);
-            const double sh = sin(inst_h);
+            const double inst_x   = ri.x;
+            const double inst_y   = ri.y;
+            const double inst_z   = ri.z;
+            const double inst_h   = ri.h;
+            const double inst_len = ri.inst_len;
+            const double inst_wid = ri.inst_wid;
+            const double ch       = cos(inst_h);
+            const double sh       = sin(inst_h);
 
             std::vector<SideEdge> side_edges;
 
@@ -2386,31 +2394,19 @@ namespace roadgeom
                 if (marking->UsesOutline())
                 {
                     std::vector<osg::Vec3d> polyline;  // world coordinates (origin subtracted later)
-                    roadmanager::Position   corner_pos;
 
                     for (id_t corner_id : marking->corner_references_)
                     {
-                        roadmanager::OutlineCorner* corner = object->GetOutlineCornerById(corner_id);
-                        if (corner == nullptr)
+                        const roadmanager::ResolvedOutlineCorner* rc = ri.FindCorner(corner_id);
+                        if (rc == nullptr)
                         {
                             LOG_WARN("Object {} marking references unknown outline corner id {}, skipping point", object->GetName(), corner_id);
                             continue;
                         }
-                        if (roadmanager::OutlineCornerRoad* corner_road = dynamic_cast<roadmanager::OutlineCornerRoad*>(corner))
-                        {
-                            // Evaluate the corner on the road at the instance position, preserving curvature.
-                            double corner_s = inst_base_s + (corner_road->s_ - corner_road->center_s_);
-                            double corner_t = inst_base_t + (corner_road->t_ - corner_road->center_t_);
-                            corner_pos.SetTrackPos(road->GetId(), corner_s, corner_t);
-                            polyline.emplace_back(corner_pos.GetX(), corner_pos.GetY(), corner_pos.GetZ() + corner_road->dz_ + marking->z_offset_);
-                        }
-                        else
-                        {
-                            // cornerLocal: place in the object local (u, v) frame, then transform to the instance
-                            double u, v, dummy_z;
-                            corner->GetPosLocal(u, v, dummy_z);
-                            polyline.emplace_back(inst_x + u * ch - v * sh, inst_y + u * sh + v * ch, z);
-                        }
+                        // Reuse the resolved corner (scaled edge, object floor) and transform to world.
+                        const double wx = inst_x + rc->x * ch - rc->y * sh;
+                        const double wy = inst_y + rc->x * sh + rc->y * ch;
+                        polyline.emplace_back(wx, wy, rc->marking_z + marking->z_offset_);
                     }
 
                     // Apply optional lateral shift (left +, right -) to the marking centerline.
@@ -2661,30 +2657,12 @@ namespace roadgeom
             }
         };
 
-        roadmanager::Repeat*  rep      = object->GetRepeat();
-        const bool            repeated = (rep != nullptr && rep->GetLength() > SMALL_NUMBER && rep->GetDistance() > SMALL_NUMBER);
-        roadmanager::Position pos;
-
-        if (!repeated)
+        // Replicate markings for each resolved instance (single object, or one per repeat copy). The
+        // instance placement and corner resolution are computed once in RoadManager so the viewer and
+        // OSI stay in sync.
+        for (const roadmanager::RepeatInstance& ri : object->GetRepeatInstances(road))
         {
-            // Single object instance placed at its own s/t
-            pos.SetTrackPosMode(road->GetId(),
-                                object->GetS(),
-                                object->GetT(),
-                                roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::Z_REL |
-                                    roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_REL);
-
-            double inst_h = pos.GetH() + object->GetHOffset();
-            double inst_z = pos.GetZ() + object->GetZOffset();
-            emit_instance(object->GetS(), object->GetT(), pos.GetX(), pos.GetY(), inst_z, inst_h, object->GetLength(), object->GetWidth());
-        }
-        else
-        {
-            // Repeated object: replicate markings for each instance along the repeat span
-            for (const roadmanager::RepeatInstance& ri : object->GetRepeatInstances(road))
-            {
-                emit_instance(ri.s, ri.t, ri.x, ri.y, ri.z, ri.h, ri.inst_len, ri.inst_wid);
-            }
+            emit_instance(ri);
         }
 
         return group;

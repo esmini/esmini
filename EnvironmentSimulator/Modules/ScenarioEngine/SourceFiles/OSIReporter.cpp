@@ -642,66 +642,35 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object, roa
 {
     // Build the OSI base polygon (object local 2D frame) into 'base' and return the average corner
     // height. The polygon is reported relative to the instance position/orientation (base.position /
-    // base.orientation). cornerRoad corners are re-evaluated on the road at this instance's position so
-    // the footprint follows the road curvature (and therefore differs between repeat instances on a
-    // curve), then transformed into the instance local frame; cornerLocal corners keep a fixed local
-    // shape. The repeat dimension factors scale the outline about the instance reference.
+    // base.orientation). The corner positions were resolved once in RMObject::GetRepeatInstances and are
+    // stored on the instance in the local frame, so here they are copied straight into base_polygon (and
+    // shared with the viewer). cornerRoad corners follow the road curvature (and therefore differ between
+    // repeat instances on a curve); cornerLocal corners keep a fixed local shape.
     auto build_outline_polygon = [&](osi3::BaseStationary *base, const roadmanager::RepeatInstance &ri) -> double
     {
         double       height_sum   = 0.0;
         unsigned int corner_count = 0;
-        const double cy           = cos(ri.h);
-        const double sy           = sin(ri.h);
 
-        for (unsigned int k = 0; k < object->GetNumberOfOutlines(); k++)
+        for (unsigned int k = 0; k < ri.outline_corners.size(); k++)
         {
-            roadmanager::Outline *outline = object->GetOutline(k);
-            if (outline == nullptr)
-            {
-                continue;
-            }
+            const std::vector<roadmanager::ResolvedOutlineCorner> &corners = ri.outline_corners[k];
+            const roadmanager::Outline                            *outline = object->GetOutline(k);
 
             const int start = base->base_polygon_size();
-            for (size_t l = 0; l < outline->corner_.size(); l++)
+            for (const roadmanager::ResolvedOutlineCorner &corner : corners)
             {
-                roadmanager::OutlineCorner *corner = outline->corner_[l];
-
-                double wx, wy;
-                if (roadmanager::OutlineCornerRoad *cr = dynamic_cast<roadmanager::OutlineCornerRoad *>(corner))
-                {
-                    // Evaluate the corner on the road at the instance position (curvature aware)
-                    const double          corner_s = ri.s + (cr->s_ - cr->center_s_) * ri.scale_len;
-                    const double          corner_t = ri.t + (cr->t_ - cr->center_t_) * ri.scale_wid;
-                    roadmanager::Position cp;
-                    cp.SetTrackPos(road->GetId(), corner_s, corner_t);
-                    wx = cp.GetX();
-                    wy = cp.GetY();
-                }
-                else
-                {
-                    // cornerLocal: fixed local shape rigidly placed in the instance frame
-                    double u, v, dummy_z;
-                    corner->GetPosLocal(u, v, dummy_z);
-                    const double su = u * ri.scale_len;
-                    const double sv = v * ri.scale_wid;
-                    wx              = ri.x + su * cy - sv * sy;
-                    wy              = ri.y + su * sy + sv * cy;
-                }
-
-                // Express the world corner in the instance local frame (relative to base position/orientation)
-                const double    dx  = wx - ri.x;
-                const double    dy  = wy - ri.y;
+                // The resolved corner is already in the instance local frame
                 osi3::Vector2d *vec = base->add_base_polygon();
-                vec->set_x(dx * cy + dy * sy);
-                vec->set_y(-dx * sy + dy * cy);
-                height_sum += corner->GetHeight() * ri.scale_hgt;
+                vec->set_x(corner.x);
+                vec->set_y(corner.y);
+                height_sum += corner.height;
                 corner_count++;
             }
 
-            if (!outline->closed_)
+            if (outline != nullptr && !outline->closed_)
             {
                 // Repeat intermediate vertices to close the polygon, avoiding single edge between last and first vertices
-                for (int l = static_cast<int>(outline->corner_.size()) - 2; l > 0; l--)
+                for (int l = static_cast<int>(corners.size()) - 2; l > 0; l--)
                 {
                     osi3::Vector2d *vec = base->add_base_polygon();
                     vec->set_x(base->base_polygon().at(start + l).x());
@@ -862,60 +831,40 @@ static osi3::RoadMarking_Classification_Color ODRColor2OSIMarkingColor(roadmanag
 int OSIReporter::UpdateOSIRoadMarkingsODR(roadmanager::RMObject *object, roadmanager::Road *road)
 {
     // Build and report one osi3::RoadMarking for the given marking, placed at a single object instance.
-    // cornerRoad outline corners are evaluated directly on the road at the instance's road position
-    // (offset by the corner's s/t relative to the object reference), so they follow road curvature.
-    // cornerLocal corners and bounding box side markings are placed in the object local frame and
-    // rigidly transformed to the instance.
-    auto emit_marking = [&](const roadmanager::ObjectMarking *marking,
-                            unsigned int                      marking_index,
-                            double                            inst_base_s,
-                            double                            inst_base_t,
-                            double                            inst_x,
-                            double                            inst_y,
-                            double                            inst_z,
-                            double                            inst_h,
-                            double                            inst_len,
-                            double                            inst_wid)
+    // Outline (cornerReference) markings reuse the outline corner positions resolved once in
+    // RMObject::GetRepeatInstances (so they follow the road curvature for cornerRoad and keep a fixed
+    // shape for cornerLocal, consistent with the outline geometry and the viewer). Bounding box side
+    // markings are placed in the object local frame and rigidly transformed to the instance.
+    auto emit_marking = [&](const roadmanager::ObjectMarking *marking, unsigned int marking_index, const roadmanager::RepeatInstance &ri)
     {
         std::vector<std::array<double, 3>> points;
 
-        const double cosh = cos(inst_h);
-        const double sinh = sin(inst_h);
-        const double z    = inst_z + marking->z_offset_;
+        const double inst_x = ri.x;
+        const double inst_y = ri.y;
+        const double cosh   = cos(ri.h);
+        const double sinh   = sin(ri.h);
+        const double z      = ri.z + marking->z_offset_;
 
         if (marking->UsesOutline())
         {
-            roadmanager::Position corner_pos;
-
-            // Outline based marking: resolve each referenced outline corner
+            // Outline based marking: reuse the resolved corner (stored in the instance local frame)
             for (size_t c = 0; c < marking->corner_references_.size(); c++)
             {
-                roadmanager::OutlineCorner *corner = object->GetOutlineCornerById(marking->corner_references_[c]);
+                const roadmanager::ResolvedOutlineCorner *corner = ri.FindCorner(marking->corner_references_[c]);
                 if (corner != nullptr)
                 {
-                    if (roadmanager::OutlineCornerRoad *corner_road = dynamic_cast<roadmanager::OutlineCornerRoad *>(corner))
-                    {
-                        // Evaluate the corner on the road at the instance position, preserving curvature
-                        double corner_s = inst_base_s + (corner_road->s_ - corner_road->center_s_);
-                        double corner_t = inst_base_t + (corner_road->t_ - corner_road->center_t_);
-                        corner_pos.SetTrackPos(road->GetId(), corner_s, corner_t);
-                        points.push_back({corner_pos.GetX(), corner_pos.GetY(), corner_pos.GetZ() + corner_road->dz_ + marking->z_offset_});
-                    }
-                    else
-                    {
-                        // cornerLocal: place in the object local frame, then transform to the instance
-                        double u, v, dummy_z;
-                        corner->GetPosLocal(u, v, dummy_z);
-                        points.push_back({inst_x + u * cosh - v * sinh, inst_y + u * sinh + v * cosh, z});
-                    }
+                    // Transform the instance local corner (scaled edge, object floor) to world
+                    const double wx = inst_x + corner->x * cosh - corner->y * sinh;
+                    const double wy = inst_y + corner->x * sinh + corner->y * cosh;
+                    points.push_back({wx, wy, corner->marking_z + marking->z_offset_});
                 }
             }
         }
         else if (marking->side_ != roadmanager::ObjectMarking::Side::NONE)
         {
             // Bounding box side based marking: build the two endpoints of the selected side
-            double half_l = inst_len / 2.0;
-            double half_w = inst_wid / 2.0;
+            double half_l = ri.inst_len / 2.0;
+            double half_w = ri.inst_wid / 2.0;
 
             // local endpoints (u along heading, v to the left)
             double u0, v0, u1, v1;
@@ -985,13 +934,14 @@ int OSIReporter::UpdateOSIRoadMarkingsODR(roadmanager::RMObject *object, roadman
     };
 
     // Replicate the markings for each resolved instance (single object, or one per repeat copy). The
-    // instance placement is computed once in RoadManager so the viewer and OSI stay in sync.
+    // instance placement and corner resolution are computed once in RoadManager so the viewer and OSI
+    // stay in sync.
     const std::vector<roadmanager::RepeatInstance> instances = object->GetRepeatInstances(road);
     for (const roadmanager::RepeatInstance &ri : instances)
     {
         for (unsigned int m = 0; m < object->GetNumberOfMarkings(); m++)
         {
-            emit_marking(object->GetMarking(m), m, ri.s, ri.t, ri.x, ri.y, ri.z, ri.h, ri.inst_len, ri.inst_wid);
+            emit_marking(object->GetMarking(m), m, ri);
         }
     }
 
