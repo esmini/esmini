@@ -2,7 +2,30 @@
 set -euo pipefail
 
 docs_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-output_path="$docs_dir/search-index.json"
+
+# Optional first argument: output folder for the generated index (defaults to docs_dir)
+case "${1:-}" in
+  -h|--help)
+    cat <<EOF
+Usage: $(basename "${BASH_SOURCE[0]}") [OUTPUT_DIR]
+
+Generate search-index.json from the AsciiDoc (.adoc) files in this folder.
+
+Arguments:
+  OUTPUT_DIR   Optional folder to write search-index.json to.
+               Created if it does not exist. Defaults to the script's folder.
+
+Options:
+  -h, --help   Show this help message and exit.
+EOF
+    exit 0
+    ;;
+esac
+
+output_dir="${1:-$docs_dir}"
+mkdir -p "$output_dir"
+output_dir="$(cd "$output_dir" && pwd)"
+output_path="$output_dir/search-index.json"
 
 json_escape() {
   local value="$1"

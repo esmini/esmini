@@ -837,6 +837,11 @@ int OSIReporter::UpdateOSIRoadMarkingsODR(roadmanager::RMObject *object, roadman
     // markings are placed in the object local frame and rigidly transformed to the instance.
     auto emit_marking = [&](const roadmanager::ObjectMarking *marking, unsigned int marking_index, const roadmanager::RepeatInstance &ri)
     {
+        if (marking == nullptr)
+        {
+            return;
+        }
+
         std::vector<std::array<double, 3>> points;
 
         const double inst_x = ri.x;

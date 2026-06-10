@@ -457,6 +457,156 @@ This is how esmini maps the semantic states from OpenSCENARIO to OSI:
 . logical_lane_assignment
 ====
 
+=== Road objects
+
+Road objects are stationary features of the road environment, e.g. trees, poles, barriers, parking spaces, crosswalks and buildings. They are specified, per road, with the https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/1.8.0/specification/13_objects/13_01_introduction.html[`<object>`] element in the OpenDRIVE road network description.
+
+esmini reads these objects to:
+
+- build a 3D representation for visualization (esmini and odrviewer), and
+- export them as over OSI (`stationary_object`, including their bounding box, outline and any markings).
+
+A minimal object only needs a position (`s`, `t`) on a road. Everything else - dimensions, shape and 3D model - is optional and resolved according to the rules below.
+
+==== Dimensions: length, width and height
+
+An object has a bounding box defined by `length` (along the road s-axis at the object), `width` (lateral) and `height` (vertical). esmini resolves the three dimensions from several possible sources, in the following order of precedence:
+
+. *Explicit attributes* - `length`, `width` and `height` given on the `<object>` element are always used as-is.
+. *radius* - see <<Circular objects (radius)>> below.
+. *3D model bounding box* - if a 3D model is found and a dimension was _not_ specified, esmini back-fills that dimension from the model's bounding box (and logs an informational warning).
+. *Default minimum* - if a dimension is still unspecified (no attribute, no radius, no model), esmini falls back to a minimum of *0.05 m* so the object still has a (tiny but valid) non-zero extent.
+
+[NOTE]
+====
+The 0.05 m default is a fallback to avoid degenerate (zero-size) geometry. For meaningful visualization and OSI output you should specify the relevant dimensions, or rely on a 3D model that provides them.
+====
+
+==== Circular objects (radius)
+
+Instead of `length` and `width`, a circular (cylindrical) object can be specified with a `radius` attribute (ASAM OpenDRIVE §11). esmini then:
+
+- sets both `length` and `width` to the diameter (`2 × radius`) so box-based logic still works, and
+- visualizes the object as a *cylinder* (rather than a box), with the given `height`.
+
+If `radius` is specified _together with_ `length` and/or `width`, the `radius` is ignored, the `length`/`width` attributes take precedence, and a warning is logged.
+
+==== 3D models and dimension scaling
+
+An object can reference a 3D model (via the `name` attribute, resolved to a `.osgb` file in the model search paths). How the model interacts with the dimensions:
+
+- If a dimension is *omitted*, it is taken from the model's bounding box - the model is used at its native size along that axis.
+- If a dimension is *specified*, the model is *scaled* along that axis so that it exactly matches the specified value, i.e. scale factor = `specified_dimension / model_bounding_box_dimension`.
+
+This means a single 3D model can be reused at different sizes: specifying only `width` stretches/shrinks the model in the lateral direction while leaving length and height at their native (model) size, and so on. Specifying all three dimensions scales the model to the exact requested bounding box.
+
+If no 3D model is found, esmini generates a stand-in primitive instead - a box (or a cylinder for circular objects) sized from the resolved dimensions.
+
+==== Outlines: detailed shapes
+
+A bounding box (or scaled 3D model) is often enough, but for more accurate geometry an object can define one or more `<outline>` elements. An outline is a polygon of corners that describes the actual footprint/shape, optionally extruded to a height. This is useful for non-rectangular footprints such as crosswalks, parking-space markings, irregular barriers or building outlines.
+
+Each corner is one of two types, which differ in how the corner position is anchored:
+
+[%autowidth, cols="1,3"]
+|===
+|*Corner type*|*Meaning*
+
+|`cornerRoad`
+|Position is given in *road coordinates* (`s`, `t`, `dz`, `height`). The corner is anchored to the road reference line, so the outline *follows the curvature* of the road. Ideal for shapes painted on or aligned to the road surface (crosswalks, parking bays, lane markings).
+
+|`cornerLocal`
+|Position is given in the *object's local frame* (`u`, `v`, `z`, `height`), relative to the object origin and heading. The shape is *rigid* - it keeps its exact form regardless of road curvature, and is simply translated and rotated to the object pose. Ideal for solid objects such as trees, signs or buildings.
+|===
+
+Corners are connected in the order given; a closed outline (`closed="true"`) connects the last corner back to the first. Each corner may carry its own `height` to form an extruded (3D) shape; `dz`/`z` raises the corner above the road surface.
+
+==== Repeated objects
+
+The `<repeat>` element instantiates an object many times along a stretch of road without listing each copy. Common uses: rows of trees, poles, guardrail segments or a continuous barrier. The repeat parameters (`s`, `length`, `distance`, `tStart`/`tEnd`, `widthStart`/`widthEnd`, `lengthStart`/`lengthEnd`, `heightStart`/`heightEnd`, `radiusStart`/`radiusEnd`, `zOffsetStart`/`zOffsetEnd`) are linearly interpolated from start to end along the repeat length, so instances can gradually change lateral offset, size and elevation.
+
+The `distance` attribute decides the repetition mode:
+
+- *`distance` > 0* - *discrete copies*: separate instances are placed every `distance` metres along `s`. Each copy is an independent object (3D model, box/cylinder, or outline) at its interpolated size and offset.
+- *`distance` = 0* - *continuous object*: esmini treats the repeat as a single continuous shape and generates an outline (a quad strip following the road reference line) spanning the repeat length - suitable for continuous barriers, walls or curbs.
+
+When the repeated object also has an `<outline>`, the corner type again determines the result of the repetition:
+
+- *cornerRoad outline* - each instance resolves its corners against the road reference line at that instance's `s`. The repeated shapes therefore *bend with the road* and stay aligned to it.
+- *cornerLocal outline* - each instance keeps the *rigid* local shape; only its placement (position + heading) changes along the road. The shape itself is not distorted by curvature.
+
+If a dimension grows along the repeat (e.g. an interpolated `width`), a cornerRoad outline edge is scaled accordingly so the shape continues to match the (scaled) footprint, while authored marking widths are preserved.
+
+[NOTE]
+====
+Even when a repeat is treated as a continuous outline, the original object (and any referenced 3D model) is retained, so a 3D model can still be used for visualization if available.
+====
+
+==== Other attributes
+
+- `zOffset` - raises (or lowers) the object relative to the road surface at its position.
+- `hdg`, `pitch`, `roll` - local orientation of the object, applied on top of the road orientation. `orientation` (`+`/`-`/`none`) selects validity direction.
+- `height` - extrusion height for box/cylinder/outline objects.
+- Objects can additionally carry *markings* (e.g. painted lines for crosswalks and parking spaces); see the OpenDRIVE marking definitions. Markings are kept at the object's floor level and follow the (possibly scaled) outline edges while preserving their authored line width.
+
+[#_road_objects_example]
+==== Example
+
+image::road_object_features.jpg[]
+
+Video clip: https://youtu.be/F3ByrfXuEVE
+
+The https://github.com/esmini/esmini/blob/dev/resources/xosc/parking_demo.xosc[parking_demo.xosc] scenario, and referred https://github.com/esmini/esmini/blob/dev/resources/xodr/parking_demo.xodr[parking_demo.xodr], includes multiple examples of road object features. For example:
+
+* Various parking space layouts along the curved road
+  ** Parallel, Perpendicular and Angled
+  ** space defined by outline with `cornerRoad` (s/t) vertices
+  ** markings referring to specific outline edges
+* Parking lot with identically shaped parking spaces
+  ** defined in terms of rectangular shape only
+  ** markings in terms of `side` attribute
+* Trees along the curved road
+  ** cylinder (`radius` > 0) for the trunk
+  ** stacked and grouped outlines for the top
+  ** using `cornerLocal` vertices for identical repeat instances
+
+==== Decision overview
+
+The following flowchart summarizes how esmini decides an object's shape and dimensions:
+
+[mermaid,format="svg"]
+....
+flowchart TD
+    A[OpenDRIVE object] --> B{radius specified?}
+    B -- "yes, no length/width" --> C["Cylinder, length = width = 2 x radius"]
+    B -- "yes, with length/width" --> D["Ignore radius, warn, use length/width"]
+    B -- no --> E{outline defined?}
+    E -- yes --> F{corner type}
+    F -- cornerRoad --> G[Outline follows road curvature]
+    F -- cornerLocal --> H[Rigid local-frame outline]
+    E -- no --> I{3D model found?}
+    I -- yes --> J[Use model bounding box]
+    I -- no --> K[Box / cylinder primitive]
+
+    C --> L{dimension specified?}
+    D --> L
+    J --> L
+    K --> L
+    G --> M{repeat defined?}
+    H --> M
+
+    L -- yes --> N[Scale axis to specified value]
+    L -- "no, model present" --> O[Use model native size for that axis]
+    L -- "no, no model" --> P[Fallback minimum 0.05 m]
+
+    N --> M
+    O --> M
+    P --> M
+    M -- "distance greater than 0" --> Q["Discrete copies along s, params interpolated start to end"]
+    M -- "distance = 0" --> R[Continuous outline along road]
+    M -- "no repeat" --> S[Single instance]
+....
+
 === Expressions
 From OpenSCENARIO v1.1 https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_expressions[expressions] including mathematical operations are supported in assignment of value to OpenSCENARIO https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameters[parameters] and XML element attributes. Examples:
 

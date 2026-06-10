@@ -12,7 +12,7 @@ The class diagram below shows the main https://github.com/esmini/esmini/tree/mas
 
 It illustrates how the main esmini application uses PlayerBase to orchestrate the simulation. PlayerBase in turn utilizes ScenarioEngine for the simulation logic and ViewerBase for visualization. Both ScenarioEngine and ViewerBase depend on RoadManager for road network data. Controllers are managed by the ScenarioEngine, and CommonMini provides utility functions used by several other modules.
 
-[mermaid]
+[mermaid, width=60%]
 ....
 graph TD
     subgraph Application
@@ -144,7 +144,7 @@ First we look at high level interaction between app and esmini lib.
 
 A simplistic scenario player application (C/C++/C#/Python) utilizing esmini lib:
 
-[mermaid]
+[mermaid, width=50%]
 ....
 sequenceDiagram
     participant app as Application
@@ -157,7 +157,7 @@ sequenceDiagram
 
 A typical test tool involving a system under test (Ego):
 
-[mermaid]
+[mermaid, width=60%]
 ....
 sequenceDiagram
     participant app as Application
