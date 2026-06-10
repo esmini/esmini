@@ -819,11 +819,11 @@ namespace viewer
         osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
         double                                time_;
         double                                frictionScaleFactor_;
-        bool                                  defaultClearColorUsed_;
         std::vector<float>                    fogColor_;
         osg::StateSet*                        axis_indicator_stateset_;
         int                                   axis_indicator_mode_ = 0;
         bool                                  showLights_;
+        bool                                  clearColorSet_;
 
         struct
         {

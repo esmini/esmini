@@ -1806,8 +1806,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
                bool                    overlay)
 {
     (void)scenarioFilename;
-    odrManager_             = odrManager;
-    bool        clear_color = false;
+    odrManager_ = odrManager;
     std::string arg_str;
 
     // suppress OSG info messages
@@ -1831,10 +1830,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     imgCallback_                  = {nullptr, nullptr};
     winDim_                       = {-1, -1, -1, -1};
     time_                         = 0.0;
-    frictionScaleFactor_          = 1.0;  // default friction scale factor
-    defaultClearColorUsed_        = false;
+    frictionScaleFactor_          = 1.0;                    // default friction scale factor
     fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
     showLights_                   = false;
+    clearColorSet_                = false;
 #ifdef _USE_IMPLOT
     imguiOverlay_ = nullptr;
 #endif  // _USE_IMPLOT
@@ -1920,16 +1919,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     camera->setGraphicsContext(gc);
     camera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    if (!clear_color)
-    {
-        // Default background color
-        // camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f)); currrnt code, check if it is needed
-        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
-    }
-    else
-    {
-        camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
-    }
     camera->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
     camera->setProjectionMatrixAsPerspective(30.0f, static_cast<double>(traits->width) / static_cast<double>(traits->height), 0.5, 1E5);
     camera->setViewport(new osg::Viewport(0, 0, traits->width, traits->height));
@@ -2105,8 +2094,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         osgViewer_->setThreadingModel(osgViewer::ViewerBase::ThreadingModel::CullThreadPerCameraDrawThreadPerContext);
 
     std::string colorStr;
-    bool        clearColorSet = false;
-    if (arguments.read("--clear-color", colorStr))
+    clearColorSet_ = arguments.read("--clear-color", colorStr);
+    if (clearColorSet_)
     {
         float r, g, b;
         float a   = 1.0f;
@@ -2114,19 +2103,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         if (cnt == 3 || cnt == 4)
         {
             camera->setClearColor(osg::Vec4(r, g, b, a));
-            clearColorSet = true;
         }
         else
         {
             LOG_WARN("Invalid clear color \"{}\" - setting some default", colorStr);
+            clearColorSet_ = false;
         }
-    }
-
-    if (!clearColorSet)
-    {
-        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
-        clearColorSet          = true;
-        defaultClearColorUsed_ = true;
     }
 
     // Setup the camera models
@@ -2302,25 +2284,38 @@ void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double f
     double specLevel = 0.4 * scaled_sunIntensity;
     light->setSpecular(osg::Vec4(specLevel, specLevel, specLevel, 1.0));
 
-    // Blend background color (blue) with fog color (gray) based on fogVisualRangeFactor (scaled up to have higher influence of fog with low visual
-    // range) This creates a smooth transition from blue sky to gray fog as the visual range decreases. blue component degrading slower than red
-    // and green with sun intensity to keep the sky from looking too gray under low sun intensity.
+    if (!clearColorSet_)
+    {
+        // Blend background color (blue) with fog color (gray) based on fogVisualRangeFactor (scaled up to have higher influence of fog with low
+        // visual range) This creates a smooth transition from blue sky to gray fog as the visual range decreases. blue component degrading slower
+        // than red and green with sun intensity to keep the sky from looking too gray under low sun intensity.
 
-    float clamped_visual_range = CLAMP(0.0, 1.0, fogVisualRangeFactor * 100.0);
-    float blended_background_r = clamped_visual_range * fogColor_[0] + (1 - clamped_visual_range) * sunIntensityFactor * color_background[0];
-    float blended_background_g = clamped_visual_range * fogColor_[1] + (1 - clamped_visual_range) * sunIntensityFactor * color_background[1];
-    float blended_background_b =
-        clamped_visual_range * fogColor_[2] + (1 - clamped_visual_range) * pow(sunIntensityFactor, 0.75) * color_background[2];
+        float clamped_visual_range = CLAMP(0.0, 1.0, fogVisualRangeFactor * 100.0);
+        float blended_background_r = clamped_visual_range * fogColor_[0] + (1 - clamped_visual_range) * sunIntensityFactor * color_background[0];
+        float blended_background_g = clamped_visual_range * fogColor_[1] + (1 - clamped_visual_range) * sunIntensityFactor * color_background[1];
+        float blended_background_b =
+            clamped_visual_range * fogColor_[2] + (1 - clamped_visual_range) * pow(sunIntensityFactor, 0.75) * color_background[2];
 
-    // Blend the background color with fog color based on cloudinessFactor (very cloudy sky will be overwhelmingly gray), else blue sky with fog
-    // influence
-    float r = (1 - cloudinessFactor) * blended_background_r + cloudinessFactor * fogColor_[0];
-    float g = (1 - cloudinessFactor) * blended_background_g + cloudinessFactor * fogColor_[1];
-    float b = (1 - cloudinessFactor) * blended_background_b + cloudinessFactor * fogColor_[2];
+        // Blend the background color with fog color based on cloudinessFactor (very cloudy sky will be overwhelmingly gray), else blue sky with fog
+        // influence
+        float r = (1 - cloudinessFactor) * blended_background_r + cloudinessFactor * fogColor_[0];
+        float g = (1 - cloudinessFactor) * blended_background_g + cloudinessFactor * fogColor_[1];
+        float b = (1 - cloudinessFactor) * blended_background_b + cloudinessFactor * fogColor_[2];
 
-    LOG_DEBUG("sunIntensity {:.2f} scaledSunIntensity {:.2f} clear color ({:.2f}, {:.2f}, {:.2f})", sunIntensityFactor, scaled_sunIntensity, r, g, b);
+        osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
 
-    osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
+        LOG_DEBUG("sunIntensity {:.2f} scaledSunIntensity {:.2f} clear color ({:.2f}, {:.2f}, {:.2f})",
+                  sunIntensityFactor,
+                  scaled_sunIntensity,
+                  r,
+                  g,
+                  b);
+    }
+    else
+    {
+        // sky background color overrided by option, only sun values updated
+        LOG_DEBUG("sunIntensity {:.2f} scaledSunIntensity {:.2f}", sunIntensityFactor, scaled_sunIntensity);
+    }
 }
 
 void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment)
@@ -2329,10 +2324,8 @@ void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environmen
     {
         CreateFog(environment.GetFog().visibility_range, environment.GetSunIntensityFactor(), environment.GetFractionalCloudStateFactor());
     }
-    if (defaultClearColorUsed_)  // no --clear-color option
-    {
-        SetSkyColor(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
-    }
+
+    SetSkyColor(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
 
     if (environment.IsRoadConditionSet())
     {
