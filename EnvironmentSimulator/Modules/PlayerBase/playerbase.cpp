@@ -526,7 +526,7 @@ void ScenarioPlayer::ViewerFrame()
             if (odr_manager->GetNumOfRoads() > 0 && mov->road_sensor_)
             {
                 mov->ShowRouteSensor(obj->pos_.GetRoute() ? true : false);
-                viewer_->UpdateRoadSensors(mov->road_sensor_, mov->route_sensor_, mov->lane_sensor_, &obj->pos_);
+                viewer_->UpdateRoadSensors(mov->road_sensor_, mov->route_sensor_, mov->lane_sensor_, &obj->pos_, obj->GetCurrentLaneLayer());
             }
         }
 

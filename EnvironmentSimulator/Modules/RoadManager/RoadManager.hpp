@@ -493,10 +493,20 @@ namespace roadmanager
         PREDECESSOR = -1
     } LinkType;
 
+    typedef enum
+    {
+        LAYER_PERMANENT,
+        LAYER_TEMPORARY
+    } Layer;
+
     class LaneLink
     {
     public:
-        LaneLink(LinkType type, int id) : type_(type), id_(id)
+        LaneLink(LinkType type, int id) : type_(type), id_(id), layer_(LAYER_PERMANENT)
+        {
+        }
+
+        LaneLink(LinkType type, int id, Layer layer) : type_(type), id_(id), layer_(layer)
         {
         }
 
@@ -508,11 +518,16 @@ namespace roadmanager
         {
             return id_;
         }
+        Layer GetLayer() const
+        {
+            return layer_;
+        }
         void Print() const;
 
     private:
         LinkType type_;
         int      id_;
+        Layer    layer_;
     };
 
     class LaneWidth
@@ -819,10 +834,10 @@ namespace roadmanager
     class LaneOffset
     {
     public:
-        LaneOffset() : s_(0.0), length_(0.0)
+        LaneOffset() : s_(0.0), length_(0.0), layer_(LAYER_PERMANENT)
         {
         }
-        LaneOffset(double s, double a, double b, double c, double d) : s_(s), length_(0.0)
+        LaneOffset(double s, double a, double b, double c, double d, Layer layer = LAYER_PERMANENT) : s_(s), length_(0.0), layer_(layer)
         {
             polynomial_.Set(a, b, c, d);
         }
@@ -851,6 +866,10 @@ namespace roadmanager
         {
             return length_;
         }
+        Layer GetLayer() const
+        {
+            return layer_;
+        }
         double GetLaneOffset(double s) const;
         double GetLaneOffsetPrim(double s) const;
         void   Print() const;
@@ -859,6 +878,7 @@ namespace roadmanager
         Polynomial polynomial_;
         double     s_;
         double     length_;
+        Layer      layer_;
     };
 
     class Lane
@@ -1006,6 +1026,8 @@ namespace roadmanager
         }
 
         LaneLink               *GetLink(LinkType type) const;
+        LaneLink               *GetLink(LinkType type, Layer preferred_layer) const;
+        LaneLink               *GetLinkExact(LinkType type, Layer layer) const;
         LaneWidth              *GetWidthByIndex(idx_t index) const;
         LaneWidth              *GetWidthByS(double s) const;
         LaneRoadMark           *GetLaneRoadMarkByIdx(idx_t idx) const;
@@ -1074,7 +1096,11 @@ namespace roadmanager
     class LaneSection
     {
     public:
-        LaneSection(double s) : s_(s), length_(0)
+        LaneSection(double s) : s_(s), length_(0), layer_(LAYER_PERMANENT)
+        {
+        }
+
+        LaneSection(double s, Layer layer) : s_(s), length_(0), layer_(layer)
         {
         }
         ~LaneSection()
@@ -1148,15 +1174,21 @@ namespace roadmanager
         {
             length_ = length;
         }
-        int        GetConnectingLaneId(int incoming_lane_id, LinkType link_type) const;
+        int        GetConnectingLaneId(int incoming_lane_id, LinkType link_type, Layer preferred_layer = LAYER_PERMANENT) const;
         double     GetWidthBetweenLanes(int lane_id1, int lane_id2, double s) const;
         double     GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s) const;
         OSIPoints &GetRefLineOSIPoints();
         void       Print() const;
 
+        Layer GetLayer() const
+        {
+            return layer_;
+        }
+
     private:
         double              s_;
         double              length_;
+        Layer               layer_;
         std::vector<Lane *> lane_;
         OSIPoints           osi_points_ref_line_;
     };
@@ -2975,6 +3007,26 @@ namespace roadmanager
         }
 
         /**
+        Retrieve the lanesection at specified s-value with layer preference
+        @param s distance along the road segment
+        @param preferred_layer preferred layer (temporary or permanent)
+        @param start_at starting index for search optimization
+        */
+        LaneSection *GetLaneSectionByS(double s, Layer preferred_layer, idx_t start_at = 0) const
+        {
+            return GetLaneSectionByIdx(GetLaneSectionIdxByS(s, preferred_layer, start_at));
+        }
+
+        /**
+        Retrieve the lanesection index at specified s-value with layer preference
+        @param s distance along the road segment
+        @param preferred_layer preferred layer (temporary or permanent)
+        @param start_at starting index for search optimization
+        @return index of the lane section on success, IDX_UNDEFINED on failure
+        */
+        idx_t GetLaneSectionIdxByS(double s, Layer preferred_layer, idx_t start_at = 0) const;
+
+        /**
         Get lateral position of lane center, from road reference lane (lane id=0)
         Example: If lane id 1 is 5 m wide and lane id 2 is 4 m wide, then
         lane 1 center offset is 5/2 = 2.5 and lane 2 center offset is 5 + 4/2 = 7
@@ -2982,6 +3034,14 @@ namespace roadmanager
         @param lane_id lane specifier, starting from center -1, -2, ... is on the right side, 1, 2... on the left
         */
         double GetCenterOffset(double s, int lane_id) const;
+
+        /**
+        Get lateral position of lane center with layer preference
+        @param s distance along the road segment
+        @param lane_id lane specifier, starting from center -1, -2, ... is on the right side, 1, 2... on the left
+        @param preferred_layer preferred layer (temporary or permanent)
+        */
+        double GetCenterOffset(double s, int lane_id, Layer preferred_layer) const;
 
         /**
         Retrieve lane information at given s value from given lane id
@@ -2995,11 +3055,12 @@ namespace roadmanager
                            idx_t     start_lane_section_idx,
                            int       start_lane_id,
                            LaneInfo &lane_info,
-                           int       laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
+                           int       laneTypeMask    = Lane::LaneType::LANE_TYPE_ANY_DRIVING,
+                           Layer     preferred_layer = LAYER_PERMANENT) const;
 
-        int             GetConnectingLaneId(RoadLink *road_link, int fromLaneId, id_t connectingRoadId) const;
-        double          GetLaneWidthByS(double s, int lane_id) const;
-        Lane::LaneType  GetLaneTypeByS(double s, int lane_id) const;
+        int            GetConnectingLaneId(RoadLink *road_link, int fromLaneId, id_t connectingRoadId, Layer preferred_layer = LAYER_PERMANENT) const;
+        double         GetLaneWidthByS(double s, int lane_id) const;
+        Lane::LaneType GetLaneTypeByS(double s, int lane_id) const;
         Lane::Material *GetLaneMaterialByS(double s, int lane_id) const;
         double          GetSpeedByS(double s) const;
         RoadType        GetRoadTypeByS(double s) const;
@@ -3085,7 +3146,9 @@ namespace roadmanager
             return tunnel_;
         }
         double       GetLaneOffset(double s) const;
+        double       GetLaneOffset(double s, Layer preferred_layer) const;
         double       GetLaneOffsetPrim(double s) const;
+        double       GetLaneOffsetPrim(double s, Layer preferred_layer) const;
         unsigned int GetNumberOfLanes(double s) const;
         unsigned int GetNumberOfDrivingLanes(double s) const;
         Lane        *GetDrivingLaneByIdx(double s, idx_t idx) const;
@@ -3147,6 +3210,13 @@ namespace roadmanager
                 @return Width (m)
         */
         double GetWidth(double s, int side, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY) const;  // side: -1=right, 1=left, 0=both
+
+        /**
+         * Calculate and set proper length for each lane section based on road geometry
+         * This method should be called after all lane sections have been added to ensure
+         * correct length calculations, especially for the last lane section
+         */
+        void CalculateLaneSectionLengths();
 
         int GetIntIdByStringId(std::string string_id);
 
@@ -3994,7 +4064,7 @@ namespace roadmanager
         @return Non zero return value indicates error of some kind
         */
         ReturnCode SetTrackPosMode(id_t track_id, double s, double t, int mode, bool UpdateXY = true);
-        void       ForceLaneId(int lane_id);
+        void       ForceLaneId(int lane_id, Layer preferred_layer = LAYER_PERMANENT);
 
         /**
         Specify position by lane coordinate (road_id, lane_id, s, lane offset) using current UPDATE mode
@@ -4005,7 +4075,12 @@ namespace roadmanager
         @param lane_section_idx Optional index of lane section to start search from
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetLanePos(id_t track_id, int lane_id, double s, double offset, idx_t lane_section_idx = IDX_UNDEFINED);
+        ReturnCode SetLanePos(id_t   track_id,
+                              int    lane_id,
+                              double s,
+                              double offset,
+                              idx_t  lane_section_idx = IDX_UNDEFINED,
+                              Layer  preferred_layer  = LAYER_PERMANENT);
 
         /**
         Specify position by lane coordinate (road_id, lane_id, s, lane offset) with specified mode
@@ -4018,7 +4093,13 @@ namespace roadmanager
         @param lane_section_idx Optional index of lane section to start search from
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, idx_t lane_section_idx = IDX_UNDEFINED);
+        ReturnCode SetLanePosMode(id_t   track_id,
+                                  int    lane_id,
+                                  double s,
+                                  double offset,
+                                  int    mode,
+                                  idx_t  lane_section_idx = IDX_UNDEFINED,
+                                  Layer  preferred_layer  = LAYER_PERMANENT);
 
         Position::ReturnCode SetLaneBoundaryPos(id_t track_id, int lane_id, double s, idx_t lane_section_idx = IDX_UNDEFINED);
         void                 SetRoadMarkPos(id_t   track_id,
@@ -4129,7 +4210,10 @@ namespace roadmanager
 
         int TeleportTo(Position *position);
 
-        ReturnCode MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
+        ReturnCode MoveToConnectingRoad(RoadLink         *road_link,
+                                        ContactPointType &contact_point_type,
+                                        double            junctionSelectorAngle = -1.0,
+                                        Layer             preferred_layer       = LAYER_PERMANENT);
 
         void SetRelativePosition(Position *rel_pos, PositionType type);
 
@@ -4339,7 +4423,8 @@ namespace roadmanager
                               double            junctionSelectorAngle,
                               bool              actualDistance,
                               MoveDirectionMode mode,
-                              bool              updateRoute);
+                              bool              updateRoute,
+                              Layer             preferred_layer = LAYER_PERMANENT);
 
         /**
         Move position along the road network, forward or backward, from the current position
@@ -4375,6 +4460,29 @@ namespace roadmanager
         @return lane ID
         */
         id_t GetLaneGlobalId() const;
+
+        /**
+        Retrieve the layer of the current lane section
+        @return The layer (LAYER_PERMANENT or LAYER_TEMPORARY) of the current lane section, LAYER_PERMANENT if undefined
+        */
+        Layer GetCurrentLaneLayer() const;
+
+        /**
+        Check if this position was created with an explicit lane layer attribute
+        */
+        bool HasExplicitLaneLayer() const
+        {
+            return has_explicit_lane_layer_;
+        }
+        Layer GetExplicitLaneLayer() const
+        {
+            return explicit_lane_layer_;
+        }
+        void SetExplicitLaneLayer(Layer layer)
+        {
+            has_explicit_lane_layer_ = true;
+            explicit_lane_layer_     = layer;
+        }
 
         /**
         Retrieve a road segment specified by road ID
@@ -4868,8 +4976,8 @@ namespace roadmanager
         }
 
         /**
-                Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)
-                @parameter mode True=keep lane False=Snap to closest (default)
+        Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)
+        @parameter mode True=keep lane False=Snap to closest (default)
         */
         void SetLockOnLane(bool mode)
         {
@@ -5043,6 +5151,10 @@ namespace roadmanager
 
         // Store roads overlapping position, updated by XYZ2TrackPos()
         std::vector<id_t> overlapping_roads;  // road ids overlapping position evaluated by XYZ2TrackPos()
+
+        // Explicit layer set via LanePosition layer attribute
+        bool  has_explicit_lane_layer_ = false;
+        Layer explicit_lane_layer_     = LAYER_PERMANENT;
     };
 
     // A route is a sequence of positions, at least one per road along the route

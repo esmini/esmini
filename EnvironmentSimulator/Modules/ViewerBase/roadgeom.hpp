@@ -88,7 +88,7 @@ namespace roadgeom
                  std::string             exe_path,
                  bool                    optimize);
 
-        int                         AddRoadMarks(roadmanager::Lane* lane, osg::Group* rm_group, const osg::Vec3d& origin);
+        int                         AddRoadMarks(roadmanager::Lane* lane, osg::Group* rm_group, const osg::Vec3d& origin, bool is_temporary = false);
         void                        AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
                                                     osg::ref_ptr<osg::DrawElementsUInt> indices,
                                                     osg::Group*                         rm_group,

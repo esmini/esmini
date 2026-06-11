@@ -122,7 +122,12 @@ namespace scenarioengine
         OSCPositionLane() : OSCPosition(PositionType::LANE)
         {
         }
-        OSCPositionLane(id_t roadId, int laneId, double s, double offset, OSCOrientation orientation);
+        OSCPositionLane(id_t               roadId,
+                        int                laneId,
+                        double             s,
+                        double             offset,
+                        OSCOrientation     orientation,
+                        roadmanager::Layer layer = roadmanager::LAYER_PERMANENT);
 
         void Print()
         {
