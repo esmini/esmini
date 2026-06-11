@@ -70,7 +70,7 @@ macro(set_project_external_paths)
     set(EXTERNALS_SUMO_PATH
         ${EXTERNALS_PATH}/sumo)
     set(EXTERNALS_IMPLOT_PATH
-        ${EXTERNALS_PATH}/implot)
+        ${EXTERNALS_PATH}/implot/${IMPLOT_RELEASE_TAG})
     set(EXTERNALS_YAML_PATH
         ${EXTERNALS_PATH}/yaml)
     set(EXTERNALS_FMT_PATH

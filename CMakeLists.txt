@@ -109,10 +109,18 @@ set(FMT_INSTALL
     CACHE BOOL
           "If FMT should be installed")
 
+# ############################### Setting external dependency lib versions ############################################################
+# Available versions can be found in support/cmake/common/version_mapping.cmake
+
 set(OSI_VERSION
     "3.8.0"
     CACHE STRING
           "osi version")
+
+set(IMPLOT_VERSION
+    "0.16"
+    CACHE STRING
+          "implot version")
 
 # ############################### Setting project rules ############################################################
 
@@ -143,13 +151,13 @@ endif()
 
 # ############################### Loading common packages ############################################################
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/osi_version_mapping.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/version_mapping.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/flags.cmake)
 
-set_osi_release_tag_from_version()
+set_tags_from_version()
 set_project_internal_paths()
 set_project_external_paths()
 set_project_os_specific_paths()

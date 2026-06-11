@@ -18,8 +18,8 @@ string(STRIP "${VERSION}" VERSION)
 set(OSI_VERSION "3.8.0")
 set(OSMP_VERSION "1.4.0")
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/common/osi_version_mapping.cmake)
-set_osi_release_tag_from_version()
+include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/common/version_mapping.cmake)
+set_tags_from_version()
 
 set(STATIC_LINKING TRUE)
 
@@ -132,7 +132,7 @@ if(STATIC_LINKING)
     set(EXTERNALS_OSG_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib)
     set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5)
     set(EXTERNALS_SUMO_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib)
-    set(EXTERNALS_IMPLOT_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${EXT_INCL_DIR}/lib)
+    set(EXTERNALS_IMPLOT_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${IMPLOT_RELEASE_TAG}/${EXT_INCL_DIR}/lib)
 
     set(EXTERNALS_OSI_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${OSI_RELEASE_TAG}/${EXT_INCL_DIR}/include)
     set(EXTERNALS_OSI_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${OSI_RELEASE_TAG}/${EXT_INCL_DIR}/lib)
