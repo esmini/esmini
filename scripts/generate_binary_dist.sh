@@ -48,11 +48,14 @@ resources/xosc/bicycle_fall_over.xosc \
 resources/xosc/tunnels.xosc \
 resources/xosc/follow_reference.xosc \
 resources/xosc/traffic_lights.xosc \
+resources/xosc/light_state.xosc \
+resources/xosc/parking_demo.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
 resources/xosc/Catalogs/Controllers/*.* \
 resources/xosc/Catalogs/Pedestrians/*.* \
+resources/xosc/Catalogs/MiscObjects/*.* \
 resources/xodr/soderleden.xodr \
 resources/xodr/e6mini.xodr \
 resources/xodr/e6mini-lht.xodr \
@@ -67,6 +70,8 @@ resources/xodr/crest-curve.xodr \
 resources/xodr/two_plus_one.xodr \
 resources/xodr/tunnels.xodr \
 resources/xodr/fabriksgatan_traffic_lights.xodr \
+resources/xodr/circle_300m.xodr \
+resources/xodr/parking_demo.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -117,6 +122,7 @@ resources/models/hedge.osgb \
 resources/models/fence_plank.osgb \
 resources/models/fence_pole.osgb \
 resources/models/fence_plank_and_pole.osgb \
+resources/models/checkers.png \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
 resources/traffic_signals/* \
@@ -157,10 +163,8 @@ run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \
 run/replayer/run_and_plot_ltap-od_pos*.* \
 run/replayer/run_and_replay_lane-change_clothoid*.* \
-scripts/dat.py \
 scripts/plot.py \
 scripts/plot_dat.py \
-scripts/dat2csv.py \
 scripts/osi2csv.py \
 scripts/run_distribution.py \
 scripts/udp_driver/*.* \

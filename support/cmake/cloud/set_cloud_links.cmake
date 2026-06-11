@@ -5,7 +5,7 @@ macro(set_cloud_links)
     set(MODELS_PACKAGE_URL
         https://drive.usercontent.google.com/download?id=1z_NdozxK7P7q2CiI6hIJdgOzSNEjF5Nb&export=download&authuser=0&confirm=t;
         https://www.dropbox.com/scl/fi/3jwz3ie6xkgpga33cbyju/models_with_lights.7z?rlkey=9obptnofidldoagn4154iyntl&st=zxoupatb&dl=1;
-        https://esmini.asuscomm.com/AICLOUD779364751/models/models.7z)
+        https://esmini.asuscomm.com/AICLOUD984833539/models/models_with_lights.7z)
 
     if(APPLE)
         set(OSG_PACKAGE_URL

@@ -16,11 +16,9 @@
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Car1">
-         <!-- <CatalogReference catalogName="VehicleCatalog" entryName="car_white" /> -->
          <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car2">
-         <!-- <CatalogReference catalogName="VehicleCatalog" entryName="car_white" /> -->
          <CatalogReference catalogName="VehicleCatalog" entryName="van_red" />
       </ScenarioObject>
       <ScenarioObject name="Cone1">

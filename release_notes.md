@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2026-06-11 Version 3.3.0
+
+New features:
+- Road object markings and full repeat support, useful for parking, see:
+  - [User guide - Road objects](https://esmini.github.io/scenario-features.html#_road_objects)
+  - [User guide - Object markings](https://esmini.github.io/scenario-features.html#_object_markings)
+  - [User guide - Road objects example](https://esmini.github.io/scenario-features.html#_road_objects_example)
+  - Video clip: https://youtu.be/F3ByrfXuEVE
+- Object repeat instances reported on OSI
+- Support cylinder objects
+
+Improvements and fixes:
+- Restore clear-color option
+- Set default width=0 for none and edge type lane markings
+- Some fixes for LightStateAction in replayer
+- Add texture coordinates to bounding boxes as well
+
 ### 2026-06-04 Version 3.2.1
 
 Improvements and fixes:

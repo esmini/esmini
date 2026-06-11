@@ -542,12 +542,71 @@ If a dimension grows along the repeat (e.g. an interpolated `width`), a cornerRo
 Even when a repeat is treated as a continuous outline, the original object (and any referenced 3D model) is retained, so a 3D model can still be used for visualization if available.
 ====
 
+==== Object markings
+
+An object can carry one or more painted *markings* - line strips drawn on (or just above) the road surface, e.g. parking-space lines, parking-lot dividers and crosswalk stripes. Markings are defined with the OpenDRIVE https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/13_objects/13_06_object_markings.html[`<marking>`] element inside a `<markings>` block on the `<object>`.
+
+Each marking is anchored to *one edge* of the object. There are two complementary ways to pick that edge, and an object can mix both:
+
+[%autowidth, cols="1,3"]
+|===
+|*Anchor*|*Meaning*
+
+|`side`
+|Paint along one side of the object's *bounding box*: `front`, `rear`, `left` or `right`. Works for any object that has a box footprint - including plain rectangular objects (no outline needed) and repeated boxes. Adjacent sides that share a box corner are stitched together so the lines meet cleanly at the corner.
+
+|`cornerReference`
+|Paint along an edge of an *outline*, given by two or more `<cornerReference>` corner ids. The marking follows exactly the referenced outline corners (cornerRoad corners therefore follow the road curvature). Use this for non-rectangular footprints such as crosswalks, angled parking bays or irregular shapes. Listing more than two corners draws a connected chain along all of them.
+|===
+
+[NOTE]
+====
+A marking is ignored (with a warning) if it has neither a valid `side` nor at least two `cornerReference` points.
+====
+
+The visible pattern and placement along the edge are controlled by these attributes:
+
+[%autowidth, cols="1,3"]
+|===
+|*Attribute*|*Meaning*
+
+|`width`
+|Line width in metres (default `0.15`). The width is honoured as authored - it is *not* scaled with the object.
+
+|`color`
+|Marking colour (e.g. `white`, `yellow`). Defaults to white.
+
+|`zOffset`
+|Thickness/height of the painted line above the road surface, to avoid z-fighting (e.g. `0.005`).
+
+|`lineLength` / `spaceLength`
+|Dashed-line pattern: `lineLength` is the length of each painted dash and `spaceLength` the gap between dashes. Set `spaceLength="0"` for a solid, continuous line.
+
+|`startOffset` / `stopOffset`
+|Trim the marking inwards from the two ends of the edge: `startOffset` shortens it from the start, `stopOffset` from the end (both in metres). Handy to keep stripes clear of a corner or to inset a crosswalk band.
+|===
+
+===== Lateral offset (esmini extension)
+
+By default a marking is centred on its edge - i.e. the line is centered on the bounding-box side or outline edge, with half its width on either side. esmini adds a custom OpenDRIVE `userData` attribute, *`lateralOffset`*, that shifts the whole marking sideways from that centre alignment:
+
+[source,xml]
+----
+<marking width="0.1" color="white" zOffset="0.005" side="right"
+         lineLength="5.5" spaceLength="0.0" startOffset="0.0" stopOffset="0.0">
+    <userData code="lateralOffset" value="-0.05"/>
+</marking>
+----
+
+The value is a signed distance in metres, applied perpendicular to the edge direction: *positive* shifts to the *left* of the edge direction, *negative* to the *right*. In practice this lets you move a line to the *inside* or *outside* of the object boundary instead of overlapping it - for example so that two adjacent parking spaces share a single line on their common border, or so the painted line sits fully inside the bay.
+
+Markings are kept at the object's floor level (they are not raised with the object height) and, for repeated/scaled objects, follow the possibly-scaled outline edge laterally while preserving their authored line width.
+
 ==== Other attributes
 
 - `zOffset` - raises (or lowers) the object relative to the road surface at its position.
 - `hdg`, `pitch`, `roll` - local orientation of the object, applied on top of the road orientation. `orientation` (`+`/`-`/`none`) selects validity direction.
 - `height` - extrusion height for box/cylinder/outline objects.
-- Objects can additionally carry *markings* (e.g. painted lines for crosswalks and parking spaces); see the OpenDRIVE marking definitions. Markings are kept at the object's floor level and follow the (possibly scaled) outline edges while preserving their authored line width.
 
 [#_road_objects_example]
 ==== Example
