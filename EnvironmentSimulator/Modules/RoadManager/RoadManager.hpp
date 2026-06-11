@@ -2834,6 +2834,22 @@ namespace roadmanager
         {
             model3d_full_path_ = path;
         }
+        std::string GetTextureFilename() const
+        {
+            return texture_filename_;
+        }
+        void SetTextureFilename(const std::string &path)
+        {
+            texture_filename_ = path;
+        }
+        double GetTextureScale() const
+        {
+            return texture_scale_;
+        }
+        void SetTextureScale(double scale)
+        {
+            texture_scale_ = scale;
+        }
 
     private:
         std::string                name_;
@@ -2859,6 +2875,8 @@ namespace roadmanager
         double                     color_[4]              = {0.0, 0.0, 0.0, 0.0};
         TunnelComponentType        tunnel_component_type_ = TunnelComponentType::NO_TUNNEL;
         std::string                model3d_full_path_;
+        std::string                texture_filename_;
+        double                     texture_scale_ = 1.0;
     };
 
     enum class SpeedUnit

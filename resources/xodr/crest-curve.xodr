@@ -66,7 +66,10 @@
       </lanes>
       <objects>
          <object type="vegetation" name="" id="0" s="210" t="-12" zOffset="0.00" orientation="none" length="15.0" width="5.0" height="3.0" hdg="0.3" pitch="0.0" roll="0.00"/>
-         <object type="obstacle" name="" id="1" s="190" t="7.5" zOffset="0.00" orientation="none" length="5.0" width="1.0" height="1.0" hdg="1.57" pitch="0.0" roll="0.00"/>
+         <object type="obstacle" name="" id="1" s="190" t="7.5" zOffset="0.00" orientation="none" length="5.0" width="1.0" height="1.0" hdg="1.57" pitch="0.0" roll="0.00">
+            <userData code="texture" value="checkers.png"/>
+            <userData code="textureScale" value="0.5"/>
+         </object>
          <object type="building" name="Building1" id="2" s="250" t="-5" zOffset="0.00" orientation="none" length="25.0" width="10.0" height="10.0" hdg="-0.15" pitch="0.0" roll="0.00">
             <outlines>
                <outline id="52" fillType="grass" closed="true">

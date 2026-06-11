@@ -27,6 +27,8 @@
 #include <osgUtil/SmoothingVisitor>
 #include <osg/ShapeDrawable>
 #include <osg/ComputeBoundsVisitor>
+#include <osg/TexMat>
+#include <osgUtil/MeshOptimizers>
 #include <osgUtil/Optimizer>    // to flatten transform nodes
 #include <osgUtil/Tessellator>  // to tessellate multiple contours
 #include <osgDB/WriteFile>
@@ -1171,6 +1173,82 @@ namespace roadgeom
         }
     }
 
+    osg::ref_ptr<osg::Geometry> createTiledFace(const osg::Vec3&                    v0,
+                                                const osg::Vec3&                    v1,
+                                                const osg::Vec3&                    v2,
+                                                const osg::Vec3&                    v3,
+                                                const osg::Vec3&                    normal,
+                                                float                               faceWidth,
+                                                float                               faceHeight,
+                                                float                               texture_scale,
+                                                const osg::ref_ptr<osg::Vec4Array>& color_array)
+    {
+        osg::ref_ptr<osg::Geometry> geom = new osg::Geometry();
+
+        // 1. Set Vertices
+        osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array();
+        vertices->push_back(v0);
+        vertices->push_back(v1);
+        vertices->push_back(v2);
+        vertices->push_back(v3);
+        geom->setVertexArray(vertices.get());
+
+        // 2. Set scaled UVs
+        osg::ref_ptr<osg::Vec2Array> texcoords = new osg::Vec2Array();
+        texcoords->push_back(osg::Vec2(0.0f, 0.0f));
+        texcoords->push_back(osg::Vec2(faceWidth / texture_scale, 0.0f));
+        texcoords->push_back(osg::Vec2(faceWidth / texture_scale, faceHeight / texture_scale));
+        texcoords->push_back(osg::Vec2(0.0f, faceHeight / texture_scale));
+        geom->setTexCoordArray(0, texcoords.get());
+
+        // 3. Set Normal
+        osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array();
+        normals->push_back(normal);
+        geom->setNormalArray(normals.get(), osg::Array::BIND_OVERALL);
+
+        geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4));
+        geom->setColorArray(color_array.get(), osg::Array::BIND_OVERALL);
+
+        return geom;
+    }
+
+    osg::ref_ptr<osg::Geode> createTiledBox(float length, float width, float height, float texSize, const osg::Vec4& color)
+    {
+        osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+
+        float dx = length / 2.0f;
+        float dy = width / 2.0f;
+        float dz = height;
+
+        osg::ref_ptr<osg::Vec4Array> color_array = new osg::Vec4Array();
+        color_array->push_back(color);
+
+        // Define 3D corner points
+        osg::Vec3 p0(-dx, -dy, 0), p1(dx, -dy, 0), p2(dx, dy, 0), p3(-dx, dy, 0);
+        osg::Vec3 p4(-dx, -dy, dz), p5(dx, -dy, dz), p6(dx, dy, dz), p7(-dx, dy, dz);
+        osg::Vec3 n0(0, 0, -1), n1(0, 0, 1), n2(0, 1, 0), n3(0, -1, 0), n4(1, 0, 0), n5(-1, 0, 0);
+
+        // Front Face (Length x Height)
+        geode->addDrawable(createTiledFace(p0, p1, p5, p4, n0, length, height, texSize, color_array));
+        // Back Face (Length x Height)
+        geode->addDrawable(createTiledFace(p2, p3, p7, p6, n1, length, height, texSize, color_array));
+        // Top Face (Length x Width)
+        geode->addDrawable(createTiledFace(p4, p5, p6, p7, n2, length, width, texSize, color_array));
+        // Bottom Face (Length x Width)
+        geode->addDrawable(createTiledFace(p3, p2, p1, p0, n3, length, width, texSize, color_array));
+        // Right Face (Width x Height)
+        geode->addDrawable(createTiledFace(p1, p2, p6, p5, n4, width, height, texSize, color_array));
+        // Left Face (Width x Height)
+        geode->addDrawable(createTiledFace(p3, p0, p4, p7, n5, width, height, texSize, color_array));
+
+        // osg::ref_ptr<osg::Material> material_ = new osg::Material;
+        // material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
+        // material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
+        // geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+
+        return geode;
+    }
+
     int RoadGeom::CreateRoadSignsAndObjects(roadmanager::OpenDrive*  od,
                                             const osg::Vec3d&        origin,
                                             bool                     stand_in_model,
@@ -1319,8 +1397,9 @@ namespace roadgeom
 
             for (unsigned int o = 0; o < road->GetNumberOfObjects(); o++)
             {
-                roadmanager::RMObject* object = road->GetRoadObject(o);
-                osg::Vec4              color;
+                roadmanager::RMObject*       object  = road->GetRoadObject(o);
+                osg::ref_ptr<osg::Texture2D> texture = nullptr;
+                osg::Vec4                    color;
                 tx                   = nullptr;
                 std::string obj_type = prefix_road_object;  // road object is default
                 switch (object->GetTunnelComponentType())
@@ -1331,6 +1410,11 @@ namespace roadgeom
                     case roadmanager::RMObject::TunnelComponentType::TUNNEL_ROOF:
                         obj_type = prefix_tunnel_roof;
                         break;
+                }
+
+                if (!object->GetTextureFilename().empty())
+                {
+                    texture = ReadTexture(object->GetTextureFilename());
                 }
 
                 for (unsigned int c = 0; c < 4; c++)
@@ -1352,11 +1436,18 @@ namespace roadgeom
                     for (size_t j = 0; j < static_cast<unsigned int>(object->GetNumberOfOutlines()); j++)
                     {
                         roadmanager::Outline*    outline = object->GetOutline(j);
-                        osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin);
+                        osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin, {}, 1.0, texture, object->GetTextureScale());
                         if (olgroup != nullptr)
                         {
-                            SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(j));
+                            SetNodeName(*olgroup,
+                                        obj_type,
+                                        object->GetId(),
+                                        object->GetName().empty() ? object->GetTypeStr() : object->GetName() + "_" + std::to_string(j));
                             objGroup->addChild(olgroup);
+                            if (texture != nullptr)
+                            {
+                                olgroup->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
+                            }
                         }
                     }
                     LOG_INFO("Created outline geometry for object {}.", object->GetName());
@@ -1369,7 +1460,7 @@ namespace roadgeom
                 {
                     // Repeated object (separate copies) with outline(s): create curvature-aware geometry
                     // per instance so cornerRoad outlines follow the road (e.g. distorted in curves).
-                    CreateRepeatedOutlineObjects(object, road, color, origin, objGroup.get(), obj_type);
+                    CreateRepeatedOutlineObjects(object, road, color, origin, objGroup.get(), obj_type, texture);
                     LOG_INFO("Created repeated outline geometry for object {}.", object->GetName());
                 }
                 else
@@ -1427,21 +1518,29 @@ namespace roadgeom
                                 for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
                                 {
                                     roadmanager::Outline*    outline = object->GetOutline(j);
-                                    osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin);
+                                    osg::ref_ptr<osg::Group> olgroup =
+                                        CreateOutlineObject(outline, color, origin, {}, 1.0, texture, object->GetTextureScale());
                                     if (olgroup != nullptr)
                                     {
-                                        SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(j));
+                                        SetNodeName(*olgroup,
+                                                    obj_type,
+                                                    object->GetId(),
+                                                    object->GetName().empty() ? object->GetTypeStr() : object->GetName() + "_" + std::to_string(j));
                                         olgroup->setNodeMask(static_cast<unsigned int>(vol_mask));
                                         objGroup->addChild(olgroup);
                                     }
                                 }
                                 CreateObjectBoundingBoxes(object, road, color, origin, objGroup.get());
+
                                 if (has_markings)
                                 {
                                     osg::ref_ptr<osg::Group> markings_group = CreateObjectMarkings(object, road, origin);
                                     if (markings_group != nullptr && markings_group->getNumChildren() > 0)
                                     {
-                                        SetNodeName(*markings_group, prefix_road_object, object->GetId(), object->GetName() + "_markings");
+                                        SetNodeName(*markings_group,
+                                                    prefix_road_object,
+                                                    object->GetId(),
+                                                    object->GetName().empty() ? object->GetTypeStr() : object->GetName() + "_markings");
                                         objGroup->addChild(markings_group);
                                     }
                                 }
@@ -1463,28 +1562,52 @@ namespace roadgeom
                             tx = new osg::PositionAttitudeTransform;
 
                             // avoid zero width, length and width - set to a minimum value of 0.05m
-                            const float                      obj_hgt = MAX(0.05f, static_cast<float>(object->GetHeight()));
-                            osg::ref_ptr<osg::ShapeDrawable> shape;
+                            const float obj_hgt = MAX(0.05f, static_cast<float>(object->GetHeight()));
+                            const float length  = MAX(0.05f, static_cast<float>(object->GetLength()));
+                            const float width   = MAX(0.05f, static_cast<float>(object->GetWidth()));
+
+                            if (texture != nullptr)
+                            {
+                                color[0] = color[1] = color[2] = 1.0f;  // set color to white to show texture colors without tint
+                            }
+
                             if (object->GetRadius() > SMALL_NUMBER)
                             {
                                 // Circular object (ASAM OpenDRIVE 13.8): represent as a cylinder, base resting at z = 0
+                                osg::ref_ptr<osg::ShapeDrawable>     shape;
                                 osg::ref_ptr<osg::TessellationHints> th = new osg::TessellationHints();
                                 th->setDetailRatio(0.4f);
                                 shape = new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0f, 0.0f, 0.5f * obj_hgt),
                                                                                  MAX(0.05f, static_cast<float>(object->GetRadius())),
                                                                                  obj_hgt),
                                                                th.get());
+                                shape->setColor(color);
+                                if (texture != nullptr)
+                                {
+                                    shape->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
+                                }
+                                tx->addChild(shape.get());
                             }
                             else
                             {
-                                shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * obj_hgt),
-                                                                            MAX(0.05f, static_cast<float>(object->GetLength())),
-                                                                            MAX(0.05f, static_cast<float>(object->GetWidth())),
-                                                                            obj_hgt));
-                            }
+                                osg::ref_ptr<osg::Geode> geode;
 
-                            shape->setColor(color);
-                            tx->addChild(shape);
+                                if (texture != nullptr)
+                                {
+                                    color[0] = color[1] = color[2] = 1.0f;  // set color to white to show texture colors without tint
+                                    geode                          = createTiledBox(length, width, obj_hgt, object->GetTextureScale(), color);
+                                    geode->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
+                                }
+                                else
+                                {
+                                    osg::ref_ptr<osg::Box> box = new osg::Box(osg::Vec3(0.0f, 0.0f, 0.5f * obj_hgt), length, width, obj_hgt);
+                                    osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable(box.get());
+                                    box_shape->setColor(color);
+                                    geode = new osg::Geode();
+                                    geode->addDrawable(box_shape.get());
+                                }
+                                tx->addChild(geode);
+                            }
                         }
                     }
 
@@ -1554,7 +1677,10 @@ namespace roadgeom
 
                         if (clone != nullptr)
                         {
-                            SetNodeName(*clone, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(nCopies));
+                            SetNodeName(*clone,
+                                        obj_type,
+                                        object->GetId(),
+                                        object->GetName().empty() ? object->GetTypeStr() : object->GetName() + "_" + std::to_string(nCopies));
                         }
 
                         if (rep == nullptr)
@@ -1789,7 +1915,10 @@ namespace roadgeom
                     osg::ref_ptr<osg::Group> markings_group = CreateObjectMarkings(object, road, origin);
                     if (markings_group != nullptr && markings_group->getNumChildren() > 0)
                     {
-                        SetNodeName(*markings_group, prefix_road_object, object->GetId(), object->GetName() + "_markings");
+                        SetNodeName(*markings_group,
+                                    prefix_road_object,
+                                    object->GetId(),
+                                    object->GetName().empty() ? object->GetTypeStr() : object->GetName() + "_markings");
                         objGroup->addChild(markings_group);
                     }
                 }
@@ -1875,7 +2004,9 @@ namespace roadgeom
                                                 osg::Vec4              color,
                                                 const osg::Vec3d&      origin,
                                                 osg::Group*            objGroup,
-                                                const std::string&     obj_type)
+                                                const std::string&     obj_type,
+                                                osg::Texture2D*        texture,
+                                                double                 texture_scale)
     {
         roadmanager::Repeat* rep = object->GetRepeat();
         if (rep == nullptr || objGroup == nullptr)
@@ -1891,10 +2022,14 @@ namespace roadgeom
             {
                 roadmanager::Outline*    outline       = object->GetOutline(j);
                 auto                     corner_pos_fn = MakeInstanceOutlineCornerPosFn(ri, outline, j);
-                osg::ref_ptr<osg::Group> olgroup       = CreateOutlineObject(outline, color, origin, corner_pos_fn, ri.scale_hgt);
+                osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin, corner_pos_fn, ri.scale_hgt, texture, texture_scale);
                 if (olgroup != nullptr)
                 {
-                    SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(nCopies) + "_" + std::to_string(j));
+                    SetNodeName(*olgroup,
+                                obj_type,
+                                object->GetId(),
+                                object->GetName().empty() ? object->GetTypeStr()
+                                                          : object->GetName() + "_" + std::to_string(nCopies) + "_" + std::to_string(j));
                     objGroup->addChild(olgroup);
                 }
             }
@@ -1907,7 +2042,9 @@ namespace roadgeom
         osg::Vec4                                                                          color,
         const osg::Vec3d&                                                                  origin,
         const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn,
-        double                                                                             height_scale)
+        double                                                                             height_scale,
+        osg::Texture2D*                                                                    texture,
+        double                                                                             texture_scale)
     {
         if (outline == 0)
         {
@@ -1968,8 +2105,8 @@ namespace roadgeom
                 cumulative_side_dist += std::sqrt(dx * dx + dy * dy);
             }
 
-            (*tex_coords_sides)[i * 2 + 0].set(cumulative_side_dist, cornerHeight(corner));
-            (*tex_coords_sides)[i * 2 + 1].set(cumulative_side_dist, 0.0f);
+            (*tex_coords_sides)[i * 2 + 0].set(cumulative_side_dist / texture_scale, cornerHeight(corner) / texture_scale);
+            (*tex_coords_sides)[i * 2 + 1].set(cumulative_side_dist / texture_scale, 0.0f);
 
             // top and bottom shapes
             if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
@@ -1987,10 +2124,10 @@ namespace roadgeom
                 float dy    = y2 - y;
                 float width = std::sqrt(dx * dx + dy * dy);
 
-                (*tex_coords_top)[i].set(0.0, cumulative_side_dist);
-                (*tex_coords_top)[outline->corner_.size() - 1 - i].set(width, cumulative_side_dist);
-                (*tex_coords_bottom)[i].set(0.0, cumulative_side_dist);
-                (*tex_coords_bottom)[outline->corner_.size() - 1 - i].set(width, cumulative_side_dist);
+                (*tex_coords_top)[i].set(0.0, cumulative_side_dist / texture_scale);
+                (*tex_coords_top)[outline->corner_.size() - 1 - i].set(width / texture_scale, cumulative_side_dist / texture_scale);
+                (*tex_coords_bottom)[i].set(0.0, cumulative_side_dist / texture_scale);
+                (*tex_coords_bottom)[outline->corner_.size() - 1 - i].set(width / texture_scale, cumulative_side_dist / texture_scale);
             }
         }
 
@@ -2038,10 +2175,10 @@ namespace roadgeom
                     cumulative_roof_dist += (center - center_prev).length();
                 }
 
-                (*tex_coords_top)[i].set(width, cumulative_roof_dist);
-                (*tex_coords_top)[i + 1].set(0.0f, cumulative_roof_dist);
-                (*tex_coords_bottom)[i].set(width, cumulative_roof_dist);
-                (*tex_coords_bottom)[i + 1].set(0.0f, cumulative_roof_dist);
+                (*tex_coords_top)[i].set(width / texture_scale, cumulative_roof_dist / texture_scale);
+                (*tex_coords_top)[i + 1].set(0.0f, cumulative_roof_dist / texture_scale);
+                (*tex_coords_bottom)[i].set(width / texture_scale, cumulative_roof_dist / texture_scale);
+                (*tex_coords_bottom)[i + 1].set(0.0f, cumulative_roof_dist / texture_scale);
             }
         }
 
@@ -2052,8 +2189,8 @@ namespace roadgeom
 
             (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 2].set((*vertices_sides)[0]);
             (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 1].set((*vertices_sides)[1]);
-            (*tex_coords_sides)[2 * static_cast<unsigned int>(nrPoints) - 2].set(cumulative_side_dist, (*tex_coords_sides)[0].y());
-            (*tex_coords_sides)[2 * static_cast<unsigned int>(nrPoints) - 1].set(cumulative_side_dist, (*tex_coords_sides)[1].y());
+            (*tex_coords_sides)[2 * static_cast<unsigned int>(nrPoints) - 2].set(cumulative_side_dist / texture_scale, (*tex_coords_sides)[0].y());
+            (*tex_coords_sides)[2 * static_cast<unsigned int>(nrPoints) - 1].set(cumulative_side_dist / texture_scale, (*tex_coords_sides)[1].y());
 
             (*vertices_top)[static_cast<unsigned int>(nrPoints) - 1].set((*vertices_top)[0]);
             (*vertices_bottom)[static_cast<unsigned int>(nrPoints) - 1].set((*vertices_bottom)[0]);
@@ -2100,6 +2237,15 @@ namespace roadgeom
             geode->addDrawable(geom[i]);
         }
 
+        if (texture != nullptr)
+        {
+            geode->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
+            // set color to white for texture mapping, but keep alpha
+            color[0] = 1.0f;
+            color[1] = 1.0f;
+            color[2] = 1.0f;
+        }
+
         osg::ref_ptr<osg::Material> material_ = new osg::Material;
         material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
         material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
@@ -2118,7 +2264,9 @@ namespace roadgeom
                                              roadmanager::Road*     road,
                                              osg::Vec4              color,
                                              const osg::Vec3d&      origin,
-                                             osg::Group*            objGroup)
+                                             osg::Group*            objGroup,
+                                             osg::Texture2D*        texture,
+                                             double                 texture_scale)
     {
         if (object == nullptr || road == nullptr || objGroup == nullptr)
         {
@@ -2196,8 +2344,8 @@ namespace roadgeom
                 {
                     corner_pos_fn = [](roadmanager::OutlineCorner* corner, double& x, double& y, double& z) { corner->GetPos(x, y, z); };
                 }
-                osg::ref_ptr<osg::Group> fill = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale);
-                osg::ref_ptr<osg::Group> wire = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale);
+                osg::ref_ptr<osg::Group> fill = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale, texture, texture_scale);
+                osg::ref_ptr<osg::Group> wire = CreateOutlineObject(outline, color, origin, corner_pos_fn, height_scale, texture, texture_scale);
                 if (fill != nullptr)
                 {
                     bb_fill->addChild(fill.get());
@@ -2268,8 +2416,11 @@ namespace roadgeom
         bb_wire->setNodeMask(NODE_MASK_ENTITY_BB);
         bb_fill->setNodeMask(NODE_MASK_ENTITY_BB_FILLED);
 
-        SetNodeName(*bb_wire, prefix_road_object, object->GetId(), object->GetName() + "_bb");
-        SetNodeName(*bb_fill, prefix_road_object, object->GetId(), object->GetName() + "_bb_filled");
+        SetNodeName(*bb_wire, prefix_road_object, object->GetId(), object->GetName().empty() ? object->GetTypeStr() : object->GetName() + "_bb");
+        SetNodeName(*bb_fill,
+                    prefix_road_object,
+                    object->GetId(),
+                    object->GetName().empty() ? object->GetTypeStr() : object->GetName() + "_bb_filled");
 
         objGroup->addChild(bb_wire.get());
         objGroup->addChild(bb_fill.get());

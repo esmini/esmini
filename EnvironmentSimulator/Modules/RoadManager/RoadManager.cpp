@@ -5294,6 +5294,23 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     obj->validity_.push_back(validity);
                 }
 
+                for (pugi::xml_node userDataNode = object.child("userData"); userDataNode; userDataNode = userDataNode.next_sibling("userData"))
+                {
+                    std::string key = userDataNode.attribute("code").value();
+                    if (key == "texture")
+                    {
+                        obj->SetTextureFilename(userDataNode.attribute("value").value());
+                    }
+                    else if (key == "textureScale")
+                    {
+                        obj->SetTextureScale(AVOID_ZERO(userDataNode.attribute("value").as_double()));
+                    }
+                    else
+                    {
+                        LOG_WARN("Unknown userData key: {}", key);
+                    }
+                }
+
                 if (obj != NULL)
                 {
                     r->AddObject(obj);

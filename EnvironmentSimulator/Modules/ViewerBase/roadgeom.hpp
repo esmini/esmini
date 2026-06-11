@@ -109,7 +109,9 @@ namespace roadgeom
                                 osg::Vec4                                                                          color,
                                 const osg::Vec3d&                                                                  origin,
                                 const std::function<void(roadmanager::OutlineCorner*, double&, double&, double&)>& corner_pos_fn = {},
-                                double                                                                             height_scale  = 1.0);
+                                double                                                                             height_scale  = 1.0,
+                                osg::Texture2D*                                                                    texture       = nullptr,
+                                double                                                                             texture_scale = 1.0);
         // Create curvature-aware outline geometry for each instance of a repeated object (separate copies).
         // cornerRoad corners are re-evaluated on the road per instance; cornerLocal corners keep a fixed shape.
         void CreateRepeatedOutlineObjects(roadmanager::RMObject* object,
@@ -117,7 +119,9 @@ namespace roadgeom
                                           osg::Vec4              color,
                                           const osg::Vec3d&      origin,
                                           osg::Group*            objGroup,
-                                          const std::string&     obj_type);
+                                          const std::string&     obj_type,
+                                          osg::Texture2D*        texture       = nullptr,
+                                          double                 texture_scale = 1.0);
         // Create wireframe (NODE_MASK_ENTITY_BB) and solid (NODE_MASK_ENTITY_BB_FILLED) bounding box
         // representations for a road object, one box per repeated instance, sized from the object's
         // length/width/height. These toggle together with entities via the ',' key / --view_mode option.
@@ -125,7 +129,9 @@ namespace roadgeom
                                                            roadmanager::Road*     road,
                                                            osg::Vec4              color,
                                                            const osg::Vec3d&      origin,
-                                                           osg::Group*            objGroup);
+                                                           osg::Group*            objGroup,
+                                                           osg::Texture2D*        texture       = nullptr,
+                                                           double                 texture_scale = 1.0);
         osg::ref_ptr<osg::Group> CreateObjectMarkings(roadmanager::RMObject* object, roadmanager::Road* road, const osg::Vec3d& origin);
         // Emit a ribbon for a connected chain of marking edges. Consecutive edges whose shared vertex is
         // flagged in 'miter' are joined with a mitered corner (outer lines extrapolated, inner lines
