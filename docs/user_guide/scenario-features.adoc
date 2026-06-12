@@ -602,6 +602,22 @@ The value is a signed distance in metres, applied perpendicular to the edge dire
 
 Markings are kept at the object's floor level (they are not raised with the object height) and, for repeated/scaled objects, follow the possibly-scaled outline edge laterally while preserving their authored line width.
 
+==== Texture mapping (esmini extension)
+
+While esmini automatically generates default texture mapping coordinates, making it easy to process and use the generated 3D geometry downstream, it does not apply textures to road objects by default.
+
+To apply a texture, use the `texture` and `textureScale` `userData` attributes on the `<object>` element. The texture value should point to a texture image file (`.png` and `.jpg` supported) located within your search paths (such as `resources/models/`). This image maps onto all faces of the object's bounding box or extruded outlines, scaling according to the `textureScale` factor (which defaults to 1.0).
+
+Example:
+
+[source,xml]
+----
+<object id="1" s="20" t="5" zOffset="0.0" length="5" width="1" height="1">
+   <userData code="texture" value="checkers.png"/>
+   <userData code="textureScale" value="0.5"/>
+</object>
+----
+
 ==== Other attributes
 
 - `zOffset` - raises (or lowers) the object relative to the road surface at its position.
