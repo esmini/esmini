@@ -736,7 +736,8 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object, roa
             obj_osi_internal.sobj->mutable_classification()->set_color(
                 osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
 
-            source_reference->add_identifier(fmt::format("restrictions:{}", object->GetParkingSpace().GetRestrictions()));
+            std::string restrictions_str = fmt::format("restrictions:{}", object->GetParkingSpace().GetRestrictions());
+            source_reference->add_identifier(restrictions_str);
         }
         else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE || obj_type == roadmanager::RMObject::ObjectType::RAILING ||
                  obj_type == roadmanager::RMObject::ObjectType::PATCH || obj_type == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
@@ -760,8 +761,10 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object, roa
             LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
         }
 
-        source_reference->add_identifier(fmt::format("object_type:{}", src_ref_type));
-        source_reference->add_identifier(fmt::format("object_id:{}", object->GetId()));
+        std::string type_str = fmt::format("object_type:{}", src_ref_type);
+        std::string id_str   = fmt::format("object_id:{}", object->GetId());
+        source_reference->add_identifier(type_str);
+        source_reference->add_identifier(id_str);
 
         // Set OSI Stationary Object Orientation
         obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(ri.r));
@@ -910,8 +913,10 @@ int OSIReporter::UpdateOSIRoadMarkingsODR(roadmanager::RMObject *object, roadman
         // Source reference back to the OpenDRIVE object and marking index
         auto source_reference = road_marking->add_source_reference();
         source_reference->set_type(SOURCE_REF_TYPE_ODR);
-        source_reference->add_identifier(fmt::format("object_id:{}", object->GetId()));
-        source_reference->add_identifier(fmt::format("marking_index:{}", marking_index));
+        std::string id_str            = fmt::format("object_id:{}", object->GetId());
+        std::string marking_index_str = fmt::format("marking_index:{}", marking_index);
+        source_reference->add_identifier(id_str);
+        source_reference->add_identifier(marking_index_str);
 
         // Compute centroid for the base position and report the polyline relative to it
         double cx = 0.0, cy = 0.0, cz = 0.0;
