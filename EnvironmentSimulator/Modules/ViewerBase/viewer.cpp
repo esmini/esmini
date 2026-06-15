@@ -2642,7 +2642,6 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     osg::Vec3d                                   bbCenter(carStdOrig[0], carStdOrig[1], carStdOrig[2]);
     osg::Vec3d                                   bbDimensions(carStdDim[0], carStdDim[1], carStdDim[2]);
 
-    LOG_INFO("Name: {}", name);
     // Check if model already loaded
     for (size_t i = 0; i < entities_.size(); i++)
     {
