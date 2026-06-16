@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2026-06-16 Version 3.3.1
+
+Improvements and fixes:
+- Stich closed object markings at start/end point, avoiding cosmetic glitch
+- Add [script](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/create_parking_lot.py) for creating parking lot, see [videoclip](https://youtu.be/x5ReJatMIF8)
+- Remove useless object message spamming the log (introduced in 3.3.0)
+
 ### 2026-06-11 Version 3.3.0
 
 New features:
