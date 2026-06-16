@@ -136,7 +136,9 @@ namespace roadgeom
         // Emit a ribbon for a connected chain of marking edges. Consecutive edges whose shared vertex is
         // flagged in 'miter' are joined with a mitered corner (outer lines extrapolated, inner lines
         // trimmed to the intersection); otherwise the vertex is a plain butt joint. The two open ends of
-        // the chain are trimmed by start_offset / stop_offset. Per-edge arrays have size verts.size()-1.
+        // the chain are trimmed by start_offset / stop_offset. When 'closed' is true the chain forms a
+        // loop (first vertex coincides with last) and the start/end joint is mitered too, so there is no
+        // gap where the ribbon closes. Per-edge arrays have size verts.size()-1.
         void               CreateObjectMarkingChainGeom(const std::vector<osg::Vec3d>& verts,
                                                         const std::vector<double>&     half_w,
                                                         const std::vector<double>&     line_length,
@@ -146,7 +148,8 @@ namespace roadgeom
                                                         double                         stop_offset,
                                                         roadmanager::RoadMarkColor     color,
                                                         const osg::Vec3d&              origin,
-                                                        osg::Group*                    group);
+                                                        osg::Group*                    group,
+                                                        bool                           closed = false);
         int                AddGroundSurface();
         void               SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
         int                SaveToFile(const std::string& filename);

@@ -2504,9 +2504,32 @@ namespace roadgeom
                 };
                 const size_t            n = pl.size();
                 std::vector<osg::Vec3d> result(n);
+                // A closed loop has its first and last vertex coincident. Offset both of those endpoints
+                // along the wrap-around bisector (incoming edge n-2..n-1 and outgoing edge 0..1) so they
+                // stay coincident after the shift and the closure corner remains joined.
+                const bool closed = n >= 3 && (pl.front() - pl.back()).length() < 1e-6;
                 for (size_t i = 0; i < n; i++)
                 {
-                    if (i == 0)
+                    if (closed && (i == 0 || i == n - 1))
+                    {
+                        const osg::Vec3d lp0 = leftPerp(pl[n - 2], pl[n - 1]);
+                        const osg::Vec3d lp1 = leftPerp(pl[0], pl[1]);
+                        const double     off = 0.5 * (seg_off[n - 2] + seg_off[0]);
+                        osg::Vec3d       m   = lp0 + lp1;
+                        const double     ml  = m.length();
+                        if (ml < 1e-6)
+                        {
+                            result[i] = pl[i] + lp1 * off;  // ~180 deg turn, fall back to edge perpendicular
+                        }
+                        else
+                        {
+                            m /= ml;
+                            const double cosHalf = m * lp1;
+                            const double scale   = (fabs(cosHalf) > 1e-3) ? off / cosHalf : off;
+                            result[i]            = pl[i] + m * scale;
+                        }
+                    }
+                    else if (i == 0)
                     {
                         result[i] = pl[i] + leftPerp(pl[0], pl[1]) * seg_off[0];
                     }
@@ -2569,7 +2592,9 @@ namespace roadgeom
                     if (polyline.size() >= 2)
                     {
                         // Within a single outline marking the interior corners are always stitched; the
-                        // start/stop offsets only trim the two open ends of the polyline.
+                        // start/stop offsets only trim the two open ends of the polyline. If the marking
+                        // forms a closed loop (first corner repeated as last) and is not trimmed at the
+                        // ends, the closure joint is stitched too so there is no gap at the start corner.
                         const size_t        edge_count = polyline.size() - 1;
                         std::vector<double> half_w(edge_count, 0.5 * marking->width_);
                         std::vector<double> line_len(edge_count, marking->line_length_);
@@ -2579,6 +2604,8 @@ namespace roadgeom
                         {
                             miter[v] = true;
                         }
+                        const bool closed = polyline.size() >= 4 && (polyline.front() - polyline.back()).length() < 1e-3 &&
+                                            marking->start_offset_ < SMALL_NUMBER && marking->stop_offset_ < SMALL_NUMBER;
                         CreateObjectMarkingChainGeom(polyline,
                                                      half_w,
                                                      line_len,
@@ -2588,7 +2615,8 @@ namespace roadgeom
                                                      marking->stop_offset_,
                                                      marking->color_,
                                                      origin,
-                                                     group.get());
+                                                     group.get(),
+                                                     closed);
                     }
                 }
                 else if (marking->side_ != roadmanager::ObjectMarking::Side::NONE)
@@ -2794,6 +2822,11 @@ namespace roadgeom
                     {
                         miter[v] = (chain[v - 1].end_off < SMALL_NUMBER && chain[v].start_off < SMALL_NUMBER);
                     }
+                    // If the side markings wrap all the way around (the chain returns to its start) and
+                    // the closure corner is not trimmed by offsets, stitch that joint too so there is no
+                    // gap where the loop closes.
+                    const bool closed = verts.size() >= 4 && (verts.front() - verts.back()).length() < 1e-3 &&
+                                        chain.front().start_off < SMALL_NUMBER && chain.back().end_off < SMALL_NUMBER;
                     CreateObjectMarkingChainGeom(verts,
                                                  chain_half_w,
                                                  chain_line_len,
@@ -2803,7 +2836,8 @@ namespace roadgeom
                                                  chain.back().end_off,
                                                  chain.front().color,
                                                  origin,
-                                                 group.get());
+                                                 group.get(),
+                                                 closed);
                 }
             }
         };
@@ -2828,7 +2862,8 @@ namespace roadgeom
                                                 double                         stop_offset,
                                                 roadmanager::RoadMarkColor     color,
                                                 const osg::Vec3d&              origin,
-                                                osg::Group*                    group)
+                                                osg::Group*                    group,
+                                                bool                           closed)
     {
         const size_t N = verts.size();
         if (N < 2 || group == nullptr)
@@ -2898,6 +2933,30 @@ namespace roadgeom
             }
         }
 
+        // Closure miter: when the chain forms a loop (first vertex coincides with last) join the last
+        // edge into the first one at the shared start/end vertex, so the ribbon closes without a gap.
+        bool       closure_ok = false;
+        osg::Vec3d closure_l, closure_r;
+        if (closed && N >= 3 && dir[0].length() > SMALL_NUMBER && dir[E - 1].length() > SMALL_NUMBER)
+        {
+            const osg::Vec3d& d_in   = dir[E - 1];
+            const osg::Vec3d& p_in   = perp[E - 1];
+            const osg::Vec3d& d_out  = dir[0];
+            const osg::Vec3d& p_out  = perp[0];
+            const double      hw_in  = half_w[E - 1];
+            const double      hw_out = half_w[0];
+            osg::Vec3d        ml, mr;
+            const bool        ok_l = intersect2D(verts[0] + p_in * hw_in, d_in, verts[0] + p_out * hw_out, d_out, ml);
+            const bool        ok_r = intersect2D(verts[0] - p_in * hw_in, d_in, verts[0] - p_out * hw_out, d_out, mr);
+            const double      lim  = MITER_LIMIT * MAX(hw_in, hw_out);
+            if (ok_l && ok_r && (ml - verts[0]).length() < lim && (mr - verts[0]).length() < lim)
+            {
+                closure_l  = ml;
+                closure_r  = mr;
+                closure_ok = true;
+            }
+        }
+
         osg::ref_ptr<osg::Vec3Array>        vertices = new osg::Vec3Array;
         osg::ref_ptr<osg::DrawElementsUInt> indices  = new osg::DrawElementsUInt(GL_TRIANGLES);
 
@@ -2916,7 +2975,13 @@ namespace roadgeom
             // Ribbon boundary (left/right) and centerline point at the two ends of this edge.
             osg::Vec3d start_l, start_r, end_l, end_r, cstart, cend;
 
-            if (e > 0 && miter_ok[e])
+            if (e == 0 && closure_ok)
+            {
+                start_l = closure_l;
+                start_r = closure_r;
+                cstart  = P0;
+            }
+            else if (e > 0 && miter_ok[e])
             {
                 start_l = miter_l[e];
                 start_r = miter_r[e];
@@ -2935,7 +3000,13 @@ namespace roadgeom
                 start_r = P0 - p * hw;
             }
 
-            if (e + 1 < N - 1 && miter_ok[e + 1])
+            if (e == E - 1 && closure_ok)
+            {
+                end_l = closure_l;
+                end_r = closure_r;
+                cend  = P1;
+            }
+            else if (e + 1 < N - 1 && miter_ok[e + 1])
             {
                 end_l = miter_l[e + 1];
                 end_r = miter_r[e + 1];
