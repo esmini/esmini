@@ -245,6 +245,10 @@ bool OSIReporter::OpenOSIFile(const char *filename)
         LOG_ERROR("Failed open OSI tracefile {}", filename);
         return false;
     }
+
+    options_.format            = google::protobuf::io::GzipOutputStream::GZIP;
+    options_.compression_level = 1;
+
     LOG_INFO("OSI tracefile {} opened", filename);
     return true;
 }
@@ -252,6 +256,31 @@ bool OSIReporter::OpenOSIFile(const char *filename)
 void OSIReporter::CloseOSIFile()
 {
     osi_file.close();
+}
+
+bool OSIReporter::WriteCompressedOSIFile()
+{
+    if (!osi_file.good())
+    {
+        return false;
+    }
+    google::protobuf::io::OstreamOutputStream raw_output(&osi_file);
+    {
+        google::protobuf::io::GzipOutputStream  gzip_output(&raw_output, options_);
+        google::protobuf::io::CodedOutputStream coded_output(&gzip_output);
+
+        uint32_t size = osiGroundTruth.size;
+        coded_output.WriteRaw(reinterpret_cast<char *>(&size), sizeof(size));
+        coded_output.WriteRaw(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
+    }
+
+    if (!osi_file.good())
+    {
+        LOG_ERROR("Failed write compressed osi file");
+        return false;
+    }
+
+    return true;
 }
 
 bool OSIReporter::WriteOSIFile()
@@ -359,7 +388,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
 
     if (IsFileOpen())
     {
-        WriteOSIFile();
+        WriteCompressedOSIFile();
     }
 
     if (GetUDPClientStatus() == 0)

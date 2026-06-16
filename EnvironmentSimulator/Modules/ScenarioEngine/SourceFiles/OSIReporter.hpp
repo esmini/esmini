@@ -24,6 +24,8 @@
 #include "osi_trafficcommand.pb.h"
 #include "osi_trafficupdate.pb.h"
 #include "osi_version.pb.h"
+#include "google/protobuf/io/gzip_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -68,6 +70,10 @@ public:
     Writes GroundTruth in the OSI file
     */
     bool WriteOSIFile();
+    /**
+    Writes compressed GroundTruth in the OSI file
+    */
+    bool WriteCompressedOSIFile();
     /**
     Flush (force write) the OSI file
     */
@@ -281,20 +287,21 @@ public:
     int SetOSITimeStampExplicit(unsigned long long nanoseconds);
 
 private:
-    UDPClient*                          udp_client_;
-    ScenarioEngine*                     scenario_engine_;
-    std::ofstream                       osi_file;
-    int*                                osi_update_counter_ = nullptr;
-    int                                 counter_offset_     = 0;
-    int                                 osi_freq_           = 0;
-    std::string                         stationary_model_reference;
-    void                                CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
-    void                                CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
-    bool                                osi_updated_        = false;
-    bool                                osi_initialized_    = false;
-    bool                                report_ghost_       = true;
-    OSIStaticReportMode                 static_update_mode_ = OSIStaticReportMode::DEFAULT;
-    std::vector<std::pair<int, double>> osi_crop_           = {};       // id, radius
-    std::optional<int64_t>              environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
-    std::vector<uint8_t>                has_lightstate_action_ = {};
+    UDPClient*                                      udp_client_;
+    ScenarioEngine*                                 scenario_engine_;
+    std::ofstream                                   osi_file;
+    int*                                            osi_update_counter_ = nullptr;
+    int                                             counter_offset_     = 0;
+    int                                             osi_freq_           = 0;
+    std::string                                     stationary_model_reference;
+    void                                            CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
+    void                                            CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
+    bool                                            osi_updated_        = false;
+    bool                                            osi_initialized_    = false;
+    bool                                            report_ghost_       = true;
+    OSIStaticReportMode                             static_update_mode_ = OSIStaticReportMode::DEFAULT;
+    std::vector<std::pair<int, double>>             osi_crop_           = {};       // id, radius
+    std::optional<int64_t>                          environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
+    std::vector<uint8_t>                            has_lightstate_action_ = {};
+    google::protobuf::io::GzipOutputStream::Options options_;
 };
