@@ -30,15 +30,38 @@
 PROTOBUF_VERSION=3.15.2
 OSI_VERSION=3.5.0
 ZIP_MIN_VERSION=13
-PARALLEL_BUILDS=4
 
-if (( "$PARALLEL_BUILDS" < 2 )); then
-    PARALLEL_ARG=""
-else
-    PARALLEL_ARG="$PARALLEL_BUILDS"
-fi
+parallel_make_flag="-j4"
 
-if [ "$OSTYPE" == "msys" ]; then
+# Whether to pack the result into the final 7z archive. Disabled by default,
+# enable with the --zip (or -z) command line argument.
+create_7z=0
+
+usage() {
+    echo "Usage: $0 [options]"
+    echo "  -z, --zip    Create the final 7z archive after building"
+    echo "  -h, --help   Show this help message and exit"
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -z|--zip)
+            create_7z=1
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
     # Visual Studio 2022 using toolkit from Visual Studio 2017
     GENERATOR=("Visual Studio 17 2022")
     GENERATOR_TOOLSET="v142"
@@ -59,7 +82,7 @@ else
     echo Unknown OSTYPE: $OSTYPE
 fi
 
-if [ "$OSTYPE" == "msys" ]; then
+if [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
     target_dir="v10"
     zfilename="osi_v10.7z"
     z_exe="/c/Program Files/7-Zip/7z.exe"
@@ -88,6 +111,18 @@ fi
 # However you might want to adjust versions of software packages being checkout and built
 
 
+# Wrapper around cmake that aborts the whole script if a cmake invocation fails.
+# 'command cmake' is used to call the real cmake binary and avoid recursing into
+# this function.
+cmake() {
+    command cmake "$@"
+    local result=$?
+    if [ $result -ne 0 ]; then
+        echo "ERROR: cmake failed (exit code $result). Aborting script." >&2
+        exit $result
+    fi
+}
+
 osi_root_dir=$(pwd)
 
 
@@ -102,20 +137,20 @@ if [ ! -d zlib ]; then
     cd build
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC"
-        cmake --build . $PARALLEL_ARG --target install
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        cmake --build . $parallel_make_flag --target install
         mv ../install/lib/libz.a ../install/lib/libzd.a
 
         rm CMakeCache.txt
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
-        cmake --build . $PARALLEL_ARG --target install
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        cmake --build . $parallel_make_flag --target install
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_OSX_ARCHITECTURES="$macos_arch"
-        cmake --build . $PARALLEL_ARG --target install
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        cmake --build . $parallel_make_flag --target install
     else
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install ..
-        cmake --build . $PARALLEL_ARG --config Debug --target install
-        cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        cmake --build . $parallel_make_flag --config Debug --target install
+        cmake --build . $parallel_make_flag --config Release --target install --clean-first
     fi
 
 else
@@ -151,6 +186,14 @@ function build {
     echo ------------------------ Installing Protobuf $1 ------------------------------------
     cd $osi_root_dir
 
+    if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
+        ZLIB_FILE_RELEASE=libz.a
+        ZLIB_FILE_DEBUG=libzd.a
+    elif [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
+        ZLIB_FILE_RELEASE=zlibstatic.lib
+        ZLIB_FILE_DEBUG=zlibstaticd.lib
+    fi
+
     if [ ! -d protobuf$folder_postfix ]; then
         git clone https://github.com/protocolbuffers/protobuf.git --depth 1 --branch v$PROTOBUF_VERSION protobuf$folder_postfix
         cd protobuf$folder_postfix
@@ -159,23 +202,15 @@ function build {
 
         export INSTALL_PROTOBUF_DIR=../protobuf-install
 
-        if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
-            ZLIB_FILE_RELEASE=libz.a
-            ZLIB_FILE_DEBUG=libzd.a
-        elif [ "$OSTYPE" == "msys" ]; then
-            ZLIB_FILE_RELEASE=zlib.lib
-            ZLIB_FILE_DEBUG=zlibd.lib
-        fi
-
         if [ $DYNAMIC_LINKING == "1" ]; then
-            if [ "$OSTYPE" == "msys" ]; then
+            if [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
                 ADDITIONAL_CMAKE_PARAMETERS="-Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=-DPROTOBUF_USE_DLLS"
             else
                 ADDITIONAL_CMAKE_PARAMETERS="-Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=-DPROTOBUF_USE_DLLS -DCMAKE_CXX_FLAGS=-fPIC"
             fi
         else
             BUILD_SHARED_LIBS="OFF"
-            if [ "$OSTYPE" == "msys" ]; then
+            if [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
                 ADDITIONAL_CMAKE_PARAMETERS="-Dprotobuf_BUILD_SHARED_LIBS=OFF"
             else
                 ADDITIONAL_CMAKE_PARAMETERS="-Dprotobuf_BUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-fPIC"
@@ -183,15 +218,15 @@ function build {
         fi
 
         if [[ "$OSTYPE" != "darwin"* ]]; then
-            cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug $ADDITIONAL_CMAKE_PARAMETERS
-            cmake --build . $PARALLEL_ARG --config Debug --target install --clean-first
+            cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_POLICY_VERSION_MINIMUM=3.5 $ADDITIONAL_CMAKE_PARAMETERS
+            cmake --build . $parallel_make_flag --config Debug --target install --clean-first
             rm CMakeCache.txt
         else
             ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
         fi
 
-        cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib/install/lib/$ZLIB_FILE_RELEASE -DZLIB_INCLUDE_DIR=../../zlib/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Release $ADDITIONAL_CMAKE_PARAMETERS
-        cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
+        cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib/install/lib/$ZLIB_FILE_RELEASE -DZLIB_INCLUDE_DIR=../../zlib/install/include -DCMAKE_INSTALL_PREFIX=$INSTALL_PROTOBUF_DIR -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 $ADDITIONAL_CMAKE_PARAMETERS
+        cmake --build . $parallel_make_flag --config Release --target install --clean-first
 
     else
         echo protobuf folder already exists, continue with next step...
@@ -206,13 +241,11 @@ function build {
         git clone https://github.com/OpenSimulationInterface/open-simulation-interface.git --depth 1 --branch v$OSI_VERSION open-simulation-interface$folder_postfix
         cd open-simulation-interface$folder_postfix
         sh ./convert-to-proto3.sh
-        mkdir build
-        cd build
 
         INSTALL_ROOT_DIR=../install
         INSTALL_INCLUDE_DIR=$INSTALL_ROOT_DIR/include
         export PATH=$PATH:../../graphviz/release/bin:../../protobuf$folder_postfix/protobuf-install/bin
-        if [ "$OSTYPE" == "msys" ]; then
+        if [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
             PROTOC_EXE="../../protobuf_$1/protobuf-install/bin/protoc.exe"
         else
             PROTOC_EXE="../../protobuf_$1/protobuf-install/bin/protoc"
@@ -228,19 +261,35 @@ function build {
         mkdir $INSTALL_ROOT_DIR/debug
         mkdir $INSTALL_ROOT_DIR/release
 
-        COMMON_ARGS=".. -D CMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -D PROTOBUF_SRC_ROOT_FOLDER=../../protobuf_$1/ -D Protobuf_PROTOC_EXECUTABLE=$PROTOC_EXE -D CMAKE_VERBOSE_MAKEFILE=ON -D CMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -D CMAKE_CXX_STANDARD=11"
+        COMMON_ARGS=".. -D CMAKE_INCLUDE_PATH=../protobuf$folder_postfix/protobuf-install/include -D PROTOBUF_SRC_ROOT_FOLDER=../../protobuf_$1/ -D Protobuf_PROTOC_EXECUTABLE=$PROTOC_EXE -D CMAKE_VERBOSE_MAKEFILE=ON -D CMAKE_LIBRARY_PATH=../protobuf$folder_postfix/protobuf-install/lib -D CMAKE_CXX_STANDARD=17"
 
-        if [[ "$OSTYPE" != "darwin"* ]]; then
-            # Build debug variant first
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} $COMMON_ARGS -D CMAKE_BUILD_TYPE=Debug -D CMAKE_INSTALL_PREFIX=$INSTALL_ROOT_DIR/debug $ADDITIONAL_CMAKE_PARAMETERS ..
-            cmake --build . $PARALLEL_ARG --config Debug --target install
-            rm CMakeCache.txt
-        else
-            ADDITIONAL_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
-        fi
+        # Build each variant in sequence, in its own sub folder (build_debug, build_release)
+        osi_variants=("debug" "release")
+        for variant in "${osi_variants[@]}"; do
 
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} $COMMON_ARGS -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$INSTALL_ROOT_DIR/release $ADDITIONAL_CMAKE_PARAMETERS ..
-        cmake --build . $PARALLEL_ARG --config Release --target install --clean-first
+            # macOS: only the release variant is built
+            if [[ "$OSTYPE" == "darwin"* ]] && [[ $variant == "debug" ]]; then
+                continue
+            fi
+
+            if [ $variant == "debug" ]; then
+                BUILD_TYPE=Debug
+            else
+                BUILD_TYPE=Release
+            fi
+
+            VARIANT_CMAKE_PARAMETERS=$ADDITIONAL_CMAKE_PARAMETERS
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                VARIANT_CMAKE_PARAMETERS+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
+            fi
+
+            echo Build OSI $folder_postfix $variant variant
+            mkdir build_$variant
+            cd build_$variant
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} $COMMON_ARGS -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D CMAKE_INSTALL_PREFIX=$INSTALL_ROOT_DIR/$variant $VARIANT_CMAKE_PARAMETERS ..
+            cmake --build . $parallel_make_flag --config $BUILD_TYPE --target install --clean-first
+            cd ..
+        done
     else
         echo open-simulation-interface folder already exists, continue with next step...
     fi
@@ -249,9 +298,9 @@ function build {
 
     cd $osi_root_dir
 
-    cp open-simulation-interface$folder_postfix/VERSION $target_dir
     cp open-simulation-interface$folder_postfix/install/release/include/osi3/* $target_dir/include
     cp -r protobuf$folder_postfix/protobuf-install/include/google $target_dir/include
+    cp zlib/install/include/*.h $target_dir/include
 
     if [ $DYNAMIC_LINKING == "1" ]; then
         target_lib_dir_root=$target_dir/lib-dyn
@@ -268,9 +317,15 @@ function build {
         target_lib_dir=$target_lib_dir_root/$variant
         mkdir $target_lib_dir
 
+        if [ $variant == "debug" ]; then
+            cp zlib/install/lib/$ZLIB_FILE_DEBUG $target_lib_dir
+        else
+            cp zlib/install/lib/$ZLIB_FILE_RELEASE $target_lib_dir
+        fi
+
         if [ $DYNAMIC_LINKING == "1" ]; then
 
-            if [ "$OSTYPE" == "msys" ]; then
+            if [[ "$OSTYPE" =~ ^(msys|cygwin) ]]; then
                 cp open-simulation-interface$folder_postfix/install/$variant/lib/osi3/open_simulation_interface.dll $target_lib_dir
                 cp open-simulation-interface$folder_postfix/install/$variant/lib/osi3/open_simulation_interface_pic.lib $target_lib_dir
                 if [ $variant == "debug" ]; then
@@ -296,7 +351,7 @@ function build {
                 fi
             fi
         else
-            if [ "$OSTYPE" == "msys" ]; then
+            if [[ "$OSTYPE" =~ ^(msys|cygwin) ]]; then
                 cp open-simulation-interface$folder_postfix/install/$variant/lib/osi3/*open_simulation_interface_pic.lib $target_lib_dir
                 if [ $variant == "debug" ]; then
                     cp protobuf$folder_postfix/protobuf-install/lib/libprotobufd.lib $target_lib_dir
@@ -319,8 +374,13 @@ function build {
 build static
 build dynamic
 
+if [ $create_7z == "1" ]; then
+    echo ------------------------ Packing $zfilename ------------------------------------
 "$z_exe" a -r $zfilename -m0=LZMA -bb1 -spf -snl $target_dir/*
 # unpack with: 7z x <filename>
+else
+    echo "Skipping 7z archive creation (use --zip to enable)"
+fi
 
 echo ------------------------ Done ------------------------------------
 cd $osi_root_dir

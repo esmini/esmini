@@ -8,13 +8,14 @@ macro(set_osi_libs)
             if(DYN_PROTOBUF)
                 set(OSI_LIBRARIES
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.dylib
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.dylib)
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.dylib
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a)
             else()
                 set(OSI_LIBRARIES
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a)
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a)
             endif()
-
         elseif(LINUX)
             if(DYN_PROTOBUF)
                 set(OSI_LIBRARIES
@@ -22,20 +23,28 @@ macro(set_osi_libs)
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.so
                     optimized
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.so
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a
                     debug
                     ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface.so
                     debug
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.so)
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.so
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libzd.a)
             else()
                 set(OSI_LIBRARIES
                     optimized
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
                     optimized
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a
                     debug
                     ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_pic.a
                     debug
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a)
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libzd.a)
             endif()
         elseif(MSVC)
             if(DYN_PROTOBUF)
@@ -44,10 +53,14 @@ macro(set_osi_libs)
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
                     optimized
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/zlibstatic.lib
                     debug
                     ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
                     debug
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/zlibstaticd.lib)
             else()
                 set(OSI_LIBRARIES
                     optimized
@@ -57,12 +70,13 @@ macro(set_osi_libs)
                     debug
                     ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
                     debug
-                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/zlibstaticd.lib)
             endif()
         endif()
     else()
         message(FATAL_ERROR "Unsupported OSI version ${OSI_VERSION}")
     endif()
-
 
 endmacro()

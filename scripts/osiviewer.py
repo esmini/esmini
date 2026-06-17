@@ -25,6 +25,7 @@ import matplotlib.widgets as mw
 import matplotlib.patches as patches
 import matplotlib.transforms as transforms
 import numpy as np
+import gzip
 import os
 import sys
 import math
@@ -817,7 +818,20 @@ class OSIFile:
         self.first_timestamp = 0.0
 
         try:
-            self.file = open(self.filename, 'rb')
+            # 1. Open the file to check the magic bytes
+            with open(self.filename, 'rb') as f:
+                magic_bytes = f.read(2)
+
+            # Check for Gzip magic number (0x1F, 0x8B)
+            is_gzipped = (magic_bytes == b'\x1f\x8b')
+
+            # 2. Open the correct stream type based on the check
+            if is_gzipped:
+                print(f"Detected Gzip compression for {self.filename}. Decompressing...")
+                self.file = gzip.GzipFile(fileobj=open(self.filename, 'rb'), mode='rb')
+            else:
+                self.file = open(self.filename, 'rb')
+
         except OSError:
             print('ERROR: Could not open file {} for reading'.format(self.filename))
             exit(-1)

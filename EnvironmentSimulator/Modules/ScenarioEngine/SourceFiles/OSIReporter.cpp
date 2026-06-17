@@ -179,10 +179,7 @@ OSIReporter::~OSIReporter()
 
     delete udp_client_;
 
-    if (osi_file.is_open())
-    {
-        osi_file.close();
-    }
+    CloseOSIFile();
 
     SE_Env::Inst().ResetOSITimeStamp();
 }
@@ -239,6 +236,9 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor *> sensor)
 
 bool OSIReporter::OpenOSIFile(const char *filename)
 {
+    // Ensure any previous stream chain is torn down in a safe order before re-opening.
+    CloseOSIFile();
+
     osi_file.open(filename, std::ios_base::binary);
     if (!osi_file.good())
     {
@@ -246,41 +246,35 @@ bool OSIReporter::OpenOSIFile(const char *filename)
         return false;
     }
 
-    options_.format            = google::protobuf::io::GzipOutputStream::GZIP;
-    options_.compression_level = 1;
+    if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::OSI_COMPRESS))
+    {
+        options_.format            = google::protobuf::io::GzipOutputStream::GZIP;
+        options_.compression_level = 1;
 
-    LOG_INFO("OSI tracefile {} opened", filename);
+        gzip_write_stream_.raw_output  = std::make_unique<google::protobuf::io::OstreamOutputStream>(&osi_file);
+        gzip_write_stream_.gzip_output = std::make_unique<google::protobuf::io::GzipOutputStream>(gzip_write_stream_.raw_output.get(), options_);
+        LOG_INFO("OSI tracefile {} opened with compression", filename);
+    }
+    else
+    {
+        LOG_INFO("OSI tracefile {} opened", filename);
+    }
+
     return true;
 }
 
 void OSIReporter::CloseOSIFile()
 {
-    osi_file.close();
-}
-
-bool OSIReporter::WriteCompressedOSIFile()
-{
-    if (!osi_file.good())
+    if (gzip_write_stream_.gzip_output)
     {
-        return false;
-    }
-    google::protobuf::io::OstreamOutputStream raw_output(&osi_file);
-    {
-        google::protobuf::io::GzipOutputStream  gzip_output(&raw_output, options_);
-        google::protobuf::io::CodedOutputStream coded_output(&gzip_output);
-
-        uint32_t size = osiGroundTruth.size;
-        coded_output.WriteRaw(reinterpret_cast<char *>(&size), sizeof(size));
-        coded_output.WriteRaw(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
+        gzip_write_stream_.gzip_output.reset();  // This finishes and flushes the Gzip block
+        gzip_write_stream_.raw_output.reset();
     }
 
-    if (!osi_file.good())
+    if (osi_file.is_open())
     {
-        LOG_ERROR("Failed write compressed osi file");
-        return false;
+        osi_file.close();
     }
-
-    return true;
 }
 
 bool OSIReporter::WriteOSIFile()
@@ -290,11 +284,27 @@ bool OSIReporter::WriteOSIFile()
         return false;
     }
 
-    // write to file, first size of message
-    osi_file.write(reinterpret_cast<char *>(&osiGroundTruth.size), sizeof(osiGroundTruth.size));
+    // write to file, first size of message then the message itself
+    if (gzip_write_stream_.gzip_output)
+    {
+        if (osiGroundTruth.size > 0)
+        {
+            // Keep gzip stream persistent, but keep coded stream short-lived.
+            // This avoids backup/trim state issues in protobuf when flushing gzip.
+            {
+                google::protobuf::io::CodedOutputStream coded_output(gzip_write_stream_.gzip_output.get());
+                coded_output.WriteRaw(reinterpret_cast<char *>(&osiGroundTruth.size), sizeof(osiGroundTruth.size));
+                coded_output.WriteRaw(osiGroundTruth.ground_truth.c_str(), static_cast<int>(osiGroundTruth.size));
+            }
 
-    // write to file, actual message - the groundtruth object including timestamp and moving objects
-    osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
+            gzip_write_stream_.gzip_output->Flush();
+        }
+    }
+    else
+    {
+        osi_file.write(reinterpret_cast<char *>(&osiGroundTruth.size), sizeof(osiGroundTruth.size));
+        osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
+    }
 
     if (!osi_file.good())
     {
@@ -388,7 +398,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
 
     if (IsFileOpen())
     {
-        WriteCompressedOSIFile();
+        WriteOSIFile();
     }
 
     if (GetUDPClientStatus() == 0)
@@ -786,7 +796,11 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object, roa
         {
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
-            LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
+
+            if (obj_type != roadmanager::RMObject::ObjectType::NONE)
+            {
+                LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category {}", obj_type);
+            }
         }
 
         source_reference->add_identifier(fmt::format("object_type:{}", src_ref_type));

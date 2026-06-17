@@ -113,6 +113,7 @@ namespace esmini_options
         GUI,                             // 102
         LIGHT_MODE,                      // 103
         PRECISION,                       // 104
+        OSI_COMPRESS,                    // 105
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -161,6 +162,7 @@ namespace esmini_options
         {"log_skip_modules", LOG_SKIP_MODULES},
         {"osc_str", OSC_STR},
         {"osg_screenshot_event_handler", OSG_SCREENSHOT_EVENT_HANDLER},
+        {"osi_compress", OSI_COMPRESS},
         {"osi_crop_dynamic", OSI_CROP_DYNAMIC},
         {"osi_exclude_ghost", OSI_EXCLUDE_GHOST},
         {"osi_file", OSI_FILE},

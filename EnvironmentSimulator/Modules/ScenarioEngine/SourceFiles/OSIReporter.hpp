@@ -71,10 +71,6 @@ public:
     */
     bool WriteOSIFile();
     /**
-    Writes compressed GroundTruth in the OSI file
-    */
-    bool WriteCompressedOSIFile();
-    /**
     Flush (force write) the OSI file
     */
     void FlushOSIFile();
@@ -304,4 +300,9 @@ private:
     std::optional<int64_t>                          environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
     std::vector<uint8_t>                            has_lightstate_action_ = {};
     google::protobuf::io::GzipOutputStream::Options options_;
+    struct
+    {
+        std::unique_ptr<google::protobuf::io::OstreamOutputStream> raw_output;
+        std::unique_ptr<google::protobuf::io::GzipOutputStream>    gzip_output;
+    } gzip_write_stream_;
 };

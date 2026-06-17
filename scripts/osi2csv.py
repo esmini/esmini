@@ -2,18 +2,33 @@ import os
 import struct
 import argparse
 import math
+import gzip
 
 from osi3.osi_groundtruth_pb2 import *
 
 class OSIFile():
     def __init__(self, filename):
+        self.filename = filename
+
         try:
-            self.file = open(filename, 'rb')
+            # 1. Open the file to check the magic bytes
+            with open(self.filename, 'rb') as f:
+                magic_bytes = f.read(2)
+
+            # Check for Gzip magic number (0x1F, 0x8B)
+            is_gzipped = (magic_bytes == b'\x1f\x8b')
+
+            # 2. Open the correct stream type based on the check
+            if is_gzipped:
+                print(f"Detected Gzip compression for {self.filename}. Decompressing...")
+                self.file = gzip.GzipFile(fileobj=open(self.filename, 'rb'), mode='rb')
+            else:
+                print(f"Detected uncompressed data for {filename}. Reading directly...")
+                self.file = open(self.filename, 'rb')
         except OSError:
             print('ERROR: Could not open file {} for reading'.format(filename))
             raise
 
-        self.filename = filename
         self.osi_msg = GroundTruth()
 
     def save_csv(self):
