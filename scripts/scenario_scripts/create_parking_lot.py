@@ -269,6 +269,8 @@ if __name__ == "__main__":
                         help="Number of parking spaces per segment (default: 16)")
     args = parser.parse_args()
 
+    Scenario(args.nr_parking_segments, args.nr_parking_spaces_per_segment).generate("./generated")
+
     # uncomment the following lines to display the scenario using esmini
     # from scenariogeneration import esmini
     # esmini(Scenario(args.nr_parking_segments, args.nr_parking_spaces_per_segment),
