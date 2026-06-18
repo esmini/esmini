@@ -3,61 +3,66 @@ include_guard()
 # ############################### Setting osi libraries ##############################################################
 
 macro(set_osi_libs)
+    if(${OSI_VERSION} STREQUAL "3.5.0")
+        if(APPLE)
+            if(DYN_PROTOBUF)
+                set(OSI_LIBRARIES
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.dylib
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.dylib)
+            else()
+                set(OSI_LIBRARIES
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a)
+            endif()
 
-    if(APPLE)
-        if(DYN_PROTOBUF)
-            set(OSI_LIBRARIES
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.dylib
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.dylib)
-        else()
-            set(OSI_LIBRARIES
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a)
+        elseif(LINUX)
+            if(DYN_PROTOBUF)
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.so
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.so
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface.so
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.so)
+            else()
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_pic.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a)
+            endif()
+        elseif(MSVC)
+            if(DYN_PROTOBUF)
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
+            else()
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
+            endif()
         endif()
-
-    elseif(LINUX)
-        if(DYN_PROTOBUF)
-            set(OSI_LIBRARIES
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.so
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.so
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface.so
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.so)
-        else()
-            set(OSI_LIBRARIES
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_pic.a
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a)
-        endif()
-    elseif(MSVC)
-        if(DYN_PROTOBUF)
-            set(OSI_LIBRARIES
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
-        else()
-            set(OSI_LIBRARIES
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
-                optimized
-                ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
-                debug
-                ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib)
-        endif()
+    else()
+        message(FATAL_ERROR "Unsupported OSI version ${OSI_VERSION}")
     endif()
+
+
 endmacro()

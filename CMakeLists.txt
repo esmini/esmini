@@ -109,6 +109,12 @@ set(FMT_INSTALL
     CACHE BOOL
           "If FMT should be installed")
 
+# ############################### Setting external dependency lib versions ############################################################
+# Available versions can be found in support/cmake/common/version_mapping.cmake
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/version_mapping.cmake)
+set_default_dependency_libs_versions()
+
 # ############################### Setting project rules ############################################################
 
 set_property(
@@ -138,11 +144,13 @@ endif()
 
 # ############################### Loading common packages ############################################################
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/version_mapping.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/locations.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/definitions.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/flags.cmake)
 
+set_tags_from_version()
 set_project_internal_paths()
 set_project_external_paths()
 set_project_os_specific_paths()

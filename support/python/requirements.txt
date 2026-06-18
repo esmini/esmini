@@ -5,3 +5,4 @@ lxml==6.1.0
 psutil==7.2.2
 pre-commit==4.6.0
 protobuf==7.34.1
+matplotlib==3.10.9

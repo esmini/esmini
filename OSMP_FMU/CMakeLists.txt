@@ -15,8 +15,11 @@ message("Version: " ${VERSION})
 string(SUBSTRING "${VERSION}" 1 -1 VERSION )
 string(STRIP "${VERSION}" VERSION)
 
-set(OSIVERSION "3.5.0")
-set(OSMPVERSION "1.4.0")
+set(OSMP_VERSION "1.4.0")
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/common/version_mapping.cmake)
+set_default_dependency_libs_versions()
+set_tags_from_version()
 
 set(STATIC_LINKING TRUE)
 
@@ -64,7 +67,7 @@ elseif(LINUX)
     endif()
 endif()
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(LINK_WITH_SHARED_OSI
     OFF
@@ -99,14 +102,14 @@ string(TIMESTAMP FMUTIMESTAMP UTC)
 string(MD5 FMUGUID modelDescription.in.xml)
 configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/include
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${EXT_INCL_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${IMPLOT_RELEASE_TAG}/${EXT_INCL_DIR}/include
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${OSI_RELEASE_TAG}/${EXT_INCL_DIR}/include)
 
 link_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../bin
-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib/release
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5
@@ -127,11 +130,11 @@ target_compile_definitions(${TARGET} PRIVATE "FMU_SHARED_OBJECT")
 
 if(STATIC_LINKING)
     message("Link esmini statically")
-    set(EXTERNALS_OSI_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib)
     set(EXTERNALS_OSG_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib)
     set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5)
     set(EXTERNALS_SUMO_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib)
-    set(EXTERNALS_IMPLOT_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${EXT_INCL_DIR}/lib)
+    set(EXTERNALS_IMPLOT_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${IMPLOT_RELEASE_TAG}/${EXT_INCL_DIR}/lib)
+    set(EXTERNALS_OSI_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${OSI_RELEASE_TAG}/${EXT_INCL_DIR}/lib)
 
     include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/osi.cmake)
     set_osi_libs()
@@ -154,6 +157,8 @@ if(STATIC_LINKING)
         # add link lib for missing filesystem functions in case gcc 7.5 is usedAdd commentMore actions
         set(FMT_LIBRARIES ${FMT_LIBRARIES} "-lstdc++fs")
     endif()
+
+
     target_link_libraries(
         ${TARGET}
         PRIVATE esminiLib_static${LIB_POSTFIX}

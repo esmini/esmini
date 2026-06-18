@@ -55,13 +55,11 @@ if [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
     export EXE_FOLDER="./$build_type"
     export PYTHON="python"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    export LD_LIBRARY_PATH=${workingDir}/build/EnvironmentSimulator"/externals/OSI/linux/lib-dyn"
     export path="../../../bin"
     export EXE_FOLDER="."
     export PYTHON="python3"
     export ASAN_OPTIONS="$ASAN_OPTIONS:detect_leaks=1"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    export LD_LIBRARY_PATH=${workingDir}/build/EnvironmentSimulator"/externals/OSI/mac/lib-dyn"
     export path="../../../bin"
     export EXE_FOLDER="."
     export PYTHON="python3"
