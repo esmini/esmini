@@ -25,19 +25,17 @@ from scenariogeneration import ScenarioGenerator, prettyprint, xodr
 class Scenario(ScenarioGenerator):
     def __init__(self, nr_parking_segments=10, nr_parking_spaces_per_segment=16):
         super().__init__()
-        self.roads = []
         self.lanewidth = 3
+        self.island_width = 1.25
+        self.marking_width = 0.15
         self.parking_space_length = 5
         self.parking_space_width = 2.5
         self.border_width = 10
-        self.marking_width = 0.15
-        self.segment_counter = 0
+        self.roadmark_type = xodr.RoadMarkType.none
         self.nr_parking_segments = nr_parking_segments
         self.nr_parking_spaces_per_segment = nr_parking_spaces_per_segment
-        self.odr = xodr.OpenDrive("my_road_network")
 
-    def create_road(self, id, name, x, y, h, curvature, length, junction_id=-1, parking_spaces=False, add_border=False):
-
+    def create_road(self, id, name, x, y, h, curvature, length, junction_id=-1, parking_spaces=False, add_border=0, add_island=0):
         planview = xodr.PlanView(x_start=x, y_start=y, h_start=h)
         if (curvature != 0):
             planview.add_geometry(xodr.Arc(curvature, length))
@@ -46,9 +44,10 @@ class Scenario(ScenarioGenerator):
 
         # create centerlane
         centerlane = xodr.Lane(a=2)
-        centerlane.add_roadmark(xodr.RoadMark(xodr.RoadMarkType.broken, length=1.0, space=1.0, width=0.15))
-        lanesec = xodr.LaneSection(0, centerlane)
+        if (self.roadmark_type != xodr.RoadMarkType.none):
+            centerlane.add_roadmark(xodr.RoadMark(self.roadmark_type, length=1.0, space=1.0, width=self.marking_width))
 
+        lanesec = xodr.LaneSection(0, centerlane)
         # add driving lanes
         lanesec.add_left_lane(xodr.Lane(a=self.lanewidth))
         lanesec.add_right_lane(xodr.Lane(a=self.lanewidth))
@@ -58,10 +57,18 @@ class Scenario(ScenarioGenerator):
             lanesec.add_left_lane(xodr.Lane(a=self.parking_space_length, lane_type=xodr.LaneType.parking))
             lanesec.add_right_lane(xodr.Lane(a=self.parking_space_length, lane_type=xodr.LaneType.parking))
 
-        if (add_border == 1):
-            lanesec.add_left_lane(xodr.Lane(a=self.border_width, lane_type=xodr.LaneType.border))
-        elif (add_border == -1):
-            lanesec.add_right_lane(xodr.Lane(a=self.border_width, lane_type=xodr.LaneType.border))
+        # add any islands
+        if (add_island == 1):
+            lanesec.add_left_lane(xodr.Lane(a=self.island_width, lane_type=xodr.LaneType.sidewalk))
+        elif (add_island == -1):
+            lanesec.add_right_lane(xodr.Lane(a=self.island_width, lane_type=xodr.LaneType.sidewalk))
+
+        # add any border area
+        if (add_border != 0):
+            if (add_border == 1):
+                lanesec.add_left_lane(xodr.Lane(a=self.border_width, lane_type=xodr.LaneType.border))
+            elif (add_border == -1):
+                lanesec.add_right_lane(xodr.Lane(a=self.border_width, lane_type=xodr.LaneType.border))
 
         ## finalize the road
         lanes = xodr.Lanes()
@@ -85,49 +92,48 @@ class Scenario(ScenarioGenerator):
         junction_south_id = 100 * (self.segment_counter) + 1
         junction_south = xodr.Junction("junction_" + str(self.segment_counter) + "_south", junction_south_id)
 
-
         # create the parking segment as a road with parking spaces on each side - idx = base_idx, id = base_id + 1
-        self.create_road(base_idx + 1, "parking_segment_" + str(self.segment_counter), 0, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length),
+        self.create_road(base_idx + 1, "parking_segment_" + str(self.segment_counter), 0, self.segment_counter*(2*(self.lanewidth + self.parking_space_length)),
                          0, 0, segment_length, junction_id=-1, parking_spaces=True)
 
         # create road at left north end - idx = base_idx + 1, id = base_idx + 2
-        self.create_road(base_idx + 2, "left_north_" + str(self.segment_counter), segment_length + self.lanewidth, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length) + self.lanewidth,
-                         math.pi/2, 0, self.parking_space_length, junction_id=-1, parking_spaces=False, add_border=-1)
+        self.create_road(base_idx + 2, "left_north_" + str(self.segment_counter), segment_length + self.lanewidth + self.island_width, self.segment_counter*(2*(self.lanewidth + self.parking_space_length)) + (self.lanewidth + self.island_width),
+                         math.pi/2, 0, self.parking_space_length - self.island_width, junction_id=-1, parking_spaces=False, add_border=-1, add_island=1)
 
         # create road at right north end - idx = base_idx + 2, id = base_idx + 3
-        self.create_road(base_idx + 3, "right_north_" + str(self.segment_counter), segment_length + self.lanewidth, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length) - self.lanewidth,
-                         -math.pi/2, 0, self.parking_space_length, junction_id=-1, parking_spaces=False, add_border=1)
+        self.create_road(base_idx + 3, "right_north_" + str(self.segment_counter), segment_length + self.lanewidth + self.island_width, self.segment_counter*(2*(self.lanewidth + self.parking_space_length)) - (self.lanewidth + self.island_width),
+                         -math.pi/2, 0, self.parking_space_length - self.island_width, junction_id=-1, parking_spaces=False, add_border=1, add_island=-1)
 
         # create road at left south end - idx = base_idx + 3, id = base_idx + 4
-        self.create_road(base_idx + 4, "left_south_" + str(self.segment_counter), -self.lanewidth, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length) - self.lanewidth,
-                         -math.pi/2, 0, self.parking_space_length, junction_id=-1, parking_spaces=False, add_border=-1)
+        self.create_road(base_idx + 4, "left_south_" + str(self.segment_counter), -(self.lanewidth + self.island_width), self.segment_counter*(2*(self.lanewidth + self.parking_space_length)) - (self.lanewidth + self.island_width),
+                         -math.pi/2, 0, self.parking_space_length - self.island_width, junction_id=-1, parking_spaces=False, add_border=-1, add_island=1)
 
         # create road at right south end - idx = base_idx + 4, id = base_idx + 5
-        self.create_road(base_idx + 5, "right_south_" + str(self.segment_counter), -self.lanewidth, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length) + self.lanewidth,
-                         math.pi/2, 0, self.parking_space_length, junction_id=-1, parking_spaces=False, add_border=1)
+        self.create_road(base_idx + 5, "right_south_" + str(self.segment_counter), -(self.lanewidth + self.island_width), self.segment_counter*(2*(self.lanewidth + self.parking_space_length)) + (self.lanewidth + self.island_width),
+                         math.pi/2, 0, self.parking_space_length - self.island_width, junction_id=-1, parking_spaces=False, add_border=1, add_island=-1)
 
         # create connecting road turning left at north end - idx = base_idx + 5, id = base_idx + 6
-        self.create_road(base_idx + 6, "connecting_north_turn_left_" + str(self.segment_counter), segment_length, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length),
-                         0, 1/self.lanewidth, self.lanewidth * math.pi / 2, junction_id=junction_north_id, parking_spaces=False)
+        self.create_road(base_idx + 6, "connecting_north_turn_left_" + str(self.segment_counter), segment_length, self.segment_counter*(2*(self.lanewidth + self.parking_space_length)),
+                         0, 1/(self.lanewidth + self.island_width), (self.lanewidth + self.island_width) * math.pi / 2, junction_id=junction_north_id, parking_spaces=False, add_border=0, add_island=1)
 
         # create connecting road turning right at north end - idx = base_idx + 6, id = base_idx + 7
         self.create_road(base_idx + 7, "connecting_north_turn_right_" + str(self.segment_counter), segment_length, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length),
-                         0, -1/self.lanewidth, self.lanewidth * math.pi / 2, junction_id=junction_north_id, parking_spaces=False)
+                         0, -1/(self.lanewidth + self.island_width), (self.lanewidth + self.island_width) * math.pi / 2, junction_id=junction_north_id, parking_spaces=False, add_border=0, add_island=-1)
 
         # create connecting road turning left at south end - idx = base_idx + 7, id = base_idx + 8
-        self.create_road(base_idx + 8, "connecting_south_turn_left_" + str(self.segment_counter), 0, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length),
-                         math.pi, 1/self.lanewidth, self.lanewidth * math.pi / 2, junction_id=junction_south_id, parking_spaces=False)
+        self.create_road(base_idx + 8, "connecting_south_turn_left_" + str(self.segment_counter), 0, self.segment_counter*(2*(self.lanewidth + self.parking_space_length)),
+                         math.pi, 1/(self.lanewidth + self.island_width), (self.lanewidth + self.island_width) * math.pi / 2, junction_id=junction_south_id, parking_spaces=False, add_border=0, add_island=1)
 
         # create connecting road turning right at south end - idx = base_idx + 8, id = base_idx + 9
-        self.create_road(base_idx + 9, "connecting_south_turn_right_" + str(self.segment_counter), 0, self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length),
-                         math.pi, -1/self.lanewidth, self.lanewidth * math.pi / 2, junction_id=junction_south_id, parking_spaces=False)
+        self.create_road(base_idx + 9, "connecting_south_turn_right_" + str(self.segment_counter), 0, self.segment_counter*(2*(self.lanewidth + self.parking_space_length)),
+                         math.pi, -1/(self.lanewidth + self.island_width), (self.lanewidth + self.island_width) * math.pi / 2, junction_id=junction_south_id, parking_spaces=False, add_border=0, add_island=-1)
 
         # create straight connecting road at north end - idx = base_idx + 9, id = base_idx + 10
         self.create_road(base_idx + 10,
                          "connecting_straight_north_" + str(self.segment_counter),
-                         segment_length + self.lanewidth,
-                         self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length) - self.lanewidth,
-                         math.pi/2, 0, 2*self.lanewidth,
+                         segment_length + self.lanewidth + self.island_width,
+                         self.segment_counter*(2*(self.lanewidth + self.parking_space_length)) - (self.lanewidth + self.island_width),
+                         math.pi/2, 0, 2*(self.lanewidth + self.island_width),
                          junction_id=junction_north_id,
                          parking_spaces=False,
                          add_border=-1)
@@ -135,9 +141,9 @@ class Scenario(ScenarioGenerator):
         # create straight connecting road at south end - idx = base_idx + 10, id = base_idx + 11
         self.create_road(base_idx + 11,
                          "connecting_straight_south_" + str(self.segment_counter),
-                         -self.lanewidth,
-                         self.segment_counter*(2*self.lanewidth + 2*self.parking_space_length) + self.lanewidth,
-                         -math.pi/2, 0, 2*self.lanewidth,
+                         -(self.lanewidth + self.island_width),
+                         self.segment_counter*(2*(self.lanewidth + self.parking_space_length)) + (self.lanewidth + self.island_width),
+                         -math.pi/2, 0, 2*(self.lanewidth + self.island_width),
                          junction_id=junction_south_id,
                          parking_spaces=False,
                          add_border=-1)
@@ -221,6 +227,9 @@ class Scenario(ScenarioGenerator):
 
 
     def road(self, **kwargs):
+        self.odr = xodr.OpenDrive("parking_lot")
+        self.roads = []
+        self.segment_counter = 0
 
         # Add road network
         for i in range(self.nr_parking_segments):
@@ -238,21 +247,21 @@ class Scenario(ScenarioGenerator):
                                 Type=xodr.ObjectType.parkingSpace,
                                 id=1000 * i + j * 2 * 11 + j * 2 + side,
                                 name="Parking_space_{}".format(id),
-                                s=self.parking_space_width/2 + j * (self.parking_space_width - self.marking_width),
-                                t=side * (self.lanewidth + self.parking_space_length/2),
+                                s = self.parking_space_width/2 + j * (self.parking_space_width - self.marking_width),
+                                t = side * (self.lanewidth + self.parking_space_length / 2 + 0.25 * self.marking_width),
                                 zOffset=0.005,
                                 orientation=xodr.Orientation.none,
                                 length=self.parking_space_width - 2 * self.marking_width,
-                                width=self.parking_space_length - self.marking_width,
+                                width=self.parking_space_length - 1.5 * self.marking_width,
                                 height=3.0,
                                 hdg=0 if side == -1 else math.pi,
                                 pitch=0,
                                 roll=0)
 
-                    for side in [xodr.SideType.rear, xodr.SideType.right, xodr.SideType.front]:
+                    for marking_side in [xodr.SideType.rear, xodr.SideType.right, xodr.SideType.front, xodr.SideType.left]:
                         park_marking = xodr.Marking(color="white", lineLength="10", spaceLength="0.0",
                                                     startOffset="0.0", stopOffset="0.0", width="{}".format(self.marking_width),
-                                                    side=xodr.SideType(side), zOffset="0.005")
+                                                    side=xodr.SideType(marking_side), zOffset="0.005")
                         park_marking.add_userdata(xodr.UserData(code="lateralOffset", value=str(-self.marking_width/2)))
                         park_obj.add_marking(park_marking)
 
@@ -262,17 +271,19 @@ class Scenario(ScenarioGenerator):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Create a parking lot OpenDRIVE network.")
+    parser = argparse.ArgumentParser(description="Create a parking lot OpenDRIVE network.", formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--nr_parking_segments", type=int, default=10,
-                        help="Number of parking segments (default: 10)")
+                        help="Number of parking segments (default: %(default)s)")
     parser.add_argument("--nr_parking_spaces_per_segment", type=int, default=16,
-                        help="Number of parking spaces per segment (default: 16)")
+                        help="Number of parking spaces per segment (default: %(default)s)")
+    parser.add_argument("--preview", action="store_true",
+                        help="Preview the scenario using esmini odrviewer. Run from esmini root: python ./scripts/scenario_scripts/{} --preview".format(os.path.basename(__file__)))
     args = parser.parse_args()
 
-    Scenario(args.nr_parking_segments, args.nr_parking_spaces_per_segment).generate("./generated")
+    sce=Scenario(args.nr_parking_segments, args.nr_parking_spaces_per_segment)
+    sce.generate("./generated")
 
-    # uncomment the following lines to display the scenario using esmini
-    # from scenariogeneration import esmini
-    # esmini(Scenario(args.nr_parking_segments, args.nr_parking_spaces_per_segment),
-    #        os.path.join('../esmini_demo'),
-    #        car_density=(args.nr_parking_segments + args.nr_parking_spaces_per_segment) / 10)
+    if (args.preview):
+        from scenariogeneration import esmini
+        esmini(sce, os.path.join('.'),  # assumes run from esmini root as: python ./scripts/scenario_scripts/create_parking_lot.py
+            car_density=(args.nr_parking_segments + args.nr_parking_spaces_per_segment) / 10)
