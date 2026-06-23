@@ -2946,6 +2946,13 @@ roadmanager::RMObject::RMObject(double      s,
         color_[2] = 0.22;
         color_[3] = 1.0;
     }
+    else if (type_ == ObjectType::TRAFFICISLAND)
+    {
+        color_[0] = 0.61f;
+        color_[1] = 0.61f;
+        color_[2] = 0.61f;
+        color_[3] = 1.0f;
+    }
     else
     {
         color_[0] = 0.4;
