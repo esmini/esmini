@@ -1,5 +1,28 @@
 ## esmini release notes
 
+### 2026-06-24 Version 3.4.0
+
+Improvements and fixes:
+- Update [create_parking_lot.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/create_parking_lot.py) script
+  - add islands at parking group endpoints (videoclips: [small](https://youtu.be/GgzA7vXinTk), [large](https://youtu.be/q_q8-EATkYo))
+  - add option for preview (`--help` for usage)
+  - fix odr not created without preview
+- Fix object marking stitching (merge at corners) issue for varying lateral offsets
+- Support OSI compression (experimental)
+  - add esmini option for OSI compression (`--osi_compress`)
+  - update osi2csv.py and osiviewer.py to support compression
+  - note: modest compression rate while notable performance penalty
+- Set unique color (light gray) for traffic islands odr objects
+- Update [osi2csv.py](https://github.com/esmini/esmini/blob/dev/scripts/osi2csv.py) to also output object scenario id
+
+Build and CI updates:
+- Update and centralize dependency handling
+  - starting with osi and implot
+  - add version control and improved automation
+  - utilizing new [esmini-dependencies](https://github.com/esmini/esmini-dependencies) repo
+  - see updated info in [User guide - External dependencies](https://esmini.github.io/monolith.html#_external_dependencies)
+- Run nightly jobs only on dev changes
+
 ### 2026-06-16 Version 3.3.1
 
 Improvements and fixes:
