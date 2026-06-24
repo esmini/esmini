@@ -68,7 +68,8 @@ esmini is designed to link all dependencies statically. Main reason is to have a
 
 *Note:* Nothing stops you from going with all dynamic linking, it's just that provided build scripts are not prepared for it.
 
-CMake scripts will download several pre-compiled 3rd party packages and 3D model resource files.
+Building the dependencies from scratch would, in some cases, be both complicated and time consuming. Instead they are, by default, provided in compressed packages including needed headerfiles and prebuilt libraries. The packages are available for Win, Mac and Linux. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
+ CMake scripts will download several pre-compiled 3rd party packages and 3D model resource files.
 
 Default location for some of these resources is Google drive, and others Github as released packages. If there is an issue with Google drive packages, try switch to the backup location at Dropbox by changing the following line in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt]:
 
@@ -80,11 +81,11 @@ Links to all packages can be found in https://github.com/esmini/esmini/blob/mast
 
 If you need to (re)build a 3rd party lib for some reason, e.g. for an yet unsupported system or need for a specific version, these build scripts might be a starting point:
 
-- https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[scripts/generate_osg_libs.sh]
-- https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[scripts/generate_sumo_libs.sh]
-- https://github.com/esmini/esmini-dependencies/blob/main/osi/generate_osi_3_5_libs.sh[scripts/generate_osi_libs.sh]
+- https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[esmini/scripts/generate_osg_libs.sh]
+- https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[esmini/scripts/generate_sumo_libs.sh]
+- https://github.com/esmini/esmini-dependencies/blob/main/osi/generate_osi_3_5_libs.sh[esmini-dependencies/osi/generate_osi_3_5_libs.sh]
 
-or this script that builds all `sumo` and `osg` libs, combining the above ones:
+or this script that builds all `sumo` and `osg` libs, combining a selection of the above ones:
 
 https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.sh[scripts/generate_sumo_osg_libs.sh]
 
@@ -106,7 +107,12 @@ The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforce
 
 Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
 
-For `osi` and `implot`, the supported versions can be found in https://github.com/esmini/esmini/blob/master/support/cmake/common/version_mapping.cmake.
+For `osi` and `implot`, the supported versions can be found in https://github.com/esmini/esmini/blob/master/support/cmake/common/version_mapping.cmake[support/cmake/common/version_mapping.cmake].
+
+A few additional notes:
+
+- Although dependent libraries are provided, nothing stops you from building them yourself, e.g. for an unsupported system or need for a specific version or customized build.
+- The dependencies are built using as old compiler and toolset as possible to maximize compatibility with systems. Baseline is oldest https://github.com/actions/runner-images[image] supported by GitHub actions. The assumption being that a binary built on an older generation will run on a newer generation of a platform, but not vice versa. E.g. a binary built with on ubuntu 22.04 (e.g. with g++ v9) will run fine on Ubuntu 24.04.
 
 === Additional platform dependencies
 
