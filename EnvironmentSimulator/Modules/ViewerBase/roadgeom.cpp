@@ -2469,8 +2469,10 @@ namespace roadgeom
             // Shift a centerline polyline sideways (custom "lateralOffset" userData feature). Positive
             // moves to the left of the edge direction, negative to the right. seg_off holds the offset
             // per edge (seg_off[i] applies to the segment verts[i]..verts[i+1]). Interior vertices are
-            // offset along their miter (bisector) so the line keeps a constant lateral distance, which
-            // preserves the corner stitching.
+            // placed at the intersection of the two adjacent edge centerlines, each shifted by its own
+            // offset, so the line keeps the correct corner even when adjacent edges are shifted by
+            // different amounts (e.g. markings of differing width) - which a simple averaged bisector
+            // would misplace.
             auto offset_polyline = [](std::vector<osg::Vec3d>& pl, const std::vector<double>& seg_off)
             {
                 if (pl.size() < 2 || seg_off.size() + 1 != pl.size())
@@ -2502,32 +2504,41 @@ namespace roadgeom
                     d /= len;
                     return osg::Vec3d(-d.y(), d.x(), 0.0);
                 };
+                // Corner shared by edge (a->b) and edge (b->c): intersect the two centerlines after each
+                // is shifted left by its own offset. Returns b's plane z. Falls back to the averaged
+                // shifted points for near-parallel (~180 deg) edges where the intersection is undefined.
+                auto offsetCorner =
+                    [&leftPerp](const osg::Vec3d& a, const osg::Vec3d& b, const osg::Vec3d& c, double off_in, double off_out) -> osg::Vec3d
+                {
+                    const osg::Vec3d p0    = b + leftPerp(a, b) * off_in;   // point on shifted in-edge
+                    const osg::Vec3d d0    = b - a;                         // in-edge direction
+                    const osg::Vec3d p1    = b + leftPerp(b, c) * off_out;  // point on shifted out-edge
+                    const osg::Vec3d d1    = c - b;                         // out-edge direction
+                    const double     denom = d0.x() * d1.y() - d0.y() * d1.x();
+                    osg::Vec3d       out;
+                    if (fabs(denom) < 1e-9)
+                    {
+                        out = (p0 + p1) * 0.5;  // ~180 deg turn, intersection undefined
+                    }
+                    else
+                    {
+                        const double t = ((p1.x() - p0.x()) * d1.y() - (p1.y() - p0.y()) * d1.x()) / denom;
+                        out            = p0 + d0 * t;
+                    }
+                    out.z() = b.z();
+                    return out;
+                };
                 const size_t            n = pl.size();
                 std::vector<osg::Vec3d> result(n);
                 // A closed loop has its first and last vertex coincident. Offset both of those endpoints
-                // along the wrap-around bisector (incoming edge n-2..n-1 and outgoing edge 0..1) so they
-                // stay coincident after the shift and the closure corner remains joined.
+                // at the wrap-around corner (incoming edge n-2..n-1 and outgoing edge 0..1) so they stay
+                // coincident after the shift and the closure corner remains joined.
                 const bool closed = n >= 3 && (pl.front() - pl.back()).length() < 1e-6;
                 for (size_t i = 0; i < n; i++)
                 {
                     if (closed && (i == 0 || i == n - 1))
                     {
-                        const osg::Vec3d lp0 = leftPerp(pl[n - 2], pl[n - 1]);
-                        const osg::Vec3d lp1 = leftPerp(pl[0], pl[1]);
-                        const double     off = 0.5 * (seg_off[n - 2] + seg_off[0]);
-                        osg::Vec3d       m   = lp0 + lp1;
-                        const double     ml  = m.length();
-                        if (ml < 1e-6)
-                        {
-                            result[i] = pl[i] + lp1 * off;  // ~180 deg turn, fall back to edge perpendicular
-                        }
-                        else
-                        {
-                            m /= ml;
-                            const double cosHalf = m * lp1;
-                            const double scale   = (fabs(cosHalf) > 1e-3) ? off / cosHalf : off;
-                            result[i]            = pl[i] + m * scale;
-                        }
+                        result[i] = offsetCorner(pl[n - 2], pl[i], pl[1], seg_off[n - 2], seg_off[0]);
                     }
                     else if (i == 0)
                     {
@@ -2539,22 +2550,7 @@ namespace roadgeom
                     }
                     else
                     {
-                        const osg::Vec3d lp0 = leftPerp(pl[i - 1], pl[i]);
-                        const osg::Vec3d lp1 = leftPerp(pl[i], pl[i + 1]);
-                        const double     off = 0.5 * (seg_off[i - 1] + seg_off[i]);
-                        osg::Vec3d       m   = lp0 + lp1;
-                        const double     ml  = m.length();
-                        if (ml < 1e-6)
-                        {
-                            result[i] = pl[i] + lp0 * off;  // ~180 deg turn, fall back to edge perpendicular
-                        }
-                        else
-                        {
-                            m /= ml;
-                            const double cosHalf = m * lp0;
-                            const double scale   = (fabs(cosHalf) > 1e-3) ? off / cosHalf : off;
-                            result[i]            = pl[i] + m * scale;
-                        }
+                        result[i] = offsetCorner(pl[i - 1], pl[i], pl[i + 1], seg_off[i - 1], seg_off[i]);
                     }
                 }
                 pl = result;
