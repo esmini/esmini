@@ -24,16 +24,29 @@ jobs:
           submodules: true
           fetch-depth: 0  # Fetch all history for proper branch switching
 
-      - name: Install valgrind
-        run: |
-          sudo apt update
-          sudo apt install -y valgrind
-
       - name: Conditional Checkout
         run: |
           if [ "${{ github.ref }}" == "refs/heads/master" ]; then
             git checkout dev
           fi
+
+      - name: Check recent commits
+        id: changes
+        run: |
+          COUNT=$(git rev-list --count --since="24 hours ago" origin/dev)
+          echo "$COUNT commits over the last 24 hours found on dev"
+          echo "commit_count=$COUNT" >> $GITHUB_OUTPUT
+
+      - name: Skip job
+        if: steps.changes.outputs.commit_count == '0'
+        run: |
+          echo "No new commits on dev. Skipping."
+          exit 0
+
+      - name: Install valgrind
+        run: |
+          sudo apt update
+          sudo apt install -y valgrind
 
       - uses: ./.github/actions/setup_tools_shared
 
@@ -57,4 +70,5 @@ jobs:
 
       - name: Run Tests
         # Use xvfb on Linux and extend timeout allowing for slow execution
-        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_memory_leak_tests.sh
+        run: |
+          ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_memory_leak_tests.sh
