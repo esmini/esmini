@@ -170,20 +170,6 @@ or
 
 - get the package from https://www.dropbox.com/scl/fi/3jwz3ie6xkgpga33cbyju/models_with_lights.7z?rlkey=9obptnofidldoagn4154iyntl&st=zxoupatb&dl=1[here] and unpack files into `./resources/models`
 
-==== Update 3rd party prebuilt libraries
-
-There are a few external dependencies that takes long time to build from scratch. Instead they are provided in compressed packages including needed headerfiles and prebuilt libraries. The packages are available for Win, Mac and Linux. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
-
-The cmake script will check for the availability of these libraries, by simply checking for existence of corresponding folders, e.g. osg, osi, sumo, under esmini/externals. If missing, compressed packages will be downloaded and extracted.
-
-Not often, but at some points the prebuilt libraries needs to be updated. In most cases it affects the esmini build configuration and/or code. Hence, sometimes an update of esmini comes with a need to update the external libraries as well. Lack of automatic handling, such update needs to be done manually. One way is to delete the specific folder(s) and run ordinary cmake command again. But the simplest way is to enforce redownload of all packages:
-
-`cmake .. -D  FORCE_DOWNLOAD_BINARIES=TRUE`
-
-The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforced download of all packages. Upon successful download, the libraries will be replaced, one by one.
-
-Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
-
 ==== Entity does not appear
 In order to appear in the scenario, without need for AddEntity action, an entity must be represented in the Init section of the Storyboard. Common is to add actions to establish inital position and speed.
 

@@ -67,6 +67,8 @@ macro(set_osi_libs)
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
                     optimized
                     ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/zlibstatic.lib
                     debug
                     ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
                     debug

@@ -70,7 +70,7 @@ esmini is designed to link all dependencies statically. Main reason is to have a
 
 CMake scripts will download several pre-compiled 3rd party packages and 3D model resource files.
 
-Default location for these resources is Google drive. If there is an issue, try switch to the backup location at Dropbox by changing the following line in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt]:
+Default location for some of these resources is Google drive, and others Github as released packages. If there is an issue with Google drive packages, try switch to the backup location at Dropbox by changing the following line in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt]:
 
 ``set ( FILE_STORAGE "google" )`` +
 to +
@@ -81,12 +81,32 @@ Links to all packages can be found in https://github.com/esmini/esmini/blob/mast
 If you need to (re)build a 3rd party lib for some reason, e.g. for an yet unsupported system or need for a specific version, these build scripts might be a starting point:
 
 - https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[scripts/generate_osg_libs.sh]
-- https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh[scripts/generate_osi_libs.sh]
 - https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[scripts/generate_sumo_libs.sh]
+- https://github.com/esmini/esmini-dependencies/blob/main/osi/generate_osi_3_5_libs.sh[scripts/generate_osi_libs.sh]
 
-or this script that builds all three libs, combining the above ones:
+or this script that builds all `sumo` and `osg` libs, combining the above ones:
 
-https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.sh[scripts/generate_osi_sumo_osg_libs.sh]
+https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.sh[scripts/generate_sumo_osg_libs.sh]
+
+==== External dependency details
+
+The provided 3rd party packages includes needed headerfiles and prebuilt libraries. The packages are available for Win, Mac and Linux. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
+
+The cmake script checks for the availability of these libraries by looking for the expected folders under `externals`. From esmini v3.1.1, some packages (`osi` and `implot`) are built, released and version controlled via tags on https://github.com/esmini/esmini-dependencies[github], so the library handling is slightly different depending on the package.
+
+For example, `osg` and `sumo` are checked through their corresponding folder names, while for `osi` and `implot`, cmake maps the selected version (specified via `-D OSI_VERSION` and `-D IMPLOT_VERSION`) to a release tag and looks for the matching package locally under `externals/osi` and `externals/implot`.
+
+If a required package is missing, cmake automatically downloads and extracts it alongside any other packages in that folder.
+
+When one of these prebuilt libraries needs to be updated, it is typically enough to remove the corresponding package folder and run cmake again. For `osi` and `implot`, the update should happen automatically. The simplest way to enforce re-download of all downloadable packages is:
+
+`cmake .. -D  FORCE_DOWNLOAD_BINARIES=TRUE`
+
+The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforced download of all packages. Upon successful download, the libraries will be replaced, one by one.
+
+Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
+
+For `osi` and `implot`, the supported versions can be found in https://github.com/esmini/esmini/blob/master/support/cmake/common/version_mapping.cmake.
 
 === Additional platform dependencies
 
@@ -159,17 +179,13 @@ Then build as usual. It will link with protobuf shared library instead of linkin
 When running esmini, the protobuf shared library needs to be found. Set dynamic library path environment variable to the folder where the library is. Example:
 
 Linux: +
-``export LD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+``export LD_LIBRARY_PATH=./externals/osi/v3.5.0_2/linux/lib-dyn``
 
 macOS: +
-``export DYLD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+``export DYLD_LIBRARY_PATH=./externals/osi/v3.5.0_2/linux/lib-dyn``
 
 *Note:* +
-The dynamic versions of protobuf were added Aug 31 2021. So you might need to update the OSI library package. Get the latest from following links:
-
-- https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=0[OSI Windows]
-- https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=0[OSI Linux]
-- https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0[OSI Mac]
+In above example, `v3.5.0_2` reflects a tag that might change, use the one available in your system by checking the supported tags for your release in `./support/cmake/common/version_mapping.cmake`.
 
 === Slim esmini - customize configration
 
