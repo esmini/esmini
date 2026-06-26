@@ -276,6 +276,8 @@ if __name__ == "__main__":
                         help="Number of parking segments (default: %(default)s)")
     parser.add_argument("--nr_parking_spaces_per_segment", type=int, default=16,
                         help="Number of parking spaces per segment (default: %(default)s)")
+    parser.add_argument("--car_density", type=float, default=1.0,
+                        help="Car density (default: %(default)s)")
     parser.add_argument("--preview", action="store_true",
                         help="Preview the scenario using esmini odrviewer. Run from esmini root: python ./scripts/scenario_scripts/{} --preview".format(os.path.basename(__file__)))
     args = parser.parse_args()
@@ -286,4 +288,4 @@ if __name__ == "__main__":
     if (args.preview):
         from scenariogeneration import esmini
         esmini(sce, os.path.join('.'),  # assumes run from esmini root as: python ./scripts/scenario_scripts/create_parking_lot.py
-            car_density=(args.nr_parking_segments + args.nr_parking_spaces_per_segment) / 10)
+               car_density=args.car_density)
