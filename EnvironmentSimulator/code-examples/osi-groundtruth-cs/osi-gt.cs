@@ -42,6 +42,11 @@ namespace esmini_csharp
                     {
                         Console.WriteLine("  Object[{0}] indicator {1}", o.Id.Value, o.VehicleClassification.LightState.IndicatorState);
                     }
+
+                    foreach (Osi3.MovingObject.Types.VehicleAttributes.Types.WheelData wd in o.VehicleAttributes.WheelData)
+                    {
+                        Console.WriteLine("     wheel[{0}] angle: {1:N4}", wd.Index ,wd.Orientation.Yaw);
+                    }
                 }
             }
         }
