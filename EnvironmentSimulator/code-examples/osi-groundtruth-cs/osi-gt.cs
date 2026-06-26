@@ -13,7 +13,7 @@ namespace esmini_csharp
         static void Main(string[] args)
         {
             // initialize esmini
-            if (ESMiniLib.SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0) != 0)
+            if (ESMiniLib.SE_Init("../../../../../resources/xosc/light_state.xosc", 0, 1, 0, 0) != 0)
             {
                 Console.WriteLine("failed to load scenario");
                 return;
@@ -26,7 +26,7 @@ namespace esmini_csharp
                 ESMiniLib.SE_Step();
 
                 // Get OSI message
-                IntPtr int_ptr = ESMiniLib.SE_GetOSIGroundTruth(ref size);
+                IntPtr int_ptr = ESMiniLib.SE_GetOSIGroundTruth(out size);
                 Byte[] byte_array = new Byte[size];
                 Marshal.Copy(int_ptr, byte_array, 0, size);
                 Osi3.GroundTruth gt_msg = Osi3.GroundTruth.Parser.ParseFrom(byte_array);
@@ -37,6 +37,11 @@ namespace esmini_csharp
                 {
                     Console.WriteLine("  Object[{0}], Pos: {1:N2}, {2:N2}, {3:N2}",
                         o.Id.Value, o.Base.Position.X, o.Base.Position.Y, o.Base.Position.Z);
+
+                    if (o.VehicleClassification.LightState != null)
+                    {
+                        Console.WriteLine("  Object[{0}] indicator {1}", o.Id.Value, o.VehicleClassification.LightState.IndicatorState);
+                    }
                 }
             }
         }
