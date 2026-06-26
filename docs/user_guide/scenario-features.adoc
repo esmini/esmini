@@ -778,7 +778,7 @@ Examples:
 
 === Parameter distributions
 
-Parameter values and distributions can be specified in a separate https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/09_reuse_mechanisms/09_03_parameter_distribution.html[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario.
+Parameter values and distributions can be specified in a separate https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.3.1/09_reuse_mechanisms/09_03_parameter_distribution.html[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario.
 
 Here's an example: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc[cut-in_parameter_set.xosc].
 
@@ -788,7 +788,7 @@ To run all permutations with esmini, the following variants works:
 . `./bin/esmini --window 60 60 800 400 --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
 . `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
 
-The first two will use the scenario file referred to by the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/ParameterValueDistribution.html[ParameterValueDistriution element] inside the parameter value distribution file (`cut-in_parameter_set.xosc`). The third example will apply the parameter settings on the scenario defined by the `osc` launch argument, overriding any scenario reference in the specified `param_dist` file. This can be useful when a single parameter distribution applies to multiple scenarios (instead of having one parameter file for each scenario).
+The first two will use the scenario file referred to by the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.3.1/generated/content/ParameterValueDistribution.html[ParameterValueDistribution element] inside the parameter value distribution file (`cut-in_parameter_set.xosc`). The third example will apply the parameter settings on the scenario defined by the `osc` launch argument, overriding any scenario reference in the specified `param_dist` file. This can be useful when a single parameter distribution applies to multiple scenarios (instead of having one parameter file for each scenario).
 
 How to abort:
 

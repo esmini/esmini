@@ -9,7 +9,7 @@ toc::[]
 endif::monolith[]
 esmini make use of OpenSceneGraph (OSG) for visualization of the scenario. The OpenSCENARIO files can optionally refer to existing 3D models of the static environment (scene graph) and dynamic objects (entities). If the scene graph reference is missing, esmini will try to generate a basic model based on the OpenDRIVE road network description. Currently esmini only supports OSG native .osgb 3D file format. However, there are ways to convert 3D models as described next.
 
-http://www.openscenegraph.org/[OpenSceneGraph] (osg) includes readers and writers for quite a few 3D file formats. It comes with a demo application, http://www.openscenegraph.org/index.php/documentation/user-guides/55-osgconv[osgconv], a command line tool that simply takes one file as input and outputs the same content in a different format.
+http://www.openscenegraph.org/[OpenSceneGraph] (osg) includes readers and writers for quite a few 3D file formats. It comes with a demo application, https://openscenegraph.github.io/OpenSceneGraphDotComBackup/OpenSceneGraph/www.openscenegraph.com/index.php/documentation/user-guides/55-osgconv.html[osgconv], a command line tool that simply takes one file as input and outputs the same content in a different format.
 
 Examples:
 
@@ -65,7 +65,7 @@ For more info regarding building OSG for Linux, here's a great guide: +
 https://vicrucann.github.io/tutorials/osg-linux-quick-install/  +
 But note that it does not consider FBX support.
 
-Find more info on COLLADA via this old http://www.openscenegraph.com/index.php/documentation/guides/user-guides/111-collada[link].
+Find more info on COLLADA via this old https://openscenegraph.github.io/OpenSceneGraphDotComBackup/OpenSceneGraph/www.openscenegraph.com/index.php/documentation/guides/user-guides/111-collada.html[link].
 
 ==== Pre-build binaries
 

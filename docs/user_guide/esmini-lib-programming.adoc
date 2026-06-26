@@ -179,7 +179,7 @@ See link:command-reference.html#_esmini[_esmini], or run: `esmini --help`, for f
 
 ===== OSI via UDP
 
-By launch argument `--osi_receiver_ip <ip addr>` you can have esmini sending OSI packeges in UDP frames. The socket port is hardcoded but can of course be changed in the code (OSI_OUT_PORT in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp)[OSIReporter.cpp]).
+By launch argument `--osi_receiver_ip <ip addr>` you can have esmini sending OSI packeges in UDP frames. The socket port is hardcoded but can of course be changed in the code (OSI_OUT_PORT in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp[OSIReporter.cpp]).
 
 See receiver side code example https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp[osi_receiver.cpp].
 
