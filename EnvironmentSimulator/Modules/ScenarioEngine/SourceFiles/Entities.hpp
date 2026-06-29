@@ -191,6 +191,7 @@ namespace scenarioengine
             double            rgb[3]            = {0.0, 0.0, 0.0};     // current emissionRbg
             double            baseRgb[3]        = {0.0, 0.0, 0.0};
             double            maxRgb[3]         = {0.0, 0.0, 0.0};  // Init as the base materials max
+            bool              emitting          = false;
 
             std::string LightType2Str(VehicleLightType lightType);
         };

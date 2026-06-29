@@ -3134,6 +3134,16 @@ void LightStateAction::SetVehicleLightState(Object::VehicleLightStatus* vehicleL
         double x                  = luminousity / MAX_INTENSITY_LUM;
         double k                  = 0.25;  // Adjust this value to change the curvature of the intensity function
         vehicleLight->emission[i] = vehicleLight->maxRgb[i] * pow(x, k);
+
+        // Does any channel have a bit of emission? If so, the lamp is deemed to emit light
+        if (vehicleLight->emission[i] > 1e-3)
+        {
+            vehicleLight->emitting = true;
+        }
+        else
+        {
+            vehicleLight->emitting = false;
+        }
     }
 
     vehicleLight->luminousIntensity = luminousity;
@@ -3337,13 +3347,19 @@ void LightStateAction::HandleConflictingLights(const Object::VehicleLightType& t
             break;
         case Object::VehicleLightType::INDICATOR_LEFT:
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)]);
-            ResetLight(
-                object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_RIGHT)]);  // Can't be on at the same time in OSI
+            if (object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_RIGHT)].mode != Object::VehicleLightMode::UNKNOWN)
+            {
+                ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_RIGHT)],
+                           Object::VehicleLightMode::OFF);  // Can't be on at the same time in OSI
+            }
             break;
         case Object::VehicleLightType::INDICATOR_RIGHT:
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)]);
-            ResetLight(
-                object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)]);  // Can't be on at the same time in OSI
+            if (object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)].mode != Object::VehicleLightMode::UNKNOWN)
+            {
+                ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)],
+                           Object::VehicleLightMode::OFF);  // Can't be on at the same time in OSI
+            }
             break;
         default:
             break;

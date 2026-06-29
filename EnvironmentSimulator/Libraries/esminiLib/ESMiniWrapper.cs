@@ -106,6 +106,24 @@ namespace ESMini
         REL_DIST_EUCLIDIAN = 4,
     }
 
+    public enum SE_VehicleLightType
+    {
+        DAYTIME_RUNNING_LIGHTS = 0,
+        LOW_BEAM = 1,
+        HIGH_BEAM = 2,
+        FOG_LIGHTS = 3,
+        FOG_LIGHTS_FRONT = 4,
+        FOG_LIGHTS_REAR = 5,
+        BRAKE_LIGHTS = 6,
+        WARNING_LIGHTS = 7,
+        INDICATOR_LEFT = 8,
+        INDICATOR_RIGHT = 9,
+        REVERSING_LIGHTS = 10,
+        TAIL_LIGHTS = 11,
+        LICENSE_PLATE_ILLUMINATION = 12,
+        SPECIAL_PURPOSE_LIGHTS = 13,
+    }
+
     public enum SE_OSIStaticReportMode
     {
         DEFAULT = 0,
@@ -195,6 +213,16 @@ namespace ESMini
         public int axle;
         /// <summary>The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel</summary>
         public int index;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public struct SE_LightState
+    {
+        /// <summary>0 (off), 1 (on), 2 (flashing), 3 (unknown)</summary>
+        public int light_mode;
+        /// <summary>Is the lamp emitting light or not</summary>
+        [MarshalAs(UnmanagedType.I1)]
+        public bool emitting;
     }
 
     /// <summary>
@@ -1357,6 +1385,16 @@ namespace ESMini
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern int SE_GetObjectState(int object_id, out SE_ScenarioObjectState state);
+
+        /// <summary>
+        /// Get the light state of specified object
+        /// </summary>
+        /// <param name="object_id">Id of the object</param>
+        /// <param name="light_type">Enum specifying the type of light to get the state of</param>
+        /// <param name="light_state">Pointer/reference to a SE_LightState struct to be filled in</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_GetObjectLightState(int object_id, SE_VehicleLightType light_type, out SE_LightState light_state);
 
         /// <summary>
         /// Get the object route status

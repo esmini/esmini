@@ -565,7 +565,7 @@ TEST(LightState, TestLightStateColors)
 
         if (c1_light.type == Type::INDICATOR_RIGHT)
         {
-            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.mode, Mode::OFF);
             EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }

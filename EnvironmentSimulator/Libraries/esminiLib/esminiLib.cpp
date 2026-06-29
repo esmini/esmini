@@ -1466,6 +1466,36 @@ extern "C"
         return -1;
     }
 
+    SE_DLL_API int SE_GetObjectLightState(int object_id, SE_VehicleLightType light_type, SE_LightState *light_state)
+    {
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+
+        if (obj == nullptr)
+        {
+            return -1;
+        }
+
+        size_t type_idx         = static_cast<size_t>(light_type);
+        auto  &light            = obj->vehLghtStsList[type_idx];
+        light_state->light_mode = static_cast<int>(light.mode);
+
+        if (light_type == SE_VehicleLightType::FOG_LIGHTS || light_type == SE_VehicleLightType::WARNING_LIGHTS)
+        {
+            light_state->emitting = (obj->vehLghtStsList[type_idx + 1].emitting && obj->vehLghtStsList[type_idx + 2].emitting);
+        }
+        else
+        {
+            light_state->emitting = light.emitting;
+        }
+
+        return 0;
+    }
+
     SE_DLL_API int SE_GetObjectRouteStatus(int object_id)
     {
         if (player != nullptr)

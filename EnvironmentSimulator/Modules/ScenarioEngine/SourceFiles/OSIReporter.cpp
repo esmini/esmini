@@ -1249,6 +1249,9 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
 
     if (obj_id < has_lightstate_action_.size() && has_lightstate_action_[obj_id] == 1)
     {
+        auto light_state     = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
+        auto indicator_state = osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_OFF;
+
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
             const Object::VehicleLightMode &light_mode = obj.vehLghtStsList[i].mode;
@@ -1258,15 +1261,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                 continue;  // If mode not set, move to next light
             }
 
-            const Object::VehicleLightType &light_type  = obj.vehLghtStsList[i].type;
-            auto                            light_state = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
-
-            if ((light_type == Object::VehicleLightType::INDICATOR_LEFT || light_type == Object::VehicleLightType::INDICATOR_RIGHT) &&
-                light_state->indicator_state() == osi3::MovingObject_VehicleClassification_LightState_IndicatorState::
-                                                      MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING)
-            {
-                continue;  // We skip check of left/right blinkers as they can't be on at the same time as warning lights
-            }
+            const Object::VehicleLightType &light_type = obj.vehLghtStsList[i].type;
 
             switch (light_type)
             {
@@ -1300,9 +1295,30 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                     light_state->set_brake_light_state(GetBrakeLightMode(light_mode, obj.vehLghtStsList[i].luminousIntensity));
                     break;
                 case Object::VehicleLightType::WARNING_LIGHTS:
+                    if (light_mode != Object::VehicleLightMode::OFF)
+                    {
+                        indicator_state = GetIndicatorLightMode(light_mode, light_type);
+                    }
+                    break;
                 case Object::VehicleLightType::INDICATOR_LEFT:
+                    if (indicator_state != osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING)
+                    {
+                        auto mode = GetIndicatorLightMode(light_mode, light_type);
+                        if (mode != osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_OFF)
+                        {
+                            indicator_state = mode;
+                        }
+                    }
+                    break;
                 case Object::VehicleLightType::INDICATOR_RIGHT:
-                    light_state->set_indicator_state(GetIndicatorLightMode(light_mode, light_type));
+                    if (indicator_state != osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING)
+                    {
+                        auto mode = GetIndicatorLightMode(light_mode, light_type);
+                        if (mode != osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_OFF)
+                        {
+                            indicator_state = mode;
+                        }
+                    }
                     break;
                 case Object::VehicleLightType::REVERSING_LIGHTS:
                     light_state->set_reversing_light(GetGenericLightMode(light_mode));
@@ -1330,6 +1346,8 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                     break;
             }
         }
+
+        light_state->set_indicator_state(indicator_state);
     }
 
     // Set OSI Moving Object Control Type

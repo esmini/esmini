@@ -77,6 +77,12 @@ typedef struct
     // not existing.
 } SE_WheelData;
 
+typedef struct
+{
+    int  light_mode;  // 0 (off), 1 (on), 2 (flashing), 3 (unknown)
+    bool emitting;    // Is the lamp emitting light or not
+} SE_LightState;
+
 // asciidoc tag::SE_RoadInfo_struct[]
 typedef struct
 {
@@ -344,6 +350,24 @@ typedef enum
     REL_DIST_CARTESIAN    = 3,
     REL_DIST_EUCLIDIAN    = 4
 } SE_RelativeDistanceType;
+
+typedef enum
+{
+    DAYTIME_RUNNING_LIGHTS     = 0,
+    LOW_BEAM                   = 1,
+    HIGH_BEAM                  = 2,
+    FOG_LIGHTS                 = 3,
+    FOG_LIGHTS_FRONT           = 4,
+    FOG_LIGHTS_REAR            = 5,
+    BRAKE_LIGHTS               = 6,
+    WARNING_LIGHTS             = 7,
+    INDICATOR_LEFT             = 8,
+    INDICATOR_RIGHT            = 9,
+    REVERSING_LIGHTS           = 10,
+    TAIL_LIGHTS                = 11,
+    LICENSE_PLATE_ILLUMINATION = 12,
+    SPECIAL_PURPOSE_LIGHTS     = 13,
+} SE_VehicleLightType;
 
 typedef enum
 {
@@ -1100,6 +1124,15 @@ extern "C"
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state);
+
+    /**
+            Get the light state of specified object
+            @param object_id Id of the object
+            @param light_type Enum specifying the type of light to get the state of
+            @param light_state Pointer/reference to a SE_LightState struct to be filled in
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetObjectLightState(int object_id, SE_VehicleLightType light_type, SE_LightState *light_state);
 
     /**
             Get the object route status
