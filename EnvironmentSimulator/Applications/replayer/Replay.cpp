@@ -281,9 +281,10 @@ void Replay::RemoveDuplicateTimestampsInSlices(const Timeline<double>& dts)
 bool Replay::ExtractPacketsAsSlices(bool dt_in_slice, size_t scenario_idx)
 {
     // Build the packets containing header and data and store in a vector
-    PacketSlice* current_slice  = nullptr;
-    bool         has_restart    = false;
-    double       prev_timestamp = 0.0;
+    PacketSlice* current_slice   = nullptr;
+    bool         has_restart     = false;
+    bool         first_timestamp = true;
+    double       prev_timestamp  = 0.0;
 
     Dat::PacketHeader header;
     while (dat_reader_->ReadFile(header))
@@ -360,9 +361,14 @@ bool Replay::ExtractPacketsAsSlices(bool dt_in_slice, size_t scenario_idx)
             current_slice->packets.push_back(packet);
         }
 
-        if (timestamp < prev_timestamp)
+        if (!first_timestamp && timestamp < prev_timestamp)
         {
             has_restart = true;
+        }
+
+        if (packet.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
+        {
+            first_timestamp = false;
         }
 
         prev_timestamp = timestamp;
@@ -931,18 +937,20 @@ void Replay::FillInTimestamps()
                 double end_time = next_timestamp - next_dt;
                 FillEmptyTimestamps(curr_time, end_time, current_dt, filled);
             }
-            // We have reached the last dt_ value, but the current time is not at the end, so we need to fill with current dt until the end
-            else if (j == dts_.values.size() - 1 && curr_time + current_dt < timestamps_.back() - SMALL_NUMBER)
-            {
-                FillEmptyTimestamps(curr_time, timestamps_.back(), current_dt, filled);
-            }
             // We are one sample away, just add it
             else
             {
                 filled.emplace_back(next_timestamp);
             }
+
             i++;
             curr_time = filled.back();
+
+            // We have reached the last dt_ value, but the current time is not at the end, so we need to fill with current dt until the end
+            if (j == dts_.values.size() - 1 && curr_time + current_dt < timestamps_.back() - SMALL_NUMBER)
+            {
+                FillEmptyTimestamps(curr_time, timestamps_.back(), current_dt, filled);
+            }
         }
     }
 
