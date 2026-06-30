@@ -458,6 +458,41 @@ namespace scenarioengine
                         double&                           thw,
                         double                            maxDist = LARGE_NUMBER);
 
+        /**
+        @brief Measure the time to collision (TTC) from this object to the target object.
+
+        TTC = relative distance / relative speed, where relative speed is projected on the
+        target's velocity direction. This matches OpenSCENARIO TimeToCollisionCondition
+        (TrigByTimeToCollision::CheckCondition delegates to this method, so the values
+        agree to the last bit).
+
+        TTC is set to -1.0 (undefined) when:
+          - the target is behind this object (moving away from each other),
+          - distance or relative speed is effectively zero (bounding boxes overlap, or
+            both objects are stationary / moving in steady state),
+          - the underlying Distance() call cannot resolve the geometry (treated as
+            "infinite" distance, then divided into -1.0 by the rules above).
+
+        @param target The target object to measure to. Must not be null.
+        @param cs Coordinate system, see roadmanager::CoordinateSystem
+                  (CS_ENTITY matches OpenSCENARIO default)
+        @param relDistType Distance type, see roadmanager::RelativeDistanceType
+                  (REL_DIST_LONGITUDINAL matches OpenSCENARIO default)
+        @param freeSpace Measure free distance between bounding boxes (true) or
+                         reference-point to reference-point (false)
+        @param ttc Time to collision in seconds, or -1.0 if undefined (output parameter,
+                   always written exactly once)
+        @param maxDist Skip computation if distance exceeds this threshold
+        @return 0 on success (including when ttc is -1.0 due to a valid undefined case),
+                -1 on hard failure (e.g. target == nullptr)
+        */
+        int TimeToCollision(Object*                           target,
+                            roadmanager::CoordinateSystem     cs,
+                            roadmanager::RelativeDistanceType relDistType,
+                            bool                              freeSpace,
+                            double&                           ttc,
+                            double                            maxDist = LARGE_NUMBER);
+
         enum class OverlapType
         {
             NONE            = 0,             // object is not overlapping Ego front projection

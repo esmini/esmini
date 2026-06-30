@@ -1348,6 +1348,64 @@ int Object::TimeHeadway(Object*                           target,
     return 0;
 }
 
+int Object::TimeToCollision(Object*                           target,
+                            roadmanager::CoordinateSystem     cs,
+                            roadmanager::RelativeDistanceType relDistType,
+                            bool                              freeSpace,
+                            double&                           ttc,
+                            double                            maxDist)
+{
+    ttc = -1;
+
+    if (target == nullptr)
+    {
+        return -1;
+    }
+
+    double rel_dist  = LARGE_NUMBER;
+    double rel_speed = 0.0;
+
+    if (this->Distance(target, cs, relDistType, freeSpace, rel_dist, maxDist) != 0)
+    {
+        rel_dist = LARGE_NUMBER;
+    }
+
+    // Compute relative speed projected on target's velocity direction.
+    // Mirrors TrigByTimeToCollision::CheckCondition so that the public
+    // API and the existing OpenSCENARIO condition agree to the last digit.
+    if (fabs(target->pos_.GetVelX()) < SMALL_NUMBER && fabs(target->pos_.GetVelY()) < SMALL_NUMBER)
+    {
+        // target standing still, consider only own speed
+        rel_speed = this->GetSpeed();
+    }
+    else
+    {
+        double rel_vel[2] = {0.0, 0.0};
+        double proj_speed = ProjectPointOnVector2DSignedLength(this->pos_.GetVelX(),
+                                                               this->pos_.GetVelY(),
+                                                               target->pos_.GetVelX(),
+                                                               target->pos_.GetVelY(),
+                                                               rel_vel[0],
+                                                               rel_vel[1]);
+
+        rel_speed = SIGN(this->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(target->GetSpeed()));
+    }
+
+    // TTC not defined when distance or relative speed is effectively zero
+    if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
+    {
+        ttc = -1;
+        return 0;
+    }
+
+    double candidate = rel_dist / rel_speed;
+
+    // Moving away from each other -> undefined
+    ttc = (candidate < 0.0) ? -1.0 : candidate;
+
+    return 0;
+}
+
 Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 {
     // Strategy:

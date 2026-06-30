@@ -790,8 +790,7 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
     (void)sim_time;
 
     triggered_by_entities_.clear();
-    bool   result   = false;
-    double rel_dist = LARGE_NUMBER, rel_speed = 0.0;
+    bool result = false;
 
     ttc_ = -1;
 
@@ -804,82 +803,47 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
             continue;
         }
 
-        int retVal = 0;
-
         if (object_ != nullptr)
         {
             if (!object_->IsActive())
             {
                 continue;
             }
-            retVal = trigObj->Distance(object_, cs_, relDistType_, freespace_, rel_dist);
+            // Object-to-object case: delegate to the public Object::TimeToCollision so the
+            // condition and the SE_GetTimeToCollision/get_ttc APIs share one source of truth.
+            // The method writes -1 to ttc_ when undefined (target behind, moving apart, zero
+            // rel speed); we preserve that semantics by treating ttc_ < 0 as "no condition".
+            trigObj->TimeToCollision(object_, cs_, relDistType_, freespace_, ttc_);
         }
         else
         {
-            roadmanager::Position* pos = position_->GetRMPos();
-            retVal                     = trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist);
-        }
+            // Position (static point) target: kept inline because Object::TimeToCollision
+            // currently only supports object-to-object. A Position overload could replace
+            // this fallback in a future PR.
+            double                 rel_dist = LARGE_NUMBER;
+            roadmanager::Position* pos      = position_->GetRMPos();
+            int                    retVal   = trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist);
 
-        if (retVal != 0)
-        {
-            rel_dist = LARGE_NUMBER;
-        }
-
-        if (object_)
-        {
-            if (fabs(object_->pos_.GetVelX()) < SMALL_NUMBER && fabs(object_->pos_.GetVelY()) < SMALL_NUMBER)
+            if (retVal != 0)
             {
-                // object standing still, consider only speed of triggering entity
-                rel_speed = trigObj->GetSpeed();
+                rel_dist = LARGE_NUMBER;
+            }
+            const double rel_speed = trigObj->speed_;
+
+            if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
+            {
+                ttc_ = -1;
             }
             else
             {
-                double rel_vel[2] = {0.0, 0.0};
-                // Calculate relative speed of triggering entity along object's velocity direction
-                double proj_speed = ProjectPointOnVector2DSignedLength(trigObj->pos_.GetVelX(),
-                                                                       trigObj->pos_.GetVelY(),
-                                                                       object_->pos_.GetVelX(),
-                                                                       object_->pos_.GetVelY(),
-                                                                       rel_vel[0],
-                                                                       rel_vel[1]);
-
-                // calculate trig object relative speed as projected velocity absolute difference considering
-                rel_speed = SIGN(trigObj->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(object_->GetSpeed()));
+                const double candidate = rel_dist / rel_speed;
+                ttc_                   = (candidate < 0.0) ? -1.0 : candidate;
             }
-            // printf("rel_dist %.2f obj vel (%.2f, %.2f) speed %.2f trig_obj vel (%.2f, %.2f) speed %.2f proj_speed %.2f rel_speed %.2f\n",
-            //     rel_dist, object_->pos_.GetVelX(),
-            //     object_->pos_.GetVelY(),
-            //     object_->GetSpeed(),
-            //     trigObj->pos_.GetVelX(),
-            //     trigObj->pos_.GetVelY(),
-            //     trigObj->GetSpeed(),
-            //     proj_speed,
-            //     rel_speed);
-        }
-        else
-        {
-            rel_speed = trigObj->speed_;
         }
 
-        // TimeToCollision (TTC) not defined for cases:
-        //  - no distance between entities
-        //  - moving away from each other
-        if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
+        if (ttc_ >= 0.0)
         {
-            ttc_ = -1;
-        }
-        else
-        {
-            ttc_ = rel_dist / rel_speed;
-
-            if (ttc_ < 0.0)
-            {
-                ttc_ = -1.0;
-            }
-            else
-            {
-                result = EvaluateRule(ttc_, value_, rule_);
-            }
+            result = EvaluateRule(ttc_, value_, rule_);
 
             if (result == true)
             {
@@ -1600,8 +1564,8 @@ bool TrigByRelativeSpeed::CheckCondition(double sim_time)
         }
         else if (direction_ == LATERAL)
         {
-            double vel_y = sin(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelX() +
-                           cos(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelY();
+            double vel_y       = sin(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelX() +
+                                 cos(-object_->pos_.GetH()) * triggering_entities_.entity_[i].object_->pos_.GetVelY();
             current_rel_speed_ = vel_y - object_->pos_.GetVelLat();
         }
         else if (direction_ == VERTICAL)
