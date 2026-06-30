@@ -371,6 +371,16 @@ typedef enum
 
 typedef enum
 {
+    CS_UNDEFINED  = 0,
+    CS_ENTITY     = 1,
+    CS_LANE       = 2,
+    CS_ROAD       = 3,
+    CS_TRAJECTORY = 4,
+    CS_WORLD      = 5
+} SE_CoordinateSystem;  // Must match roadmanager::CoordinateSystem
+
+typedef enum
+{
     DEFAULT     = 0,
     API         = 1,
     API_AND_LOG = 2
@@ -1417,6 +1427,39 @@ extern "C"
                                                 const double            tracking_limit,
                                                 double                 *distance,
                                                 double                 *timestamp);
+
+    /**
+            @brief Compute the time to collision (TTC) from one object to another.
+
+            Mirrors OpenSCENARIO TimeToCollisionCondition: relative distance is divided by
+            the relative speed projected on the target's velocity direction. The same math
+            is used by TrigByTimeToCollision::CheckCondition, so values returned here are
+            bit-identical to what a TimeToCollisionCondition would observe at the same
+            simulation step.
+
+            @param object_a_id Id of the object measuring (e.g. ego)
+            @param object_b_id Id of the target object
+            @param cs Coordinate system used to measure distance, see SE_CoordinateSystem
+                      (CS_ENTITY = local frame, matches OpenSCENARIO default)
+            @param dist_type Distance type, see SE_RelativeDistanceType
+                      (REL_DIST_LONGITUDINAL matches OpenSCENARIO TimeToCollisionCondition default)
+            @param free_space If non-zero, measure distance between bounding boxes;
+                      if zero, measure from reference point to reference point
+            @param ttc Output: time to collision in seconds, or -1.0 when undefined.
+                      Undefined cases (set to -1.0):
+                        - target is behind (moving away from each other)
+                        - relative speed is effectively zero (steady-state convoy / both stopped)
+                        - bounding boxes already overlap (zero rel_dist)
+            @return 0 on success (including when ttc is -1.0 due to a valid undefined case),
+                    -1 on failure (invalid object id, null ttc pointer, or distance
+                    computation failed)
+    */
+    SE_DLL_API int SE_GetTimeToCollision(int                     object_a_id,
+                                         int                     object_b_id,
+                                         SE_CoordinateSystem     cs,
+                                         SE_RelativeDistanceType dist_type,
+                                         int                     free_space,
+                                         double                 *ttc);
 
     /**
             Create an ideal object sensor and attach to specified vehicle

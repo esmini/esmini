@@ -2405,6 +2405,46 @@ extern "C"
         return obj_found;
     }
 
+    SE_DLL_API int SE_GetTimeToCollision(int                     object_a_id,
+                                         int                     object_b_id,
+                                         SE_CoordinateSystem     cs,
+                                         SE_RelativeDistanceType dist_type,
+                                         int                     free_space,
+                                         double                 *ttc)
+    {
+        if (ttc == nullptr)
+        {
+            return -1;
+        }
+        // Out-of-range enum values would otherwise reach Object::Distance() which
+        // silently treats unknown CS as Cartesian. Be explicit and reject.
+        if (cs < CS_UNDEFINED || cs > CS_WORLD || dist_type < REL_DIST_UNDEFINED || dist_type > REL_DIST_EUCLIDIAN)
+        {
+            return -1;
+        }
+
+        Object *obj_a = nullptr;
+        if (getObjectById(object_a_id, obj_a) == -1)
+        {
+            return -1;
+        }
+
+        Object *obj_b = nullptr;
+        if (getObjectById(object_b_id, obj_b) == -1)
+        {
+            return -1;
+        }
+
+        double ttc_val = -1.0;
+        int    rc      = obj_a->TimeToCollision(obj_b,
+                                                static_cast<roadmanager::CoordinateSystem>(cs),
+                                                static_cast<roadmanager::RelativeDistanceType>(dist_type),
+                                                free_space != 0,
+                                                ttc_val);
+        *ttc           = ttc_val;
+        return rc;
+    }
+
     void objCallbackFn(scenarioengine::Object *obj, void *my_data)
     {
         for (size_t i = 0; i < objCallback.size(); i++)

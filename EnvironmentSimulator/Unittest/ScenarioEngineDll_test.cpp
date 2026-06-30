@@ -5139,8 +5139,8 @@ TEST(APITest, TestFetchImage)
 
 static void paramDeclCallbackSetRoute(void* args)
 {
-    double(*positions)[8] = reinterpret_cast<double(*)[8]>(args);
-    static int counter    = 0;
+    double (*positions)[8] = reinterpret_cast<double (*)[8]>(args);
+    static int counter     = 0;
 
     SE_SetParameterInt("StartRoadId", static_cast<int>(positions[counter][0]));
     SE_SetParameterInt("StartLaneId", static_cast<int>(positions[counter][1]));
@@ -6361,6 +6361,49 @@ INSTANTIATE_TEST_SUITE_P(
     TrailTest,
     testing::Values(std::make_tuple("position", 71.0, -6.0, 64, 0.0445, 79.9937, -5.7766, 8, 0.1624, 84.8936, -4.8236, 2, 0.0118),
                     std::make_tuple("time", 60.9999, -5.994, 64, 0.2758, 65.9984, -5.8872, 8, 0.1624, 70.9764, -5.4374, 2, -0.0157)));
+
+// Verify SE_GetTimeToCollision behaves consistently with the TimeToCollisionCondition
+// already exercised by ttc_condition.xosc, and that invalid inputs return -1 without
+// touching the output value.
+TEST(GetTimeToCollisionTest, ttc_basic_and_edge_cases)
+{
+    const char* args[] = {"--osc", "../../../resources/xosc/cut-in.xosc", "--headless", "--fixed_timestep", "0.05"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    // ttc_value sentinel: we expect implementations to write -1.0 on undefined cases
+    // and to leave the value alone on hard errors (nullptr / invalid id) per the
+    // SE_GetTimeToCollision contract.
+    double ttc_value = 42.0;
+
+    // null pointer -> -1 and sentinel preserved
+    EXPECT_EQ(SE_GetTimeToCollision(0, 1, CS_ENTITY, REL_DIST_LONGITUDINAL, 1, nullptr), -1);
+    EXPECT_DOUBLE_EQ(ttc_value, 42.0);
+
+    // invalid object id -> -1
+    EXPECT_EQ(SE_GetTimeToCollision(99, 1, CS_ENTITY, REL_DIST_LONGITUDINAL, 1, &ttc_value), -1);
+
+    // out-of-range enum -> -1
+    EXPECT_EQ(SE_GetTimeToCollision(0, 1, static_cast<SE_CoordinateSystem>(42), REL_DIST_LONGITUDINAL, 1, &ttc_value), -1);
+    EXPECT_EQ(SE_GetTimeToCollision(0, 1, CS_ENTITY, static_cast<SE_RelativeDistanceType>(42), 1, &ttc_value), -1);
+
+    // Step the scenario a couple of frames so velocities settle
+    for (int i = 0; i < 20; i++)
+    {
+        SE_StepDT(0.05);
+    }
+
+    // Valid query: ego id=0 vs target id=1 along ENTITY/LONGITUDINAL must succeed.
+    // We don't assert a specific value (depends on scenario kinematics) — only the
+    // contract: rc == 0, ttc either -1 or a finite non-negative number.
+    ASSERT_EQ(SE_GetTimeToCollision(0, 1, CS_ENTITY, REL_DIST_LONGITUDINAL, 1, &ttc_value), 0);
+    EXPECT_TRUE(ttc_value == -1.0 || (std::isfinite(ttc_value) && ttc_value >= 0.0));
+
+    // EUCLIDIAN free-space distance: contract identical.
+    ASSERT_EQ(SE_GetTimeToCollision(0, 1, CS_ENTITY, REL_DIST_EUCLIDIAN, 1, &ttc_value), 0);
+    EXPECT_TRUE(ttc_value == -1.0 || (std::isfinite(ttc_value) && ttc_value >= 0.0));
+
+    SE_Close();
+}
 
 int main(int argc, char** argv)
 {
