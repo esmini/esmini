@@ -790,8 +790,7 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
     (void)sim_time;
 
     triggered_by_entities_.clear();
-    bool   result   = false;
-    double rel_dist = LARGE_NUMBER, rel_speed = 0.0;
+    bool result = false;
 
     ttc_ = -1;
 
@@ -804,8 +803,6 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
             continue;
         }
 
-        int retVal = 0;
-
         if (object_ != nullptr)
         {
             if (!object_->IsActive())
@@ -816,14 +813,13 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
         }
         else
         {
-            roadmanager::Position* pos = position_->GetRMPos();
-            retVal                     = trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist);
-
-            if (retVal != 0)
+            roadmanager::Position* pos      = position_->GetRMPos();
+            double                 rel_dist = LARGE_NUMBER;
+            if (trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist) != 0)
             {
                 rel_dist = LARGE_NUMBER;
             }
-            rel_speed = trigObj->speed_;
+            double rel_speed = trigObj->speed_;
 
             // TimeToCollision (TTC) not defined for cases:
             //  - no distance between entities
