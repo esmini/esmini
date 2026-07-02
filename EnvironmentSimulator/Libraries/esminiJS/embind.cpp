@@ -153,7 +153,8 @@ namespace esmini
             .function("get_simulation_time", &OpenScenario::get_simulation_time)
             .function("is_quit", &OpenScenario::is_quit)
             .function("get_object_state", &OpenScenario::get_object_state, emscripten::allow_raw_pointers())
-            .function("get_object_state_by_second", &OpenScenario::get_object_state_by_second);
+            .function("get_object_state_by_second", &OpenScenario::get_object_state_by_second)
+            .function("get_ttc", &OpenScenario::get_ttc);
     }
 }  // namespace esmini
 
