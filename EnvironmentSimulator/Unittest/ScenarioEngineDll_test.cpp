@@ -6356,6 +6356,27 @@ TEST_P(TrailTest, TrailTestPositionMode)
     SE_Close();
 }
 
+TEST(APITest, TestGetTimeToCollision)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/ttc_condition.xosc";
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    ASSERT_GE(SE_GetNumberOfObjects(), 2);
+
+    double ttc = 42.0;
+
+    // Invalid object id -> error
+    EXPECT_EQ(SE_GetTimeToCollision(999, 0, 1, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, false, &ttc), -1);
+
+    // Null pointer -> error
+    EXPECT_EQ(SE_GetTimeToCollision(0, 1, 1, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, false, nullptr), -1);
+
+    // Valid call -> success (ttc may be -1 if undefined in this frame)
+    EXPECT_EQ(SE_GetTimeToCollision(0, 1, 1, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, false, &ttc), 0);
+
+    SE_Close();
+}
+
 INSTANTIATE_TEST_SUITE_P(
     TrailTestPositionModePosition,
     TrailTest,
