@@ -2405,6 +2405,32 @@ extern "C"
         return obj_found;
     }
 
+    SE_DLL_API int SE_GetTimeToCollision(int object_a_id, int object_b_id, int cs, SE_RelativeDistanceType dist_type, bool free_space, double *ttc)
+    {
+        if (ttc == nullptr)
+        {
+            return -1;
+        }
+
+        Object *obj_a = nullptr;
+        if (getObjectById(object_a_id, obj_a) == -1)
+        {
+            return -1;
+        }
+
+        Object *obj_b = nullptr;
+        if (getObjectById(object_b_id, obj_b) == -1)
+        {
+            return -1;
+        }
+
+        return obj_a->TimeToCollision(obj_b,
+                                      static_cast<roadmanager::CoordinateSystem>(cs),
+                                      static_cast<roadmanager::RelativeDistanceType>(dist_type),
+                                      free_space,
+                                      *ttc);
+    }
+
     void objCallbackFn(scenarioengine::Object *obj, void *my_data)
     {
         for (size_t i = 0; i < objCallback.size(); i++)
