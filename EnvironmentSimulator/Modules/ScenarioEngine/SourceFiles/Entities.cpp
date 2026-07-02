@@ -1348,6 +1348,66 @@ int Object::TimeHeadway(Object*                           target,
     return 0;
 }
 
+int Object::TimeToCollision(Object*                           target,
+                            roadmanager::CoordinateSystem     cs,
+                            roadmanager::RelativeDistanceType relDistType,
+                            bool                              freeSpace,
+                            double&                           ttc,
+                            double                            maxDist)
+{
+    ttc = -1;
+
+    if (target == nullptr)
+    {
+        return -1;
+    }
+
+    double rel_dist  = LARGE_NUMBER;
+    double rel_speed = 0.0;
+
+    if (this->Distance(target, cs, relDistType, freeSpace, rel_dist, maxDist) != 0)
+    {
+        rel_dist = LARGE_NUMBER;
+    }
+
+    if (fabs(target->pos_.GetVelX()) < SMALL_NUMBER && fabs(target->pos_.GetVelY()) < SMALL_NUMBER)
+    {
+        // target standing still, consider only speed of triggering entity
+        rel_speed = this->GetSpeed();
+    }
+    else
+    {
+        double rel_vel[2] = {0.0, 0.0};
+        // Calculate relative speed along target's velocity direction
+        double proj_speed = ProjectPointOnVector2DSignedLength(this->pos_.GetVelX(),
+                                                               this->pos_.GetVelY(),
+                                                               target->pos_.GetVelX(),
+                                                               target->pos_.GetVelY(),
+                                                               rel_vel[0],
+                                                               rel_vel[1]);
+
+        rel_speed = SIGN(this->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(target->GetSpeed()));
+    }
+
+    // TTC not defined for cases:
+    //  - no distance between entities
+    //  - moving away from each other
+    if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
+    {
+        ttc = -1;
+    }
+    else
+    {
+        ttc = rel_dist / rel_speed;
+        if (ttc < 0.0)
+        {
+            ttc = -1.0;
+        }
+    }
+
+    return 0;
+}
+
 Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
 {
     // Strategy:

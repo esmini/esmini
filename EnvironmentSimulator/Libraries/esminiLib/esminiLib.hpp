@@ -1419,6 +1419,20 @@ extern "C"
                                                 double                 *timestamp);
 
     /**
+            Compute time to collision (TTC) between two objects, mirroring the math used
+            by OpenSCENARIO TimeToCollisionCondition.
+            @param object_a_id Id of the object from which to measure
+            @param object_b_id Id of the target object
+            @param cs Coordinate system, see roadmanager::CoordinateSystem
+            @param dist_type Enum specifying what distance to measure
+            @param free_space Measure distance between bounding boxes (true) or between ref points (false)
+            @param ttc Output: time to collision in seconds, or -1.0 when undefined
+                       (target behind, moving apart, or zero relative speed)
+            @return 0 on success, -1 on failure (invalid object id, null ttc pointer)
+    */
+    SE_DLL_API int SE_GetTimeToCollision(int object_a_id, int object_b_id, int cs, SE_RelativeDistanceType dist_type, bool free_space, double *ttc);
+
+    /**
             Create an ideal object sensor and attach to specified vehicle
             @param object_id Handle to the object to which the sensor should be attached
             @param x Position x coordinate of the sensor in vehicle local coordinates

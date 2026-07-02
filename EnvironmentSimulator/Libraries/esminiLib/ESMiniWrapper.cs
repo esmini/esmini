@@ -1675,6 +1675,20 @@ namespace ESMini
         public static extern int SE_SimpleGetDistanceToObject(int object_a_id, int object_b_id, SE_RelativeDistanceType dist_type, double tracking_limit, out double distance, out double timestamp);
 
         /// <summary>
+        /// Compute time to collision (TTC) between two objects, mirroring the math used
+        /// by OpenSCENARIO TimeToCollisionCondition.
+        /// </summary>
+        /// <param name="object_a_id">Id of the object from which to measure</param>
+        /// <param name="object_b_id">Id of the target object</param>
+        /// <param name="cs">Coordinate system, see roadmanager::CoordinateSystem</param>
+        /// <param name="dist_type">Enum specifying what distance to measure</param>
+        /// <param name="free_space">Measure distance between bounding boxes (true) or between ref points (false)</param>
+        /// <param name="ttc">Output: time to collision in seconds, or -1.0 when undefined (target behind, moving apart, or zero relative speed)</param>
+        /// <returns>0 on success, -1 on failure (invalid object id, null ttc pointer)</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_GetTimeToCollision(int object_a_id, int object_b_id, int cs, SE_RelativeDistanceType dist_type, [MarshalAs(UnmanagedType.I1)] bool free_space, out double ttc);
+
+        /// <summary>
         /// Create an ideal object sensor and attach to specified vehicle
         /// </summary>
         /// <param name="object_id">Handle to the object to which the sensor should be attached</param>

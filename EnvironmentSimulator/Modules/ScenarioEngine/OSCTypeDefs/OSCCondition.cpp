@@ -790,8 +790,7 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
     (void)sim_time;
 
     triggered_by_entities_.clear();
-    bool   result   = false;
-    double rel_dist = LARGE_NUMBER, rel_speed = 0.0;
+    bool result = false;
 
     ttc_ = -1;
 
@@ -804,82 +803,45 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
             continue;
         }
 
-        int retVal = 0;
-
         if (object_ != nullptr)
         {
             if (!object_->IsActive())
             {
                 continue;
             }
-            retVal = trigObj->Distance(object_, cs_, relDistType_, freespace_, rel_dist);
+            trigObj->TimeToCollision(object_, cs_, relDistType_, freespace_, ttc_);
         }
         else
         {
-            roadmanager::Position* pos = position_->GetRMPos();
-            retVal                     = trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist);
-        }
-
-        if (retVal != 0)
-        {
-            rel_dist = LARGE_NUMBER;
-        }
-
-        if (object_)
-        {
-            if (fabs(object_->pos_.GetVelX()) < SMALL_NUMBER && fabs(object_->pos_.GetVelY()) < SMALL_NUMBER)
+            roadmanager::Position* pos      = position_->GetRMPos();
+            double                 rel_dist = LARGE_NUMBER;
+            if (trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist) != 0)
             {
-                // object standing still, consider only speed of triggering entity
-                rel_speed = trigObj->GetSpeed();
+                rel_dist = LARGE_NUMBER;
+            }
+            double rel_speed = trigObj->speed_;
+
+            // TimeToCollision (TTC) not defined for cases:
+            //  - no distance between entities
+            //  - moving away from each other
+            if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
+            {
+                ttc_ = -1;
             }
             else
             {
-                double rel_vel[2] = {0.0, 0.0};
-                // Calculate relative speed of triggering entity along object's velocity direction
-                double proj_speed = ProjectPointOnVector2DSignedLength(trigObj->pos_.GetVelX(),
-                                                                       trigObj->pos_.GetVelY(),
-                                                                       object_->pos_.GetVelX(),
-                                                                       object_->pos_.GetVelY(),
-                                                                       rel_vel[0],
-                                                                       rel_vel[1]);
+                ttc_ = rel_dist / rel_speed;
 
-                // calculate trig object relative speed as projected velocity absolute difference considering
-                rel_speed = SIGN(trigObj->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(object_->GetSpeed()));
+                if (ttc_ < 0.0)
+                {
+                    ttc_ = -1.0;
+                }
             }
-            // printf("rel_dist %.2f obj vel (%.2f, %.2f) speed %.2f trig_obj vel (%.2f, %.2f) speed %.2f proj_speed %.2f rel_speed %.2f\n",
-            //     rel_dist, object_->pos_.GetVelX(),
-            //     object_->pos_.GetVelY(),
-            //     object_->GetSpeed(),
-            //     trigObj->pos_.GetVelX(),
-            //     trigObj->pos_.GetVelY(),
-            //     trigObj->GetSpeed(),
-            //     proj_speed,
-            //     rel_speed);
-        }
-        else
-        {
-            rel_speed = trigObj->speed_;
         }
 
-        // TimeToCollision (TTC) not defined for cases:
-        //  - no distance between entities
-        //  - moving away from each other
-        if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
+        if (ttc_ >= 0.0)
         {
-            ttc_ = -1;
-        }
-        else
-        {
-            ttc_ = rel_dist / rel_speed;
-
-            if (ttc_ < 0.0)
-            {
-                ttc_ = -1.0;
-            }
-            else
-            {
-                result = EvaluateRule(ttc_, value_, rule_);
-            }
+            result = EvaluateRule(ttc_, value_, rule_);
 
             if (result == true)
             {
