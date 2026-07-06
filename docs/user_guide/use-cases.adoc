@@ -198,6 +198,14 @@ Mesa3D is normally installed with Linux distributions. Check OpenGL support with
 If the command is not available, then Mesa3D utility package is probably missing. Install as: +
 ``sudo apt install mesa-utils``
 
+To enforce software (CPU based) 3D rendering, utilize the `LIBGL_ALWAYS_SOFTWARE` environment variable: +
+
+- single run example: +
+`LIBGL_ALWAYS_SOFTWARE=1 ./bin/esmini --osc ./resources/xosc/cut-in.xosc --window 50 50 800 600`
+
+- persistent setting: +
+`export LIBGL_ALWAYS_SOFTWARE=1`
+
 To run headless with a virtual frame buffer:
 
 - Activate https://en.wikipedia.org/wiki/Xvfb[xvfb]: +

@@ -146,6 +146,11 @@ In order to execute the files you need to do one of following from a terminal in
 ** Remove quarantine flags: `xattr -c -r esmini-demo/bin`, or
 ** Sign executables for use on local machine: `codesign -f -s - esmini-demo/bin/*`
 
+==== esmini in WSL
+WSL (Windows Subsystem for Linux) is a compatibility layer for running Linux binary executables natively on Windows 10 and Windows 11. This can be a good option for Windows users needing or wanting to run esmini in Linux environment.
+
+Unfortunately we get reports of failures running esmini with viewer in WSL, probably related to failed mapping of OpenGL to Windows graphics driver. A workaround might be to enforce software (CPU based) rendering, bypassing the graphics (hardware) driver. This can be done by utilizing the `LIBGL_ALWAYS_SOFTWARE` environment variable. See xref:use-cases.adoc#_software_rendering_no_gfx_hw[View a scenario / Software rendering (no gfx hw)] for more info.
+
 ==== OpenStreetMap (OSM) roads in esmini
 SUMO comes with a great tool, https://sumo.dlr.de/docs/netconvert.html[netconvert], that can convert road networks from and to various formats.
 

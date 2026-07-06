@@ -47,6 +47,8 @@ From the `docs/user_guide/` folder, render the pages and update the search index
 for f in *.adoc; do asciidoctor -r ./mermaid-ink-preprocessor.rb "$f"; done
 ./generate-search-index.sh
 ----
+This produces a collection of `.html` files (`index.html` being the landing page) and the `search_index.json` file that is used for the search functionality in the published document.
+
 Same thing, but directing the output files to a specific folder:
 [source,bash]
 ----
@@ -54,7 +56,12 @@ for f in *.adoc; do asciidoctor -r ./mermaid-ink-preprocessor.rb -D ../../../esm
 ./generate-search-index.sh ../../../esmini.github.io
 ----
 
-This produces a collection of `.html` files (`index.html` being the landing page) and the `search_index.json` file that is used for the search functionality in the published document.
+Similar, but only for files that have been changed since last commit:
+[source,bash]
+----
+git diff --name-only --relative | while read -r f; do asciidoctor -r ./mermaid-ink-preprocessor.rb -D ../../../esmini.github.io "$f"; done
+./generate-search-index.sh ../../../esmini.github.io
+----
 
 === How to view previous versions
 Full commit history is found https://github.com/esmini/esmini.github.io/commits/main[here]
