@@ -615,24 +615,24 @@ TEST(LightState, TestLightStateColors)
         // Car 1
         if (c1_light.type == Type::WARNING_LIGHTS)
         {
-            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
         }
         else if (c1_light.type == Type::INDICATOR_LEFT)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
-            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 12000.0);
         }
         else if (c1_light.type == Type::INDICATOR_RIGHT)
         {
-            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
-            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.mode, Mode::OFF);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
         else if (c1_light.type == Type::BRAKE_LIGHTS)
         {
-            EXPECT_EQ(c1_light.mode, Mode::OFF);
-            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::VIOLET);
             EXPECT_EQ(c1_light.luminousIntensity, 6000.0);
         }
         else if (c1_light.type == Type::FOG_LIGHTS)
@@ -653,14 +653,14 @@ TEST(LightState, TestLightStateColors)
         }
         else if (c1_light.type == Type::HIGH_BEAM)
         {
-            EXPECT_EQ(c1_light.mode, Mode::ON);
-            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
         else if (c1_light.type == Type::LOW_BEAM)
         {
-            EXPECT_EQ(c1_light.mode, Mode::ON);
-            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
     }
@@ -676,36 +676,36 @@ TEST(LightState, TestLightStateColors)
 
         if (c1_light.type == Type::WARNING_LIGHTS)
         {
-            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
         }
         else if (c1_light.type == Type::INDICATOR_LEFT)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
-            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 12000.0);
         }
         else if (c1_light.type == Type::INDICATOR_RIGHT)
         {
-            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
-            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.mode, Mode::OFF);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
         else if (c1_light.type == Type::BRAKE_LIGHTS)
         {
-            EXPECT_EQ(c1_light.mode, Mode::OFF);
-            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::VIOLET);
             EXPECT_EQ(c1_light.luminousIntensity, 3600.0);
         }
         else if (c1_light.type == Type::HIGH_BEAM)
         {
-            EXPECT_EQ(c1_light.mode, Mode::ON);
-            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 4000.0);
         }
         else if (c1_light.type == Type::LOW_BEAM)
         {
-            EXPECT_EQ(c1_light.mode, Mode::ON);
-            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 4000.0);
         }
     }
@@ -864,8 +864,8 @@ TEST(OSI, TestLightStates)
     car1_ls = &osi_gt_ptr->moving_object(0).vehicle_classification().light_state();
     car2_ls = &osi_gt_ptr->moving_object(1).vehicle_classification().light_state();
 
-    EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING);
-    EXPECT_EQ(car1_ls->brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_OFF);
+    EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
+    EXPECT_EQ(car1_ls->brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_NORMAL);
     EXPECT_EQ(car1_ls->front_fog_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
     EXPECT_EQ(car1_ls->rear_fog_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
 

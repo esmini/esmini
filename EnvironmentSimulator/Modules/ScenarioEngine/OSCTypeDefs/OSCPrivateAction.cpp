@@ -3183,8 +3183,6 @@ void LightStateAction::Start(double simTime)
         }
 
         lightState.previousIntensity_ = vehicleLight->luminousIntensity;
-        vehicleLight->mode            = actionVehicleLightStatus_.mode;
-        vehicleLight->color           = actionVehicleLightStatus_.color;
 
         // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
         std::copy_n(vehicleLight->rgb, RGB_ARRAY_SIZE_, lightState.previousMinRgb_);
@@ -3222,6 +3220,13 @@ void LightStateAction::Step(double simTime, double dt)
         if (actionVehicleLightStatus_.mode != Object::VehicleLightMode::FLASHING)
         {
             end_action = true;
+        }
+
+        // Update the lamps of the action after we have transitioned
+        for (auto& lightState : vehicleLights_)
+        {
+            lightState.vehicleLight_->mode  = actionVehicleLightStatus_.mode;
+            lightState.vehicleLight_->color = actionVehicleLightStatus_.color;
         }
 
         transitioned_ = true;  // Make sure we only enter this if-statement once
@@ -3553,25 +3558,27 @@ void LightStateAction::SetVehicleLights(const Object::VehicleLightType& type)
 {
     if (type == Object::VehicleLightType::FOG_LIGHTS)
     {
-        object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)].mode = actionVehicleLightStatus_.mode;  // Save mode
-
+        VehicleLightState fogLights;
+        fogLights.vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
         VehicleLightState fogLightFront;
         fogLightFront.vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type) + 1];
         VehicleLightState fogLightRear;
         fogLightRear.vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type) + 2];
 
+        vehicleLights_.emplace_back(fogLights);
         vehicleLights_.emplace_back(fogLightFront);
         vehicleLights_.emplace_back(fogLightRear);
     }
     else if (actionVehicleLightStatus_.type == Object::VehicleLightType::WARNING_LIGHTS)
     {
-        object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)].mode = actionVehicleLightStatus_.mode;  // Save mode
-
+        VehicleLightState warningLights;
+        warningLights.vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
         VehicleLightState indicatorLeft;
         indicatorLeft.vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type) + 1];
         VehicleLightState indicatorRight;
         indicatorRight.vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type) + 2];
 
+        vehicleLights_.emplace_back(warningLights);
         vehicleLights_.emplace_back(indicatorLeft);
         vehicleLights_.emplace_back(indicatorRight);
     }

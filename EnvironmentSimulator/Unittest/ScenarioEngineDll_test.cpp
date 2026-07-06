@@ -3229,6 +3229,106 @@ TEST(OSILaneParing, Signs)
     SE_Close();
 }
 
+TEST(VehicleLightStateTest, GetVehicleLightState)
+{
+    const char* scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc";
+    int         init          = SE_Init(scenario_file, 0, 0, 0, 0);
+
+    ASSERT_EQ(init, 0);
+
+    SE_LightState light_state;
+
+    SE_GetObjectLightState(0, SE_VehicleLightType::DAYTIME_RUNNING_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::LOW_BEAM, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::HIGH_BEAM, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::FOG_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::FOG_LIGHTS_FRONT, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::FOG_LIGHTS_REAR, &light_state);
+    EXPECT_EQ(light_state.light_mode, 0);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::BRAKE_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::WARNING_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::INDICATOR_LEFT, &light_state);
+    EXPECT_EQ(light_state.light_mode, 2);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::INDICATOR_RIGHT, &light_state);
+    EXPECT_EQ(light_state.light_mode, 0);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::REVERSING_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::TAIL_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::LICENSE_PLATE_ILLUMINATION, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::SPECIAL_PURPOSE_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 2);
+    EXPECT_EQ(light_state.emitting, true);
+
+    while (SE_GetSimulationTime() < 0.125 + SMALL_NUMBER)
+    {
+        SE_StepDT(0.025);
+    }
+
+    SE_GetObjectLightState(0, SE_VehicleLightType::FOG_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::FOG_LIGHTS_FRONT, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::FOG_LIGHTS_REAR, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::BRAKE_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::WARNING_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::HIGH_BEAM, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::LOW_BEAM, &light_state);
+    EXPECT_EQ(light_state.light_mode, 3);
+    EXPECT_EQ(light_state.emitting, false);
+
+    while (SE_GetSimulationTime() < 0.625 + SMALL_NUMBER)
+    {
+        SE_StepDT(0.025);
+    }
+
+    SE_GetObjectLightState(0, SE_VehicleLightType::WARNING_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 2);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::BRAKE_LIGHTS, &light_state);
+    EXPECT_EQ(light_state.light_mode, 0);
+    EXPECT_EQ(light_state.emitting, false);
+    SE_GetObjectLightState(0, SE_VehicleLightType::HIGH_BEAM, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+    SE_GetObjectLightState(0, SE_VehicleLightType::LOW_BEAM, &light_state);
+    EXPECT_EQ(light_state.light_mode, 1);
+    EXPECT_EQ(light_state.emitting, true);
+
+    SE_Close();
+}
+
 TEST(ExternalControlTest, TestTimings)
 {
     // This test case imitates a custom application controlling the Ego vehicle
