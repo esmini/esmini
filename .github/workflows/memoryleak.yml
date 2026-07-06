@@ -44,13 +44,16 @@ jobs:
           exit 0
 
       - name: Install valgrind
+        if: steps.changes.outputs.commit_count != '0'
         run: |
           sudo apt update
           sudo apt install -y valgrind
 
       - uses: ./.github/actions/setup_tools_shared
+        if: steps.changes.outputs.commit_count != '0'
 
       - name: Cache
+        if: steps.changes.outputs.commit_count != '0'
         uses: actions/cache@v5
         with:
           path: |
@@ -62,13 +65,15 @@ jobs:
           key: ${{ runner.os }}-external-resources
 
       - name: CMake Configure - Ubuntu
-        if: runner.os == 'Linux'
+        if: steps.changes.outputs.commit_count != '0' && runner.os == 'Linux'
         run: cmake -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
       - name: CMake Build
+        if: steps.changes.outputs.commit_count != '0'
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
       - name: Run Tests
+        if: steps.changes.outputs.commit_count != '0'
         # Use xvfb on Linux and extend timeout allowing for slow execution
         run: |
           ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_memory_leak_tests.sh
