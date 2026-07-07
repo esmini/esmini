@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.22.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Link entry point and generated OSI C# files from parent folders -->
+    <Compile Include="../osi-gt.cs" Link="osi-gt.cs" />
+    <Compile Include="../osi3/*.cs" Link="osi3/%(Filename)%(Extension)" />
+    <!-- Link the ESMiniWrapper.cs file that lives outside this folder -->
+    <Compile Include="../../../Libraries/esminiLib/ESMiniWrapper.cs" Link="ESMiniWrapper.cs" />
+  </ItemGroup>
+</Project>

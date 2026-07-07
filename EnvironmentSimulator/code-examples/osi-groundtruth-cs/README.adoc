@@ -1,7 +1,8 @@
 This example shows, one way, how to access OSI data in a C# environment.
 
-It's dependent on the https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs[ESMiniWrapper.cs], and targeting Windows environment. If the wrapper is modified to work on Linux (referring .so instead of DLL) it might work there as well, but it's not been tested.
+It's dependent on the https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs[ESMiniWrapper.cs].
 
+== Windows
 === Build
 [source]
 ----
@@ -20,8 +21,27 @@ cd ../../../../bin
 ../EnvironmentSimulator/code-examples/osi-groundtruth-cs/build/Release/osi-groundtruth
 ----
 
-=== How to create the osi3 C# files
-For this example the osi3 C# files were provided. If you need or want to compile them yourself:
+== Linux
+=== Build
+[source]
+----
+mkdir build
+cd build
+cmake ../linux
+cmake --build .
+----
+
+=== Run
+To have the correct relative path to the scenario file and also access to esminiLib we move into `esmini/bin` folder for running the example.
+
+[source]
+----
+cd ../../../../bin
+../EnvironmentSimulator/code-examples/osi-groundtruth-cs/linux/bin/Release/net8.0/osi-groundtruth
+----
+
+== How to create the osi3 C# files
+For this example the osi3 C# files were provided. If you need or want to compile them yourself (Windows example):
 
 * Get protoc compiler +
   Suggested version: 3.15.2 +
