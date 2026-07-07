@@ -4204,6 +4204,10 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                             {
                                 lane_type = Lane::LANE_TYPE_ON_RAMP;
                             }
+                            else if (lane_type_str == "curb")
+                            {
+                                lane_type = Lane::LANE_TYPE_CURB;
+                            }
                             else if (lane_type_str == "connectingRamp")
                             {
                                 lane_type = Lane::LANE_TYPE_CONNECTING_RAMP;

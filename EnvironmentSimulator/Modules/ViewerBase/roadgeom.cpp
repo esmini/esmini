@@ -1020,6 +1020,7 @@ namespace roadgeom
                                 geom->getOrCreateStateSet()->setAttributeAndModes(materialAsphalt_.get());
                             }
                             else if (lane->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BIKING) ||
+                                     lane->IsType(roadmanager::Lane::LaneType::LANE_TYPE_CURB) ||
                                      lane->IsType(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK))
                             {
                                 material_t = MaterialType::CONCRETE;
