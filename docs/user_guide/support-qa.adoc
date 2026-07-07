@@ -283,8 +283,7 @@ The difference is basically that real-time will run with as small time-steps as 
 zing precision but constrained by system clock. In other words, the scenario will play out in "natural" speed, good for previewing or demonstrating sc
 narios. Each timestep is calculated by esmini based on passed system-time since last frame.
 
-The fixed-time is simpler, esmini will simply execute the scenario as fast as possible applying the specified delta-time for each step. Good for runni
-g tests for later post processing of resulting logs, data or OSI files.
+The fixed-time is simpler, esmini will simply execute the scenario as fast as possible applying the specified delta-time for each step. Good for running tests for later post processing of resulting logs, data or OSI files.
 
 A common use-case is to run esmini quick/headless and then utilize the replayer for viewing the result. See more info here: link:use-cases.html#_replay_scenario[Replay scenario]
 

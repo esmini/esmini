@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2026-07-07 Version 3.4.1
+
+Improvements and fixes:
+- Add basic VehicleLightState info in esminiLib API
+- Fix replay time sometimes cut short in `replayer` and `dat2csv`
+- Add [create_simple_tree_and_parking.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/create_simple_tree_and_parking.py) script
+  - showing simple object creation with scenariogeneration
+- Add `--car_density <number>` argument to [create_parking_lot.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/create_parking_lot.py)
+- Fix a few broken links in [User guide](https://esmini.github.io/)
+- Add tip on enforced SW rendering in [User guide - Software rendering](https://esmini.github.io/monolith.html#_software_rendering_no_gfx_hw)
+
+Build and CI updates:
+- Bugfix: Nightly jobs runs in spite no dev changes
+
 ### 2026-06-24 Version 3.4.0
 
 Improvements and fixes:
