@@ -5,6 +5,8 @@
 Improvements and fixes:
 - Add basic VehicleLightState info in esminiLib API
 - Fix replay time sometimes cut short in `replayer` and `dat2csv`
+- Bugfix: Visualize curb as sidewalk instead of grass
+- Add linux support to C# [osi-gt code example](https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/code-examples/osi-groundtruth-cs)
 - Add [create_simple_tree_and_parking.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/create_simple_tree_and_parking.py) script
   - showing simple object creation with scenariogeneration
 - Add `--car_density <number>` argument to [create_parking_lot.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/create_parking_lot.py)
