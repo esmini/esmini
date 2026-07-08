@@ -3877,7 +3877,11 @@ void Viewer::SetLightMaterialAndColor(Object::VehicleLightStatus* light, CarMode
     }
 }
 
-void Viewer::UpdateRoadSensors(PointSensor* road_sensor, PointSensor* route_sensor, PointSensor* lane_sensor, roadmanager::Position* pos)
+void Viewer::UpdateRoadSensors(PointSensor*           road_sensor,
+                               PointSensor*           route_sensor,
+                               PointSensor*           lane_sensor,
+                               roadmanager::Position* pos,
+                               roadmanager::Layer     current_layer)
 {
     if (road_sensor == 0 || route_sensor == 0 || lane_sensor == 0)
     {
@@ -3903,7 +3907,7 @@ void Viewer::UpdateRoadSensors(PointSensor* road_sensor, PointSensor* route_sens
     UpdateSensor(route_sensor);
 
     roadmanager::Position lane_pos(*pos);
-    lane_pos.SetLanePos(pos->GetTrackId(), pos->GetLaneId(), pos->GetS(), 0);
+    lane_pos.SetLanePos(pos->GetTrackId(), pos->GetLaneId(), pos->GetS(), 0, IDX_UNDEFINED, current_layer);
 
     SensorSetPivotPos(lane_sensor, pos->GetX(), pos->GetY(), pos->GetZ());
     SensorSetTargetPos(lane_sensor, lane_pos.GetX(), lane_pos.GetY(), lane_pos.GetZ());

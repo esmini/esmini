@@ -286,6 +286,9 @@ namespace scenarioengine
         double sensor_pos_[3];
 
         roadmanager::Position     pos_;
+        roadmanager::Layer        lane_layer_preference_;    // Preferred lane layer for positioning (permanent vs temporary)
+        roadmanager::Layer        current_lane_layer_;       // Current lane layer the entity is driving on
+        bool                      explicit_lane_layer_set_;  // True if current lane layer was explicitly set by LaneChangeAction
         int                       model_id_ = -1;
         roadmanager::PolyLineBase trail_;
         OSCBoundingBox            boundingbox_;
@@ -761,6 +764,27 @@ namespace scenarioengine
         Rgb GetColorRgb() const
         {
             return color_rgb_;
+        }
+
+        void SetLaneLayerPreference(roadmanager::Layer layer)
+        {
+            lane_layer_preference_ = layer;
+        }
+
+        roadmanager::Layer GetLaneLayerPreference() const
+        {
+            return lane_layer_preference_;
+        }
+
+        void SetCurrentLaneLayer(roadmanager::Layer layer)
+        {
+            current_lane_layer_      = layer;
+            explicit_lane_layer_set_ = true;  // Mark that lane layer was explicitly set
+        }
+
+        roadmanager::Layer GetCurrentLaneLayer() const
+        {
+            return current_lane_layer_;
         }
 
     private:

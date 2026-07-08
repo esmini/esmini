@@ -41,6 +41,9 @@ Object::Object(Type type)
       junctionSelectorStrategy_(Junction::JunctionStrategyType::SELECTOR_ANGLE),
       nextJunctionSelectorAngle_(0.0),
       scaleMode_(EntityScaleMode::NONE),
+      lane_layer_preference_(roadmanager::LAYER_TEMPORARY),  // Default to temporary lane layer; falls back to permanent during resolution
+      current_lane_layer_(roadmanager::LAYER_TEMPORARY),     // Start on temporary lane layer by default
+      explicit_lane_layer_set_(false),                       // Lane layer not explicitly set initially
       is_active_(false),
       model3d_full_path_(""),
       color_(""),
@@ -119,7 +122,39 @@ void Object::SetStandStill(bool state, double time)
 
 Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
 {
-    return pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
+    roadmanager::Layer old_lane_layer = current_lane_layer_;
+
+    // Decide which lane layer to use for positioning:
+    // - If lane layer was explicitly set (via LaneChangeAction), try to maintain it
+    // - Otherwise, use lane_layer_preference_ to allow natural transitions via lane links
+    roadmanager::Layer positioning_lane_layer = explicit_lane_layer_set_ ? current_lane_layer_ : lane_layer_preference_;
+
+    Position::ReturnCode ret = pos_.MoveAlongS(ds,
+                                               0.0,
+                                               GetJunctionSelectorAngle(),
+                                               actualDistance,
+                                               Position::MoveDirectionMode::HEADING_DIRECTION,
+                                               true,
+                                               positioning_lane_layer);
+
+    // Check what lane layer we actually ended up on after the move
+    roadmanager::Layer new_lane_layer = pos_.GetCurrentLaneLayer();
+
+    // If we were on an explicitly set lane layer but ended up on a different one,
+    // it means the explicit lane layer ended and we transitioned via lane links (or it doesn't exist)
+    // In this case, clear the explicit flag and adopt the new lane layer as current
+    if (explicit_lane_layer_set_ && new_lane_layer != current_lane_layer_)
+    {
+        explicit_lane_layer_set_ = false;
+    }
+
+    // Update current_lane_layer_ if it changed
+    if (new_lane_layer != old_lane_layer)
+    {
+        current_lane_layer_ = new_lane_layer;
+    }
+
+    return ret;
 }
 
 void Object::AssignController(Controller* controller)

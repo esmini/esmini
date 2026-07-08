@@ -2084,6 +2084,17 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             offset = strtod(parameters.ReadAttribute(positionChild, "offset"));
         }
 
+        // Check for optional layer attribute (default: permanent)
+        roadmanager::Layer layer = roadmanager::LAYER_PERMANENT;
+        if (positionChild.attribute("layer"))
+        {
+            std::string layer_str = parameters.ReadAttribute(positionChild, "layer");
+            if (layer_str == "temporary")
+            {
+                layer = roadmanager::LAYER_TEMPORARY;
+            }
+        }
+
         // Check for optional Orientation element
         pugi::xml_node orientation_node = positionChild.child("Orientation");
         OSCOrientation orientation;
@@ -2097,7 +2108,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
             orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
         }
 
-        pos_return = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
+        pos_return = new OSCPositionLane(road_id, lane_id, s, offset, orientation, layer);
+        if (positionChild.attribute("layer"))
+        {
+            pos_return->GetRMPos()->SetExplicitLaneLayer(layer);
+        }
     }
     else if (positionChildName == "RoutePosition")
     {
@@ -2981,7 +2996,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         else if (laneChangeChild.name() == std::string("LaneChangeTarget"))
                         {
-                            LatLaneChangeAction::Target *target = 0;
+                            LatLaneChangeAction::Target *target       = 0;
+                            roadmanager::Layer           target_layer = roadmanager::LAYER_PERMANENT;  // Default to permanent
 
                             for (pugi::xml_node targetChild = laneChangeChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
                             {
@@ -2995,22 +3011,75 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                         return 0;
                                     }
                                     target_rel->value_ = strtoi(parameters.ReadAttribute(targetChild, "value"));
-                                    target             = target_rel;
+
+                                    if (!targetChild.attribute("layer").empty())
+                                    {
+                                        std::string layer_str = parameters.ReadAttribute(targetChild, "layer");
+                                        if (layer_str == "temporary")
+                                        {
+                                            target_layer = roadmanager::LAYER_TEMPORARY;
+                                        }
+                                        else if (layer_str == "permanent")
+                                        {
+                                            target_layer = roadmanager::LAYER_PERMANENT;
+                                        }
+                                        else
+                                        {
+                                            LOG_WARN("Unknown layer type '{}', defaulting to permanent", layer_str);
+                                        }
+                                    }
+
+                                    target = target_rel;
                                 }
                                 else if (targetChild.name() == std::string("AbsoluteTargetLane"))
                                 {
                                     LatLaneChangeAction::TargetAbsolute *target_abs = new LatLaneChangeAction::TargetAbsolute;
 
                                     target_abs->value_ = strtoi(parameters.ReadAttribute(targetChild, "value"));
-                                    target             = target_abs;
+
+                                    if (!targetChild.attribute("layer").empty())
+                                    {
+                                        std::string layer_str = parameters.ReadAttribute(targetChild, "layer");
+                                        if (layer_str == "temporary")
+                                        {
+                                            target_layer = roadmanager::LAYER_TEMPORARY;
+                                        }
+                                        else if (layer_str == "permanent")
+                                        {
+                                            target_layer = roadmanager::LAYER_PERMANENT;
+                                        }
+                                        else
+                                        {
+                                            LOG_WARN("Unknown layer type '{}', defaulting to permanent", layer_str);
+                                        }
+                                    }
+
+                                    target = target_abs;
+                                }
+                                else if (targetChild.name() == std::string("Layer"))
+                                {
+                                    std::string layer_str = parameters.ReadAttribute(targetChild, "value");
+                                    if (layer_str == "temporary")
+                                    {
+                                        target_layer = roadmanager::LAYER_TEMPORARY;
+                                    }
+                                    else if (layer_str == "permanent")
+                                    {
+                                        target_layer = roadmanager::LAYER_PERMANENT;
+                                    }
+                                    else
+                                    {
+                                        LOG_WARN("Unknown layer type '{}', defaulting to permanent", layer_str);
+                                    }
                                 }
                                 else
                                 {
-                                    throw std::runtime_error(std::string("Unsupported LaneChangeTarget: ") + targetChild.name());
+                                    LOG_WARN("Unsupported LaneChangeTarget element: {}", targetChild.name());
                                 }
                             }
                             if (target)
                             {
+                                target->layer_       = target_layer;
                                 action_lane->target_ = target;
                             }
                         }
@@ -3549,6 +3618,27 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 else if (routingChild.name() == std::string("RandomRouteAction"))
                 {
                     action = new RandomRouteAction(parent);
+                }
+                else if (routingChild.name() == std::string("PreferredLaneLayerAction"))
+                {
+                    PreferredLaneLayerAction *preferredLayerAction = new PreferredLaneLayerAction(parent);
+
+                    std::string layer_str = parameters.ReadAttribute(routingChild, "layer");
+                    if (layer_str == "temporary")
+                    {
+                        preferredLayerAction->layer_ = roadmanager::LAYER_TEMPORARY;
+                    }
+                    else if (layer_str == "permanent")
+                    {
+                        preferredLayerAction->layer_ = roadmanager::LAYER_PERMANENT;
+                    }
+                    else
+                    {
+                        LOG_WARN("Unknown layer type '{}', defaulting to permanent", layer_str);
+                        preferredLayerAction->layer_ = roadmanager::LAYER_PERMANENT;
+                    }
+
+                    action = preferredLayerAction;
                 }
                 else
                 {
