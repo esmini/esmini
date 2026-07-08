@@ -1,12 +1,12 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#ifdef _USE_OSI
-#include "osi_common.pb.h"
-#include "osi_object.pb.h"
-#include "osi_sensorview.pb.h"
-#include "osi_version.pb.h"
-#endif  // _USE_OSI
+#if _RUN_OSI_TESTS
+#include <osi_common.pb.h>
+#include <osi_object.pb.h>
+#include <osi_sensorview.pb.h>
+#include <osi_version.pb.h>
+#endif  // _RUN_OSI_TESTS
 #include "Replay.hpp"
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
@@ -706,7 +706,7 @@ TEST(ProgramOptions, ParsesBoolValues)
 
 // OSI tests
 
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
 
 TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 {
@@ -3959,7 +3959,12 @@ TEST(EnvironmentTest, OSIFrictionScaleFactor)
     SE_Close();
 }
 
-#endif  // _USE_OSI
+#else
+TEST(OSI, Tests)
+{
+    GTEST_SKIP();
+}
+#endif  // _RUN_OSI_TESTS
 
 TEST(ParameterTest, GetTypedParameterValues)
 {
@@ -5708,7 +5713,7 @@ TEST(RoadmanagerTest, CheckPreviousRoadIsCleared)
 
 TEST(ParamDistTest, TestRunAll)
 {
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
     std::vector<std::string> gt = {
         "gt_1_of_12.osi",
         "gt_2_of_12.osi",
@@ -5723,7 +5728,7 @@ TEST(ParamDistTest, TestRunAll)
         "gt_11_of_12.osi",
         "gt_12_of_12.osi",
     };
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
 
     std::vector<std::string> dat = {
         "cut-in_1_of_12.dat",
@@ -5794,18 +5799,18 @@ TEST(ParamDistTest, TestRunAll)
     {
         SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
 
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
         SE_EnableOSIFile("gt.osi");
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
 
         for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
         {
             SE_StepDT(0.1);
         }
 
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
         SE_DisableOSIFile();
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
 
         SE_Close();
     }
@@ -5815,11 +5820,11 @@ TEST(ParamDistTest, TestRunAll)
     // Check that files have been created as expected
     for (unsigned int i = 0; i < SE_GetNumberOfPermutations(); i++)
     {
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
         EXPECT_EQ(stat(gt[i].c_str(), &fileStatus), 0);
         EXPECT_GE(fileStatus.st_mtime, oldModTime);
         EXPECT_GE(fileStatus.st_size, 0);
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
         EXPECT_EQ(stat(dat[i].c_str(), &fileStatus), 0);
         EXPECT_GE(fileStatus.st_mtime, oldModTime);
 

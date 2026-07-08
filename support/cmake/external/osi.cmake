@@ -3,7 +3,7 @@ include_guard()
 # ############################### Setting osi libraries ##############################################################
 
 macro(set_osi_libs)
-    if(${OSI_VERSION} STREQUAL "3.5.0")
+    if(OSI_VERSION STREQUAL "3.5.0")
         if(APPLE)
             if(DYN_PROTOBUF)
                 set(OSI_LIBRARIES
@@ -77,8 +77,151 @@ macro(set_osi_libs)
                     ${EXTERNALS_OSI_LIBRARY_PATH}/debug/zlibstaticd.lib)
             endif()
         endif()
+    elseif(OSI_VERSION STREQUAL "3.8.0")
+        if(APPLE)
+            if(DYN_PROTOBUF)
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.dylib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.dylib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface.dylib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.dylib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libz.a)
+            else()
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/absl_combined.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libupb.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libutf8_range.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libutf8_validity.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_pic.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libz.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/absl_combined.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libupbd.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libutf8_range.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libutf8_validity.a)
+            endif()
+        elseif(LINUX)
+            if(DYN_PROTOBUF)
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface.so
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.so
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface.so
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.so
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libz.a)
+            else()
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libopen_simulation_interface_pic.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libz.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/absl_combined.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libutf8_range.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libutf8_validity.a
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libupb.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libopen_simulation_interface_pic.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libz.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/absl_combined.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libutf8_range.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libutf8_validity.a
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libupbd.a)
+            endif()
+        elseif(MSVC)
+            if(DYN_PROTOBUF)
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/abseil_dll.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/zlibstatic.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/abseil_dll.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/zlibstaticd.lib)
+            else()
+                set(OSI_LIBRARIES
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/open_simulation_interface_pic.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libprotobuf.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/zlibstatic.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/absl_combined.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/libupb.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/utf8_range.lib
+                    optimized
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/release/utf8_validity.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/open_simulation_interface_pic.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libprotobufd.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/zlibstaticd.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/absl_combined.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/libupbd.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/utf8_range.lib
+                    debug
+                    ${EXTERNALS_OSI_LIBRARY_PATH}/debug/utf8_validity.lib)
+            endif()
+        endif()
     else()
         message(FATAL_ERROR "Unsupported OSI version ${OSI_VERSION}")
     endif()
-
 endmacro()

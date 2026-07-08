@@ -814,7 +814,7 @@ TEST(TrafficSignals, TestTrafficSignalActions)
     delete player;
 }
 
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
 
 TEST(OSI, TestLightStates)
 {
@@ -1807,7 +1807,13 @@ TEST_F(OSITunnelTestFixture, TestOSITunnelBoundary)
     EXPECT_EQ(lane_boundary->boundary_line_size(), 23);
 }
 
-#endif  // _USE_OSI
+#else
+TEST(OSI, Tests)
+{
+    GTEST_SKIP();
+}
+
+#endif  // _RUN_OSI_TESTS
 
 int main(int argc, char** argv)
 {

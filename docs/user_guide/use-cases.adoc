@@ -588,7 +588,7 @@ Only trace file way is described here. To save OSI data, add argument `--osi_fil
 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file``
 
-will create `ground_truth.osi` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
+will create `ground_truth.osi` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/interface/architecture/trace_file_formats.html[2.2.6 OSI trace files].
 
 esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
 

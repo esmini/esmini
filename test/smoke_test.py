@@ -2018,6 +2018,8 @@ class TestSuite(unittest.TestCase):
                                     osi_csv, re.MULTILINE))
             self.assertTrue(re.search('^3.100000, 15, obj15, 1, MEDIUM_CAR, 44.44.*$\n^3.100000, 17, obj17, 3, MEDIUM_CAR, 5.55',
                                     osi_csv, re.MULTILINE))
+        else:
+            print("Skipping part of test due to lacking OSI support ", end='', file=sys.stderr)
 
     def test_rising_edge(self):
         # This test case checks rising condition edge. A car is accelerating from 0 up to 10m/s, then braking to a stop.

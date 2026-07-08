@@ -46,6 +46,10 @@ macro(
         PRIVATE ${LIBRARIES}
                 ${GTEST_LIBRARIES})
 
+    target_compile_definitions(
+        ${TARGET}
+        PRIVATE _RUN_OSI_TESTS=$<BOOL:${RUN_OSI_TESTS}>)
+
     disable_iwyu(${TARGET})
 
     set_folder(
