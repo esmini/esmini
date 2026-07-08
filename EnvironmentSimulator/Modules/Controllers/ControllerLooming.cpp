@@ -407,10 +407,7 @@ void ControllerLooming::Step(double timeStep)
 
     object_->wheel_angle_ = vehicle_.wheelAngle_;
     object_->SetSpeed(vehicle_.speed_);
-    object_->sensor_pos_[0] = far_x;
-    object_->sensor_pos_[1] = far_y;
-
-    object_->SetSensorPosition(far_x, far_y, 0.0);
+    object_->SetLookaheadSensorPosition(far_x, far_y, 0.0);
 
     Controller::Step(timeStep);
 }
@@ -448,7 +445,7 @@ int ControllerLooming::Activate(const ControlActivationMode (&mode)[static_cast<
     }
     if (player_)
     {
-        player_->SteeringSensorSetVisible(object_->GetId(), true);
+        player_->LookaheadSensorSetVisible(object_->GetId(), true);
     }
 
     return 0;

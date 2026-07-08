@@ -12138,16 +12138,14 @@ Position::ReturnCode Position::CalcProbeInfo(Position* target, RoadProbeInfo* da
 		data->global_pos[2] = GetZ() + data->local_pos[2];
 #endif
 
-        // Calculate angle - by dot product
+        // Calculate local angle to target in vehicle coordinates.
         if (fabs(data->relative_pos[0]) < SMALL_NUMBER && fabs(data->relative_pos[1]) < SMALL_NUMBER && fabs(data->relative_pos[2]) < SMALL_NUMBER)
         {
-            data->relative_h = GetH();
+            data->relative_h = 0.0;
         }
         else
         {
-            double dot_prod = (data->relative_pos[0] * 1.0 + data->relative_pos[1] * 0.0) /
-                              sqrt(data->relative_pos[0] * data->relative_pos[0] + data->relative_pos[1] * data->relative_pos[1]);
-            data->relative_h = SIGN(data->relative_pos[1]) * acos(dot_prod);
+            data->relative_h = atan2(data->relative_pos[1], data->relative_pos[0]);
         }
     }
 
@@ -12193,12 +12191,7 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 
     if (fabs(lookahead_distance) > SMALL_NUMBER)
     {
-        retval = target.MoveAlongS(lookahead_distance,
-                                   0.0,
-                                   0.0,
-                                   lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER,
-                                   Position::MoveDirectionMode::HEADING_DIRECTION,
-                                   true);
+        retval = target.MoveAlongS(lookahead_distance, 0.0, 0.0, true, Position::MoveDirectionMode::HEADING_DIRECTION, true);
     }
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER)

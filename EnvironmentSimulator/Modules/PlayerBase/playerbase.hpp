@@ -177,7 +177,7 @@ namespace scenarioengine
         void InitVehicleModel(Object *obj, viewer::CarModel *model);
 #endif
         void AddOSIDetection(int object_index);
-        void SteeringSensorSetVisible(int object_index, bool value);
+        void LookaheadSensorSetVisible(int object_index, bool value);
         void SetFixedTimestep(double timestep)
         {
             fixed_timestep_ = timestep;

@@ -97,7 +97,7 @@ void ControllerACC::Step(double timeStep)
         // mode_ == ControlOperationMode::MODE_ADDITIVE &&
         abs(object_->GetSpeed() - currentSpeed_) > 1e-3)
     {
-        LOG_INFO("New setspeed: {:5.2f}", setSpeed_);
+        LOG_INFO("New setspeed: {:5.2f} -> {:5.2f}", setSpeed_, object_->GetSpeed());
         setSpeed_ = object_->GetSpeed();
     }
 
@@ -136,7 +136,7 @@ void ControllerACC::Step(double timeStep)
             if (diff.dLaneId == 0 && adjustedGapLength > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < lateralDist_)
             {
                 minGapLength = adjustedGapLength;
-                // minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();
+                // minSpeedDiff = current_speed_ - pivot_obj->GetSpeed();
                 minObjIndex = static_cast<int>(i);  // TODO: size_t to int
             }
         }
@@ -151,7 +151,7 @@ void ControllerACC::Step(double timeStep)
                 y_local < 0.2 && y_local > -0.5)  // yield some more for right hand traffic
             {
                 minGapLength = x_local;
-                // minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();
+                // minSpeedDiff = current_speed_ - pivot_obj->GetSpeed();
                 minObjIndex = static_cast<int>(i);
             }
         }
@@ -184,9 +184,9 @@ void ControllerACC::Step(double timeStep)
             currentSpeed_ = MIN(MAX(0.0, currentSpeed_), setSpeed_);
         }
 
-        object_->SetSensorPosition(entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetX(),
-                                   entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetY(),
-                                   entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetZ());
+        object_->SetLookaheadSensorPosition(entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetX(),
+                                            entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetY(),
+                                            entities_->object_[static_cast<unsigned int>(minObjIndex)]->pos_.GetZ());
     }
     else
     {
@@ -205,7 +205,7 @@ void ControllerACC::Step(double timeStep)
             currentSpeed_ = tmpSpeed;
         }
 
-        object_->SetSensorPosition(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
+        object_->SetLookaheadSensorPosition(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
     }
 
     if (mode_ == ControlOperationMode::MODE_OVERRIDE && !virtual_)
@@ -245,7 +245,7 @@ int ControllerACC::Activate(const ControlActivationMode (&mode)[static_cast<unsi
 
     if (player_)
     {
-        player_->SteeringSensorSetVisible(object_->GetId(), true);
+        player_->LookaheadSensorSetVisible(object_->GetId(), true);
     }
 
     return 0;

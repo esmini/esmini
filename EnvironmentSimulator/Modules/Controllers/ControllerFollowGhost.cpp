@@ -192,9 +192,7 @@ void ControllerFollowGhost::Step(double timeStep)
     }
 
     // Update object sensor position for visualization
-    object_->sensor_pos_[0] = steering_target_point.x;
-    object_->sensor_pos_[1] = steering_target_point.y;
-    object_->sensor_pos_[2] = steering_target_point.z;
+    object_->SetLookaheadSensorPosition(steering_target_point.x, steering_target_point.y, steering_target_point.z);
 
     double diffGlobal[2] = {steering_target_point.x - object_->pos_.GetX(), steering_target_point.y - object_->pos_.GetY()};
     double len           = sqrt(diffGlobal[0] * diffGlobal[0] + diffGlobal[1] * diffGlobal[1]);
@@ -254,9 +252,7 @@ int ControllerFollowGhost::Activate(const ControlActivationMode (&mode)[static_c
         vehicle_.SetMaxAcc(10.0);
         vehicle_.SetSteeringScale(steering_speed_inertia_);
 
-        object_->sensor_pos_[0] = object_->pos_.GetX();
-        object_->sensor_pos_[1] = object_->pos_.GetY();
-        object_->sensor_pos_[2] = object_->pos_.GetZ();
+        object_->SetLookaheadSensorPosition(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
     }
 
     return Controller::Activate(mode);

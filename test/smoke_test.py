@@ -2690,6 +2690,29 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^.0.700.* actionHighBeamOnBrightWhite: Transition completed in 0.50s', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.700.* actionLowBeamOnDarkWhite: Transition completed in 0.50s', log, re.MULTILINE))
 
+    def test_follow_road_controller(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/follow_road_controller.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.05 --vehicle_dynamics 5,8,22")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*follow_road_controller.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^.0.000.* Controller followRoad active on domains: Lateral & Longitudinal \\(mask=0x3\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^.80.000.* Quit: true, delay: 0.00, 80.0000 >= 80.0000, edge: none', log, re.MULTILINE))
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^0.000, 0, Ego, 401.000, -241.875, 0.000, 6.283, 0.000, 0.000, 19.444, -0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.000, 0, Ego, 473.105, -241.701, 0.000, 0.057, 0.000, 0.000, 16.459, 0.038, 1.030', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.000, 0, Ego, 504.010, -231.518, 0.000, 0.578, 0.000, 0.000, 16.459, 0.048, 0.835', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 0, Ego, 528.428, -2.527, 0.000, 2.268, 0.000, 0.000, 13.144, 0.246, 5.269', csv, re.MULTILINE))
+        self.assertTrue(re.search('^32.600, 0, Ego, 302.086, 1.837, 0.000, 3.175, 0.000, 0.000, 14.544, 0.081, 1.938', csv, re.MULTILINE))
+        self.assertTrue(re.search('^34.400, 0, Ego, 288.291, -13.083, 0.000, 4.660, 0.000, 0.000, 11.944, 0.051, 4.449', csv, re.MULTILINE))
+        self.assertTrue(re.search('^36.000, 0, Ego, 288.126, -34.833, 0.000, 4.712, 0.000, 0.000, 15.144, 0.000, 4.220', csv, re.MULTILINE))
+        self.assertTrue(re.search('^46.600, 0, Ego, 287.946, -229.792, 0.000, 4.606, 0.000, 0.000, 14.344, -0.151, 1.949', csv, re.MULTILINE))
+        self.assertTrue(re.search('^47.700, 0, Ego, 277.343, -237.751, 0.000, 3.251, 0.000, 0.000, 12.744, -0.081, 5.661', csv, re.MULTILINE))
+        self.assertTrue(re.search('^80.000, 0, Ego, 188.457, -1.875, 0.000, 6.283, 0.000, 0.000, 19.444, -0.000, 3.864', csv, re.MULTILINE))
+
 
 if __name__ == "__main__":
     # execute only if run as a script

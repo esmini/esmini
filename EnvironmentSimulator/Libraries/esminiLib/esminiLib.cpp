@@ -290,8 +290,8 @@ static int GetRoadInfoAtDistance(int          object_id,
         CopyRoadInfo(r_data, &s_data);
 
         // Visualize forward looking road sensor probe
-        main_object->SetSensorPosition(s_data.road_lane_info.pos[0], s_data.road_lane_info.pos[1], s_data.road_lane_info.pos[2]);
-        player->SteeringSensorSetVisible(object_id, true);
+        main_object->SetLookaheadSensorPosition(s_data.road_lane_info.pos[0], s_data.road_lane_info.pos[1], s_data.road_lane_info.pos[2]);
+        player->LookaheadSensorSetVisible(object_id, true);
     }
 
     return static_cast<int>(retval);
@@ -345,9 +345,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, double lookahead_distance, 
     *timestamp   = trailPos.time;
 
     // Update object sensor position for visualization
-    obj->sensor_pos_[0] = trailPos.x;
-    obj->sensor_pos_[1] = trailPos.y;
-    obj->sensor_pos_[2] = trailPos.z;
+    obj->SetLookaheadSensorPosition(trailPos.x, trailPos.y, trailPos.z);
 
     return returncode;
 }
@@ -403,9 +401,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, double time, SE_RoadInfo *
     *speed_ghost = trailPos.speed;
 
     // Update object sensor position for visualization
-    obj->sensor_pos_[0] = trailPos.x;
-    obj->sensor_pos_[1] = trailPos.y;
-    obj->sensor_pos_[2] = trailPos.z;
+    obj->SetLookaheadSensorPosition(trailPos.x, trailPos.y, trailPos.z);
 
     return returncode;
 }
