@@ -97,6 +97,8 @@ resources/models/multi_intersections.osgb \
 resources/models/curves_elevation.osgb \
 resources/models/de_274-30.osgb \
 resources/models/de_274-50.osgb \
+resources/models/se_c_27-1.osgb \
+resources/models/se_c_28-1.osgb \
 resources/models/se_c_31-3.osgb \
 resources/models/se_c_31-5.osgb \
 resources/models/de_123.osgb \
