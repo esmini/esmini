@@ -1328,7 +1328,7 @@ namespace roadgeom
                                        found);
                         if (found)
                         {
-                            tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
+                            tx = LoadRoadFeature(road, located_file_path);
                         }
                     }
 
