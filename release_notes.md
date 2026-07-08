@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2026-07-08 Version 3.5.0
+
+New features:
+- Add swedish road signs for overtake ban start/end ([c27](https://www.transportstyrelsen.se/sv/vagtrafik/trafikregler-och-vagmarken/vagmarken/forbudsmarken/forbud-mot-omkorning/), [c28](https://www.transportstyrelsen.se/sv/vagtrafik/trafikregler-och-vagmarken/vagmarken/forbudsmarken/slut-pa-forbud-mot-omkorning/))
+  - requires model pack update (see [User guide - Update 3D model pack](https://esmini.github.io/support-qa.html#_update_3d_model_pack))
+
+Improvements and fixes:
+- Fix fail to resolve 3D model from signal name due to filepath bug
+- Add missing entries to release notes 3.4.1
+  - Bugfix: Visualize curb as sidewalk instead of grass
+  - Add linux support to C# [osi-gt code example](https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/code-examples/osi-groundtruth-cs)
+
 ### 2026-07-07 Version 3.4.1
 
 Improvements and fixes:
