@@ -666,19 +666,10 @@ namespace roadgeom
                         double    friction = 1.0;
                     };
 
-                    struct CandidatePos
-                    {
-                        double s;
-                        double x;
-                        double y;
-                        double z;
-                    };
-
                     std::vector<std::vector<std::vector<GeomPoint>>> geom_points_list;                          // two lists of points per lane
                     std::vector<std::vector<GeomStrip>>              geom_strips_list;                          // one list of strips info per lane
                     std::vector<int>                                 lane_osi_index(lsec->GetNumberOfLanes());  // current osi point per lane
                     std::vector<GeomCacheEntry>                      geom_cache(lsec->GetNumberOfLanes());      // one cache entry per lane
-                    std::vector<CandidatePos>                        candidates_pos(lsec->GetNumberOfLanes());  // candidates for next current s-value
                     double                                           section_current_s = lsec->GetS();
 
                     roadmanager::Position pos;  // used for calculating points along the road
@@ -720,9 +711,8 @@ namespace roadgeom
                     friction_s_list.erase(std::unique(friction_s_list.begin(), friction_s_list.end(), compare_s_values), friction_s_list.end());
 
                     // collect a list of s values where vertices are needed, considering all lanes
-                    int                   friction_s_list_index = friction_s_list.size() > 0 ? 1 : -1;
-                    bool                  done_section          = false;
-                    roadmanager::Position pos2;
+                    int  friction_s_list_index = friction_s_list.size() > 0 ? 1 : -1;
+                    bool done_section          = false;
 
                     for (int counter = 0; !done_section; counter++)
                     {
@@ -732,34 +722,43 @@ namespace roadgeom
                             done_section = false;
                             for (size_t k = 0; k < static_cast<unsigned int>(lsec->GetNumberOfLanes() - 1); k++)
                             {
-                                lane_osi_index[k]   = 0;
-                                candidates_pos[k].s = lsec->GetS();
+                                lane_osi_index[k] = 0;
                             }
                         }
                         else
                         {
-                            // for each lane, find next s-value in and register it as candidate section current s-value
-                            std::vector<double> s_list_sorted(all_lane_ids.size());
+                            // Gather candidate s-values for the next vertex, considering all lanes.
+                            // Collect ALL OSI points ahead of the current pivot (not just the first one
+                            // per lane) so that no intermediate OSI point is bypassed when advancing:
+                            // the walk below checks each point in ascending s-order and stops at the
+                            // first one that would introduce too large an error.
+                            const double        pivot_s      = section_current_s;
+                            const double        s_gather_max = pivot_s + MAX_GEOM_LENGTH;
+                            std::vector<double> s_list_sorted;
                             for (unsigned int k = 0; k < all_lane_ids.size(); k++)
                             {
                                 lane                                            = lsec->GetLaneById(all_lane_ids[k]);
                                 std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
 
-                                for (size_t l = lane_osi_index[k]; l < osiPoints.size(); l++)
+                                // advance stored index to the last OSI point behind the pivot (scan start optimization)
+                                size_t l = static_cast<size_t>(lane_osi_index[k]);
+                                while (l + 1 < osiPoints.size() && osiPoints[l + 1].s < pivot_s + SMALL_NUMBER)
                                 {
-                                    if (l == osiPoints.size() - 1 || osiPoints[l].s > section_current_s + SMALL_NUMBER)
+                                    l++;
+                                }
+                                lane_osi_index[k] = static_cast<int>(l);
+
+                                // collect all points ahead of the pivot, up to one point beyond the max
+                                // geometry length (so the maximum length clamp below has a candidate to act on)
+                                for (; l < osiPoints.size(); l++)
+                                {
+                                    if (osiPoints[l].s > pivot_s + SMALL_NUMBER)
                                     {
-                                        lane_osi_index[k]   = l;
-                                        candidates_pos[k].s = osiPoints[l].s;
-                                        s_list_sorted[k]    = osiPoints[l].s;
-
-                                        // generate point at osi index s-value
-                                        pos2.SetLaneBoundaryPos(road->GetId(), lane->GetId(), candidates_pos[k].s);
-                                        candidates_pos[k].x = pos2.GetX();
-                                        candidates_pos[k].y = pos2.GetY();
-                                        candidates_pos[k].z = pos2.GetZ();
-
-                                        break;
+                                        s_list_sorted.push_back(osiPoints[l].s);
+                                        if (osiPoints[l].s > s_gather_max)
+                                        {
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -830,7 +829,7 @@ namespace roadgeom
                                 double s_next_friction     = (friction_s_list_index > -1 && friction_s_list_index < friction_s_list.size())
                                                                  ? friction_s_list[friction_s_list_index]
                                                                  : lsec->GetS() + lsec->GetLength();
-                                double s_next_geom_max_len = geom_cache[k].point.s + MAX_GEOM_LENGTH;
+                                double s_next_geom_max_len = pivot_s + MAX_GEOM_LENGTH;
 
                                 if (s_next_friction < section_current_s &&
                                     s_next_friction < s_next_geom_max_len + MIN_GEOM_LENGTH)  // add min geom len to avoid mini patches
