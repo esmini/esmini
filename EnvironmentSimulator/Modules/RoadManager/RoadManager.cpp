@@ -7630,6 +7630,8 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
                                    std::vector<double>&      y0,
                                    std::vector<double>&      x1,
                                    std::vector<double>&      y1,
+                                   std::vector<double>&      x_last_ok,
+                                   std::vector<double>&      y_last_ok,
                                    double&                   step,
                                    bool&                     osi_requirement,
                                    std::vector<PointStruct>& osi_point,
@@ -7698,6 +7700,8 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
                            0.0,
                            false};
             pos_last_ok = pos_candidate;
+            x_last_ok   = x1;
+            y_last_ok   = y1;
         }
 
         osi_point.push_back(p);
@@ -7714,8 +7718,8 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
         pos_pivot = pos_last_ok;
 
         // reuse candidate x-y collectors for pivot position
-        x0 = x1;
-        y0 = y1;
+        x0 = x_last_ok;
+        y0 = y_last_ok;
 
         returncode = 1;
     }
@@ -7730,9 +7734,15 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
         {
             step = abs(step) / 2.0;  // insert mode, look forward half current stepsize for a point still fulfilling requirements
         }
+        else
+        {
+            step = OSI_POINT_CALC_STEPSIZE;
+        }
 
         // register candidate in case we need to revert to it
         pos_last_ok = pos_candidate;
+        x_last_ok   = x1;
+        y_last_ok   = y1;
     }
 
     // Clear x-y collectors for next iteration
@@ -7839,7 +7849,7 @@ void OpenDrive::SetLaneOSIPoints()
             double lane_offset_max = 0.0;
             for (unsigned int k = 0; k < number_of_lanes + 1; k++)  // +1 for center lane
             {
-                std::vector<double> x0, y0, x1, y1;
+                std::vector<double> x0, y0, x1, y1, x_last_ok, y_last_ok;
 
                 if (k < number_of_lanes)
                 {
@@ -7889,7 +7899,6 @@ void OpenDrive::SetLaneOSIPoints()
                                  0.0,
                                  false};
                 osi_point.push_back(p);
-                pos_last_ok = pos_pivot;
 
                 // [XO, YO] = closest position with given (-) tolerance
                 if (k < number_of_lanes)
@@ -7919,10 +7928,13 @@ void OpenDrive::SetLaneOSIPoints()
                 x0.push_back(pos_tmp.GetX());
                 y0.push_back(pos_tmp.GetY());
 
+                pos_last_ok   = pos_pivot;
+                pos_candidate = pos_pivot;
+                x_last_ok     = x0;
+                y_last_ok     = y0;
+
                 bool   insert = false;
                 double step   = MIN(OSI_POINT_CALC_STEPSIZE, lsec->GetLength());
-
-                pos_candidate = pos_pivot;
 
                 // Looping through sequential points along the track determined by "OSI_POINT_CALC_STEPSIZE"
                 while (++counter)
@@ -7980,6 +7992,8 @@ void OpenDrive::SetLaneOSIPoints()
                                                                y0,
                                                                x1,
                                                                y1,
+                                                               x_last_ok,
+                                                               y_last_ok,
                                                                step,
                                                                osi_requirement,
                                                                osi_point,
@@ -8070,7 +8084,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 
                 if (n_roadmarks == 0)
                 {
-                    std::vector<double> x0, y0, x1, y1;
+                    std::vector<double> x0, y0, x1, y1, x_last_ok, y_last_ok;
 
                     lane                 = lsec->GetLaneByIdx(k);
                     unsigned int counter = 0;
@@ -8093,7 +8107,6 @@ void OpenDrive::SetLaneBoundaryPoints()
                                      0.0,
                                      false};
                     osi_point.push_back(p);
-                    pos_last_ok = pos_pivot;
 
                     // [XO, YO] = closest position with given (-) tolerance
                     pos_tmp.SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, lsec->GetS() - OSI_TANGENT_LINE_TOLERANCE), j);
@@ -8113,6 +8126,9 @@ void OpenDrive::SetLaneBoundaryPoints()
                     double step   = MIN(OSI_POINT_CALC_STEPSIZE, lsec->GetLength());
 
                     pos_candidate = pos_pivot;
+                    pos_last_ok   = pos_pivot;
+                    x_last_ok     = x0;
+                    y_last_ok     = y0;
 
                     // Looping through sequential points along the track determined by "OSI_POINT_CALC_STEPSIZE"
                     while (++counter)
@@ -8143,6 +8159,8 @@ void OpenDrive::SetLaneBoundaryPoints()
                                                                    y0,
                                                                    x1,
                                                                    y1,
+                                                                   x_last_ok,
+                                                                   y_last_ok,
                                                                    step,
                                                                    osi_requirement,
                                                                    osi_point,
@@ -8185,7 +8203,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
     unsigned int             number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
     double                   lsec_end, s_roadmark, s_end_roadmark, s_end_roadmarkline;
-    std::vector<double>      x0, y0, x1, y1;
+    std::vector<double>      x0, y0, x1, y1, x_last_ok, y_last_ok;
     std::vector<PointStruct> osi_point;
     bool                     osi_requirement;
 
@@ -8294,7 +8312,6 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             y1.clear();
 
                                             pos_pivot.SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmark_point, 0, j);
-                                            pos_last_ok = pos_pivot;
 
                                             // Add the starting point of each lane as osi point
                                             PointStruct p = {s_roadmark_point,
@@ -8341,6 +8358,9 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             double step   = MIN(OSI_POINT_CALC_STEPSIZE, lsec->GetLength());
 
                                             pos_candidate = pos_pivot;
+                                            pos_last_ok   = pos_pivot;
+                                            x_last_ok     = x1;
+                                            y_last_ok     = y1;
 
                                             // Make sure we stay within lane section length
                                             if (lane_roadMarkTypeLine->GetSpace() > SMALL_NUMBER || lane_roadMarkTypeLine->GetRepeat() == false)
@@ -8400,6 +8420,8 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                                                                            y0,
                                                                                            x1,
                                                                                            y1,
+                                                                                           x_last_ok,
+                                                                                           y_last_ok,
                                                                                            step,
                                                                                            osi_requirement,
                                                                                            osi_point,

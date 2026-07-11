@@ -3543,6 +3543,8 @@ namespace roadmanager
                                  std::vector<double>      &y0,
                                  std::vector<double>      &x1,
                                  std::vector<double>      &y1,
+                                 std::vector<double>      &x_last_ok,
+                                 std::vector<double>      &y_last_ok,
                                  double                   &step,
                                  bool                     &osi_requirement,
                                  std::vector<PointStruct> &osi_point,
