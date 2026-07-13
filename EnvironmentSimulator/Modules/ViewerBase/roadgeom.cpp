@@ -796,8 +796,12 @@ namespace roadgeom
                                                        diff_tx[1],
                                                        diff_tx[2]);
 
-                                    double error_horizontal = abs(diff_tx[1]);
-                                    double error_vertical   = abs(diff_tx[2]);
+                                    // scale horizontal/lateral error with segment length to also consider area than just linear error
+                                    // the purpose is to avoid even small lateral deviations over long straight segments
+                                    // this is experminetal and can probably be improved, but seems to work well enough for now
+                                    double weighted_ds      = 1.0 + 0.1 * (s_list_sorted[k] - geom_cache[l].point.s);
+                                    double error_horizontal = abs(diff_tx[1]) * weighted_ds;
+                                    double error_vertical   = abs(diff_tx[2]) * weighted_ds;
 
                                     if (error_horizontal > MAX_GEOM_ERROR_HORIZONTAL || error_vertical > MAX_GEOM_ERROR_VERTICAL)
                                     {
