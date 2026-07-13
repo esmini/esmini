@@ -839,9 +839,22 @@ namespace roadgeom
                                     break;
                                 }
                                 else if (s_next_geom_max_len < section_current_s - SMALL_NUMBER &&
-                                         s_next_geom_max_len + MIN_GEOM_LENGTH < s_next_friction)  // add min geom len to avoid mini patches
+                                         s_next_geom_max_len + MIN_GEOM_LENGTH < s_next_friction)  // find s-value closest after the added point
                                 {
+                                    // set next s-value preliminary to max length, but check if there is a OSI point before that
                                     section_current_s = s_next_geom_max_len;
+
+                                    if (s_list_sorted.size() >= 2)
+                                    {
+                                        // Find the first element that is strictly greater than the max length
+                                        auto it = std::upper_bound(s_list_sorted.begin() + 1, s_list_sorted.end(), s_next_geom_max_len);
+
+                                        // If we found such an s-value, the loop would have stopped right before it
+                                        if (it != s_list_sorted.end())
+                                        {
+                                            section_current_s = *(it - 1);
+                                        }
+                                    }
                                     break;
                                 }
                             }
