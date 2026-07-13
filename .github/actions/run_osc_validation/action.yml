@@ -8,7 +8,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: PMSFIT/osc-validation
-        ref: b015e68b74f1d9c529f9dbf9964e3116a85a0f1b
+        ref: v0.1.0
         fetch-depth: 1
         path: osc-validation
 
@@ -21,7 +21,7 @@ runs:
         pip install -e .
         popd
 
-    - name: Run osc-validation pytest suite
+    - name: Run osc-validation
       id: run_tests
       shell: bash
       run: |
@@ -34,14 +34,10 @@ runs:
         mkdir -p osc_validation_results
 
         set +e
-        pytest \
-          validation/scenario/trajectories \
-          validation/scenario/triggers \
+        osc-validate \
           --tool ESMini \
           --toolpath "$SIM_BIN" \
-          --basetemp osc_validation_results \
-          --html osc_validation_results/report.html \
-          --self-contained-html
+          --html osc_validation_results/report.html
         code=$?
         echo "exitcode=$code" >> $GITHUB_OUTPUT
         echo "osc-validation finished with exit code $code"
@@ -60,6 +56,6 @@ runs:
       shell: bash
       run: |
         if [ "${{ steps.run_tests.outputs.exitcode }}" != "0" ]; then
-          echo "osc-vali idation failed"
+          echo "osc-validation failed"
           exit 1
         fi
