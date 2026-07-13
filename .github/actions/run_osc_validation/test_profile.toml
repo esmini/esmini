@@ -1,3 +1,15 @@
 [[xfail]]
 test = "scenario/trajectories/val_interpolation.py::test_timed_polyline_trajectory_interpolation[constant_acceleration_from_initial_speed-*]"
 reason = "ESMini does not currently support timed polyline constant-acceleration interpolation."
+
+[[xfail]]
+test = "scenario/trajectories/val_follow_trajectory_future_time_reference.py::test_follow_trajectory_future_time_reference_continues_init_speed_until_first_vertex"
+reason = "ESMini does not currently implement this OpenSCENARIO FollowTrajectoryAction special case (OpenSCENARIO Specification section 6.9.2)."
+
+[[xfail]]
+test = "scenario/trajectories/val_follow_trajectory_teleport.py::test_follow_trajectory_position_mode_teleports_to_current_trajectory_time[exact_trajectory_point-2.0]"
+reason = "ESMini does not currently implement this OpenSCENARIO FollowTrajectoryAction special case (OpenSCENARIO Specification section 6.9.3)."
+
+[[xfail]]
+test = "scenario/trajectories/val_follow_trajectory_teleport.py::test_follow_trajectory_position_mode_teleports_to_current_trajectory_time[between_trajectory_points-1.0]"
+reason = "ESMini does not currently implement this OpenSCENARIO FollowTrajectoryAction special case (OpenSCENARIO Specification section 6.9.3)."
