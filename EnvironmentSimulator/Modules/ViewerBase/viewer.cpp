@@ -3564,8 +3564,6 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
     roadmanager::Position pos;
     osg::Vec3             point(0, 0, 0);
 
-    roadmanager::OSIPoints* curr_osi = nullptr;
-
     for (unsigned int r = 0; r < od->GetNumOfRoads(); r++)
     {
         roadmanager::Road* road = od->GetRoadByIdx(r);
@@ -3637,16 +3635,10 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                 // Other lanes visualize lane center (k=0) and lane boundary (k=1)
                 for (unsigned int k = 0; k < 2; k++)
                 {
-                    // skip lane center for all non driving lanes except center lane
-                    if ((k == 0 && lane->GetId() != 0) && !lane->IsDriving())
-                    {
-                        continue;
-                    }
-
                     // osg references for drawing lines on the lane center using osi points
                     osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
 
-                    if (k == 0 && lane->GetId() == 0)
+                    if (lane->GetId() == 0 && k == 0)
                     {
                         // road reference line
                         roadmanager::OSIPoints ref_line_osi_points = lane_section->GetRefLineOSIPoints();
@@ -3659,18 +3651,15 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                     }
                     else
                     {
-                        curr_osi = nullptr;
+                        roadmanager::OSIPoints* curr_osi = nullptr;
 
-                        if (k == 0 || lane->GetId() == 0)
+                        if (k == 0)
                         {
                             curr_osi = lane->GetOSIPoints();  // road center lane and mid driving lanes
                         }
-                        else
+                        else if (lane->GetLaneBoundary() != nullptr)
                         {
-                            if (lane->GetLaneBoundary() != nullptr)
-                            {
-                                curr_osi = lane->GetLaneBoundary()->GetOSIPoints();  // lane boundary
-                            }
+                            curr_osi = lane->GetLaneBoundary()->GetOSIPoints();  // lane boundary when available
                         }
 
                         if (curr_osi == nullptr)
