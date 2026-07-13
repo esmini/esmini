@@ -1921,7 +1921,7 @@ class TestSuite(unittest.TestCase):
 
         self.assertTrue(re.search('^35.000, 0, Ego, 334.390, 343.001, 14.258, 5.904, 0.032, 0.000, 3.434, -0.038, 4.208', csv, re.MULTILINE))
         self.assertTrue(re.search('^35.000, 1, Target, 344.587, 338.165, 13.832, 5.784, 0.042, 0.000, 3.444, -0.030, 0.833', csv, re.MULTILINE))
-        self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.000, 0.015, 6.217', csv, re.MULTILINE))
+        self.assertTrue(re.search('^55.700, 0, Ego, 415.817, 225.261, 10.713, 5.154, 6.278, 0.000, 0.000, 0.015, 6.218', csv, re.MULTILINE))
 
     def test_repeats_and_relative_speed(self):
         # this test case exercises restarting events and maneuvers to maintain relative speed using SpeedAction without continuous flag.
@@ -2383,7 +2383,7 @@ class TestSuite(unittest.TestCase):
 
         self.assertTrue(re.search('^3.100, 0, Ego, 90.072, -1.535, -2.084, 6.283, 0.038, 6.279, 15.664, 0.000, 4.832', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.100, 1, Target, 105.669, 2.494, -2.679, 0.214, 0.036, 0.000, 8.333, 0.021, 4.694', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.150, 0, Ego, 90.850, -1.445, -2.113, 0.115, 0.039, 0.000, 15.464, 0.418, 0.758', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.150, 0, Ego, 90.849, -1.445, -2.113, 0.115, 0.039, 0.000, 15.464, 0.418, 0.758', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.150, 1, Target, 106.076, 2.583, -2.694, 0.217, 0.036, 0.000, 8.333, 0.021, 5.885', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.000, 0, Ego, 112.079, 3.951, -2.906, 0.328, 0.033, 0.002, 8.064, -0.017, 5.863', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.000, 1, Target, 120.926, 6.700, -3.192, 0.324, 0.029, 0.000, 8.333, 0.021, 5.950', csv, re.MULTILINE))

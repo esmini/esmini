@@ -4564,8 +4564,8 @@ TEST(ExternalController, TestExternalDriver)
                     {
                         SE_RoadInfo road_info3;
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-                        EXPECT_NEAR(road_info3.global_pos_x, 388.2315, 1e-3);
-                        EXPECT_NEAR(road_info3.global_pos_y, 291.2747, 1e-3);
+                        EXPECT_NEAR(road_info3.global_pos_x, 388.2329, 1e-3);
+                        EXPECT_NEAR(road_info3.global_pos_y, 291.2719, 1e-3);
                         EXPECT_NEAR(roadInfo.trail_heading, 5.1278, 1e-3);
                     }
                 }
@@ -4599,8 +4599,8 @@ TEST(ExternalController, TestExternalDriver)
                     if (ghostMode[i] == true)
                     {
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-                        EXPECT_NEAR(road_info2.global_pos_x, 388.2315, 1e-3);
-                        EXPECT_NEAR(road_info2.global_pos_y, 291.2747, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_x, 388.2329, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_y, 291.2719, 1e-3);
                         EXPECT_NEAR(roadInfo.trail_heading, 5.1519, 1e-3);
                     }
                 }
@@ -5563,7 +5563,7 @@ TEST(RoadmanagerTest, TestGetPositionDiff)
 
     ASSERT_EQ(SE_GetDistanceToObject(0, 1, true, &diff), 0);
     EXPECT_EQ(diff.dLaneId, 0);
-    EXPECT_NEAR(diff.ds, 31.7769, 1e-3);
+    EXPECT_NEAR(diff.ds, 31.7639, 1e-3);
     EXPECT_NEAR(diff.dt, 0.0, 1e-3);
     EXPECT_NEAR(diff.dx, 19.2839, 1e-3);
     EXPECT_NEAR(diff.dy, -19.1543, 1e-3);

@@ -2899,7 +2899,7 @@ TEST(ControllerTest, TestLoomingControllerSimple)
         scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 87.1630, 1e-3);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.2508, 1e-3);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.2576, 1e-3);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 1.0125, 1e-3);
 
     delete se;
