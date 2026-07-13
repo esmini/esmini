@@ -1,3 +1,9 @@
+"""
+Create a simplistic example of parking spaces along curb
+
+Assuming current directory is esmini root, e.g. VSCode was started from there
+"""
+
 import os
 import math
 from scenariogeneration import xodr, esmini
@@ -12,6 +18,7 @@ nr_parking_spaces = 5
 parking_1_start_s = 10
 mark_width = 0.1
 curb_width = 0.15
+curb_height = 0.1
 
 # cubic coefficients for lane width transition
 b = 0  # tangent aligned with road s-axis at start and end of transitions
@@ -36,21 +43,21 @@ s += nr_parking_spaces * (parking_space_length - mark_width)
 road.lanes.lanesections[0].rightlanes[1].add_lane_width(a=parking_space_width, b=0, c=-c, d=-d, soffset=s)
 s += transition_length
 road.lanes.lanesections[0].rightlanes[1].add_lane_width(a=0, b=0, c=0, d=0, soffset=s)
-road.lanes.lanesections[0].rightlanes[2].add_height(0.1)
+road.lanes.lanesections[0].rightlanes[2].add_height(curb_height)
 
-odr = xodr.OpenDrive('objects')
+odr = xodr.OpenDrive('parkings_along_curbs')
 odr.add_road(road)
 odr.adjust_roads_and_lanes()
 
 # create parking spaces 1 from bounding box
 for i in range(nr_parking_spaces):
    parking_slot_bb = xodr.Object(
-      s = i*parking_space_length + parking_1_start_s + transition_length + parking_space_length/2 + mark_width,
+      s = parking_1_start_s + transition_length + i*parking_space_length + parking_space_length/2 + mark_width,
       t = -(lane_width+parking_space_width/2+mark_width/2),
       Type=xodr.ObjectType.parkingSpace,
-      length=5-mark_width,
-      width=2.5-2*mark_width,
-      height=0.1)
+      length=parking_space_length - mark_width,
+      width=parking_space_width - mark_width,
+      height=0.05)
 
    # unroll loop for more control over the individual markings
    m_front = xodr.Marking(xodr.RoadMarkColor.white, 10, xodr.SideType.front, 0, 0, 0, width=mark_width)
@@ -84,7 +91,7 @@ curb1 = xodr.Object(
    Type=xodr.ObjectType.barrier,
    length=curb_width,
    width=parking_space_length + curb_width,
-   height=0.1)
+   height=curb_height)
 road.add_object(curb1)
 
 curb2 = xodr.Object(
@@ -93,7 +100,7 @@ curb2 = xodr.Object(
    Type=xodr.ObjectType.barrier,
    length=curb_width,
    width=parking_space_length + curb_width,
-   height=0.1)
+   height=curb_height)
 road.add_object(curb2)
 
 # create parking spaces 2 from bounding box
@@ -103,9 +110,9 @@ for i in range(nr_parking_spaces):
       s = s,
       t = -(lane_width+parking_space_length/2+mark_width/2),
       Type=xodr.ObjectType.parkingSpace,
-      length=5-mark_width,
-      width=2.5-2*mark_width,
-      height=0.1,
+      length=parking_space_length - mark_width,
+      width=parking_space_width - 2*mark_width,
+      height=0.05,
       hdg=-math.pi/2)
    s += parking_space_width - mark_width
 
@@ -125,5 +132,6 @@ for i in range(nr_parking_spaces):
    # road.add_object_roadside(parking_slot_bb, 5, parking_start_s+transition_length+parking_space_length/2+mark_width/2, 0, xodr.RoadSide.right)
    road.add_object(parking_slot_bb)
 
+odr.write_xml(os.path.join("resources/xodr", "curb_parking.xodr"))
 
-esmini(odr, "/eknabe1/GIT/esmini_ps", car_density=0)
+esmini(odr, ".", car_density=0)  # assuming current dir is esmini root, e.g. VSCode was started from there
