@@ -18,7 +18,7 @@ runs:
         pushd osc-validation
         python3 -m venv .venv
         source .venv/bin/activate
-        pip install -e .
+        pip install -e . "numpy<2.0"
         popd
 
     - name: Run osc-validation
@@ -37,6 +37,7 @@ runs:
         osc-validate \
           --tool ESMini \
           --toolpath "$SIM_BIN" \
+          --test-profile "$GITHUB_ACTION_PATH/test_profile.toml" \
           --html osc_validation_results/report.html
         code=$?
         echo "exitcode=$code" >> $GITHUB_OUTPUT

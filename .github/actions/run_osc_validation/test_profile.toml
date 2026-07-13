@@ -1,0 +1,3 @@
+[[xfail]]
+test = "scenario/trajectories/val_interpolation.py::test_timed_polyline_trajectory_interpolation[constant_acceleration_from_initial_speed-*]"
+reason = "ESMini does not currently support timed polyline constant-acceleration interpolation."
