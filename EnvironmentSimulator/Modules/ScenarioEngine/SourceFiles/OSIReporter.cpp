@@ -711,9 +711,13 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object, roa
                 // Repeat intermediate vertices to close the polygon, avoiding single edge between last and first vertices
                 for (int l = static_cast<int>(corners.size()) - 2; l > 0; l--)
                 {
-                    osi3::Vector2d *vec = base->add_base_polygon();
-                    vec->set_x(base->base_polygon().at(start + l).x());
-                    vec->set_y(base->base_polygon().at(start + l).y());
+                    int desired_idx = start + l;
+                    if (desired_idx >= 0)
+                    {
+                        osi3::Vector2d *vec = base->add_base_polygon();
+                        vec->set_x(base->base_polygon().at(desired_idx).x());
+                        vec->set_y(base->base_polygon().at(desired_idx).y());
+                    }
                 }
             }
         }
