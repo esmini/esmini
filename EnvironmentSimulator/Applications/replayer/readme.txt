@@ -112,7 +112,8 @@ Key shortcuts
     y:             Toggle show / hide OSI road points
     p:             Toggle show / hide environment 3D model
     i:             Toggle on-screen info text modes
-    Shift + i:     Toggle show / hide on-screen GUI
+    I (shift + i): Toggle show / hide on-screen GUI
+    L (shift + l): Toggle show vehicle lights
     n:             Toggle show active trajectories
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
     ; (shift + ,): Toggle show/hide object outlines

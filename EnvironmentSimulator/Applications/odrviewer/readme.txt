@@ -60,6 +60,8 @@ Options:
       Skip log from these modules, all remaining modules will be logged. See User guide for more info
   --model <model_filename>
       3D Model filename
+  --optimize_model
+      Optimize generated OSG road model. Do not set when model is to be exported (--save_generated_model* or 'v')
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
   --osi_lines
@@ -74,6 +76,8 @@ Options:
       Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
+  --save_generated_model_visible
+      Save generated 3D model with visible objects only (n/a when a scenegraph is loaded)
   --seed <number>
       Specify seed number for random generator
   --speed_factor [speed_factor]  (default if value omitted: 1.000000)
@@ -125,6 +129,7 @@ Key shortcuts
     Delete:        Same as above (Shift + TAB)
     o:             Toggle show / hide OpenDRIVE road feature lines
     u:             Toggle show / hide OSI road lines
+    v:             Save generated model, currently visible parts
     y:             Toggle show / hide OSI road points
     p:             Toggle show / hide environment 3D model
     i:             Toggle info text showing time and speed

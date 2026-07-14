@@ -2844,6 +2844,48 @@ extern "C"
         return SE_WriteTGA(filename, width, height, data, pixelSize, pixelFormat, upsidedown);
     }
 
+    SE_DLL_API int SE_SaveGeneratedModelToFileAll(const char *filename)
+    {
+#if _USE_OSG
+        if (player && player->viewer_ && player->viewer_->roadGeom)
+        {
+            player->viewer_->SaveModelToFileAll(filename);
+            return 0;
+        }
+#else
+        (void)filename;
+#endif
+        return -1;
+    }
+
+    SE_DLL_API int SE_SaveGeneratedModelToFileVisible(const char *filename)
+    {
+#if _USE_OSG
+        if (player && player->viewer_ && player->viewer_->roadGeom)
+        {
+            player->viewer_->SaveModelToFileVisible(filename);
+            return 0;
+        }
+#else
+        (void)filename;
+#endif
+        return -1;
+    }
+
+    SE_DLL_API int SE_SaveGeneratedModelToFileFiltered(const char *filename, unsigned int mask)
+    {
+#if _USE_OSG
+        if (player && player->viewer_ && player->viewer_->roadGeom)
+        {
+            player->viewer_->SaveModelToFileVisible(filename, mask);
+            return 0;
+        }
+#else
+        (void)filename;
+#endif
+        return -1;
+    }
+
     SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p)
     {
 #ifdef _USE_OSG

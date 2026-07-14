@@ -78,15 +78,13 @@ namespace roadgeom
             @param generate_road_surface If true, generate road surface geometry
             @param generate_road_objects If true, generate road objects (signs, barriers, etc.)
             @param exe_path Path to executable, used to find resources
-            @param optimize Set to false if model will be saved to file, true if used for immediate visualization
         */
         RoadGeom(roadmanager::OpenDrive* odr,
                  osg::Node*              environment,
                  osg::Vec3d              origin,
                  bool                    generate_road_surface,
                  bool                    generate_road_objects,
-                 std::string             exe_path,
-                 bool                    optimize);
+                 std::string             exe_path);
 
         int                         AddRoadMarks(roadmanager::Lane* lane, osg::Group* rm_group, const osg::Vec3d& origin);
         void                        AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
@@ -139,22 +137,37 @@ namespace roadgeom
         // the chain are trimmed by start_offset / stop_offset. When 'closed' is true the chain forms a
         // loop (first vertex coincides with last) and the start/end joint is mitered too, so there is no
         // gap where the ribbon closes. Per-edge arrays have size verts.size()-1.
-        void               CreateObjectMarkingChainGeom(const std::vector<osg::Vec3d>& verts,
-                                                        const std::vector<double>&     half_w,
-                                                        const std::vector<double>&     line_length,
-                                                        const std::vector<double>&     space_length,
-                                                        const std::vector<bool>&       miter,
-                                                        double                         start_offset,
-                                                        double                         stop_offset,
-                                                        roadmanager::RoadMarkColor     color,
-                                                        const osg::Vec3d&              origin,
-                                                        osg::Group*                    group,
-                                                        bool                           closed = false);
-        int                AddGroundSurface();
-        void               SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
-        int                SaveToFile(const std::string& filename);
-        TrafficLightModel* GetTrafficLightModel(int id);
+        void CreateObjectMarkingChainGeom(const std::vector<osg::Vec3d>& verts,
+                                          const std::vector<double>&     half_w,
+                                          const std::vector<double>&     line_length,
+                                          const std::vector<double>&     space_length,
+                                          const std::vector<bool>&       miter,
+                                          double                         start_offset,
+                                          double                         stop_offset,
+                                          roadmanager::RoadMarkColor     color,
+                                          const osg::Vec3d&              origin,
+                                          osg::Group*                    group,
+                                          bool                           closed = false);
+        int  AddGroundSurface();
+        void SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
 
+        /**
+           Save the entire road model to a file, including hidden nodes
+           @param filename Output file name (e.g. "road_model.osgb")
+           @return 0 on success, -1 on error
+        */
+        int SaveToFileAll(const std::string& filename);
+
+        /**
+           Save only visible and optionally filtered road model to a file
+           @param filename Output file name (e.g. "road_model.osgb")
+           @param mask Optional filter node mask to apply, default: ~0u (= 0xffffffff = all visible), see NodeMask enum
+           @return 0 on success, negative value on error
+        */
+        int SaveToFileVisible(const std::string& filename, unsigned int mask = ~0u);
+
+        TrafficLightModel* GetTrafficLightModel(int id);
+        void               PruneHiddenNodes(osg::Group* group, osg::Node::NodeMask mask);  // remove masked nodes, for filtering any written osgb file
         std::unordered_map<int, TrafficLightModel> traffic_light_;
 
     private:
@@ -162,10 +175,10 @@ namespace roadgeom
         std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_            = {};
         double                                                         lane_friction_          = 1.0;
         roadmanager::OpenDrive*                                        odrManager_             = nullptr;
-        bool                                                           optimize_               = true;
         osg::Node*                                                     environment_            = nullptr;
         std::string                                                    exe_dir_                = "";
         int                                                            roadmark_texture_found_ = -1;
+        int SaveToFile(const std::string& filename, bool visible = true, osg::Node::NodeMask mask = ~0u);
     };
 
 }  // namespace roadgeom

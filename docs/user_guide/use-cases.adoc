@@ -107,6 +107,8 @@ The generated model can be saved: +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --save_generated_model`` +
 Then look for `generated_road.osgb` in the current directory.
 
+To exclude permanently hidden parts, use `--save_generated_model_visible`. To save only the currently visible parts, press key 'v' at any time in `esmini` or `odrviewer`.
+
 ==== Background color
 esmini default background color is skyish, light blue. Change by launch argument --clear-color <r,g,b>, where r, g, b are the red, green, blue components as floating numbers in the range (0:1). Some examples:
 

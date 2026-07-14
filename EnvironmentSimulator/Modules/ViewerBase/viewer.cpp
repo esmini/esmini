@@ -2007,8 +2007,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     bool gen_road_surface = (environment_ == nullptr || opt->GetOptionSet("enforce_generate_model")) && odrManager->GetNumOfRoads() > 0;
     bool gen_road_objects = !(opt && opt->GetOptionSet("generate_no_road_objects"));
-    bool optimize         = !SE_Env::Inst().GetOptions().GetOptionSet("save_generated_model");
-    roadGeom              = std::make_unique<RoadGeom>(odrManager, environment_, origin_, gen_road_surface, gen_road_objects, exe_path_, optimize);
+    roadGeom              = std::make_unique<RoadGeom>(odrManager, environment_, origin_, gen_road_surface, gen_road_objects, exe_path_);
 
     if (roadGeom->root_ != nullptr)
     {
@@ -2037,13 +2036,18 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     if (roadGeom && opt && (opt->GetOptionSet("save_generated_model")))
     {
         // If road model was generated AND user want to save it
-        if (osgDB::writeNodeFile(*envGroup_, "generated_road.osgb"))
+        if (SE_Env::Inst().GetOptions().GetOptionSet("save_generated_model"))
         {
-            LOG_INFO("Saved generated 3D model in \"generated_road.osgb\"");
+            roadGeom->SaveToFileAll("generated_road.osgb");
         }
-        else
+    }
+
+    if (roadGeom && opt && (opt->GetOptionSet("save_generated_model_visible")))
+    {
+        // If road model was generated AND user want to save it
+        if (SE_Env::Inst().GetOptions().GetOptionSet("save_generated_model_visible"))
         {
-            LOG_ERROR("Failed to save generated 3D model");
+            roadGeom->SaveToFileVisible("generated_road_visible.osgb", GetNodeMask());
         }
     }
 
@@ -3033,6 +3037,26 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     return emodel;
 }
 
+int Viewer::SaveModelToFileAll(const std::string& filename)
+{
+    if (roadGeom == nullptr)
+    {
+        return -1;
+    }
+
+    return roadGeom->SaveToFileAll(filename);
+}
+
+int Viewer::SaveModelToFileVisible(const std::string& filename, unsigned int mask)
+{
+    if (roadGeom == nullptr)
+    {
+        return -1;
+    }
+
+    return roadGeom->SaveToFileVisible(filename, mask);
+}
+
 osg::ref_ptr<osg::Image> Viewer::CreateShadowTexture(int tex_size, double max_alpha, double radius_offset, int mode)
 {
     // First create the texture image, one quadrant of a circle with smooth alpha falloff to the edges
@@ -3996,6 +4020,11 @@ int Viewer::GetNodeMaskBit(int mask)
     return static_cast<int>(osgViewer_->getCamera()->getCullMask() & static_cast<unsigned int>(mask));
 }
 
+int Viewer::GetNodeMask()
+{
+    return static_cast<int>(osgViewer_->getCamera()->getCullMask());
+}
+
 void Viewer::SetCameraTrackNode(osg::ref_ptr<osg::Node> node, bool calcDistance)
 {
     rubberbandManipulator_->setTrackNode(node, calcDistance);
@@ -4252,7 +4281,6 @@ void Viewer::Frame(double time)
     }
 
     osgViewer_->frame();
-
     if (!IsOffScreenRequested())
     {
         frameCounter_++;
@@ -4569,6 +4597,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
                 viewer_->ToggleNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
+            }
+        }
+        break;
+        case (osgGA::GUIEventAdapter::KEY_V):
+        {
+            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN && viewer_->roadGeom)
+            {
+                viewer_->roadGeom->SaveToFileVisible("generated_road_visible_filtered.osgb", viewer_->GetNodeMask());
             }
         }
         break;

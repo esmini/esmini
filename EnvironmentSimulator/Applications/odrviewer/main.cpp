@@ -459,6 +459,7 @@ int main(int argc, char **argv)
                   "Skip log from these modules, all remaining modules will be logged. See User guide for more info",
                   "modulename(s)");
     opt.AddOption("model", "3D Model filename", "model_filename");
+    opt.AddOption("optimize_3d_model", "Optimize generated OSG road model. Do not set when model is to be exported (--save_generated_model* or 'v')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
@@ -466,6 +467,7 @@ int main(int argc, char **argv)
     opt.AddOption("pause", "Pause simulation after initialization. Press 'space' to start.");
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
+    opt.AddOption("save_generated_model_visible", "Save generated 3D model with visible objects only (n/a when a scenegraph is loaded)");
     opt.AddOption("seed", "Specify seed number for random generator", "number");
     opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor", std::to_string(global_speed_factor));
     opt.AddOption("stop_at_end_of_road", "Instead of respawning elsewhere, stop when no connection exists");

@@ -114,6 +114,8 @@ namespace esmini_options
         LIGHT_MODE,                      // 103
         PRECISION,                       // 104
         OSI_COMPRESS,                    // 105
+        SAVE_GENERATED_MODEL_VISIBLE,    // 106
+        OPTIMIZE_3D_MODEL,               // 107
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -183,6 +185,7 @@ namespace esmini_options
         {"road_features", ROAD_FEATURES},
         {"return_nr_permutations", RETURN_NR_PERMUTATIONS},
         {"save_generated_model", SAVE_GENERATED_MODEL},
+        {"save_generated_model_visible", SAVE_GENERATED_MODEL_VISIBLE},
         {"save_xosc", SAVE_XOSC},
         {"seed", SEED},
         {"sensors", SENSORS},
@@ -223,7 +226,9 @@ namespace esmini_options
         {"view_ghost_restart", VIEW_GHOST_RESTART},
         {"hide_obj_outline", HIDE_OBJ_OUTLINE},
         {"axis_indicator", AXIS_INDICATOR},
-        {"gui", GUI}};
+        {"gui", GUI},
+        {"optimize_3d_model", OPTIMIZE_3D_MODEL},
+    };
 
     CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key);
 }  // namespace esmini_options

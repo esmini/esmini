@@ -56,14 +56,14 @@ int main(int argc, char* argv[])
     }
 
     // Create road geometry from OpenDRIVE file
-    roadgeom::RoadGeom road_geom = roadgeom::RoadGeom(roadmanager::Position::GetOpenDrive(), nullptr, osg::Vec3(0, 0, 0), true, true, argv[0], false);
+    roadgeom::RoadGeom road_geom = roadgeom::RoadGeom(roadmanager::Position::GetOpenDrive(), nullptr, osg::Vec3(0, 0, 0), true, true, argv[0]);
 
     // Inspect slightly and print structure
     PrintNodeRecursive(road_geom.root_);
 
     // Save as OpenSceneGraph binary file
     std::string output = FileNameWithoutExtOf(filename) + ".osgb";
-    road_geom.SaveToFile(output);
+    road_geom.SaveToFileVisible(output);
 
     printf("Generated model from %s saved as %s\n", FileNameOf(filename).c_str(), output.c_str());
 

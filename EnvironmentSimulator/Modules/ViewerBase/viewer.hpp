@@ -751,6 +751,7 @@ namespace viewer
         void         ClearNodeMaskBits(int bits);
         void         ToggleNodeMaskBits(int bits);
         int          GetNodeMaskBit(int mask);
+        int          GetNodeMask();  // return current mask setting
         void         SetCameraTrackNode(osg::ref_ptr<osg::Node> xform, bool calcDistance = false);
         PointSensor* CreateSensor(const float (&color)[3], bool create_ball, bool create_line, double ball_radius, double line_width);
         bool         CreateRoadSensors(MovingModel* moving_model);
@@ -792,6 +793,21 @@ namespace viewer
         {
             showLights_ = val;
         }
+
+        /**
+           Save the entire road model to a file, including hidden nodes
+           @param filename Output file name (e.g. "road_model.osgb")
+           @return 0 on success, -1 on error
+        */
+        int SaveModelToFileAll(const std::string& filename);
+
+        /**
+           Save only visible and optionally filtered road model to a file
+           @param filename Output file name (e.g. "road_model.osgb")
+           @param mask Optional filter node mask to apply, default: ~0u (= 0xffffffff = all visible), see NodeMask enum
+           @return 0 on success, negative value on error
+        */
+        int SaveModelToFileVisible(const std::string& filename, unsigned int mask = ~0u);
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);

@@ -193,6 +193,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
             osiReporter->SetUpdated(false);
         }
 #endif
+
         scenarioEngine->mutex_.Lock();
 
         DirtyBits::SetReadFront();
@@ -1524,7 +1525,10 @@ int ScenarioPlayer::Init()
                   "Skip log from these modules, all remaining modules will be logged. See User guide for more info",
                   "modulename(s)");
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
+#ifdef _USE_OSG
+    opt.AddOption("optimize_3d_model", "Optimize generated OSG road model. Do not set when model is to be exported (--save_generated_model* or 'v')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
+#endif
 #ifdef _USE_OSI
     opt.AddOption("osi_compress", "Compress OSI data with gzip");
     opt.AddOption("osi_crop_dynamic", "Crop the dynamic osi data around the given object id with given radius", "id,radius", "", false, false);
@@ -1552,6 +1556,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
+    opt.AddOption("save_generated_model_visible", "Save generated 3D model with visible objects only (n/a when a scenegraph is loaded)");
     opt.AddOption("save_xosc",
                   "Save OpenSCENARIO file with any populated parameter values (from distribution). Modes: quit, continue.",
                   "mode",

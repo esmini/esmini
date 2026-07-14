@@ -2144,6 +2144,31 @@ namespace ESMini
         public static extern int SE_WriteTGAImage(string filename, int width, int height, in byte data, int pixelSize, int pixelFormat, [MarshalAs(UnmanagedType.I1)] bool upsidedown);
 
         /// <summary>
+        /// Save the entire generated road model, including hidden nodes, as file in .osgb format to disk
+        /// </summary>
+        /// <param name="filename">Output file name (e.g. "road_model.osgb")</param>
+        /// <returns>0 on success, -1 on error</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_SaveGeneratedModelToFileAll(string filename);
+
+        /// <summary>
+        /// Save only visible part of generated road model (excluding only nodes with mask == 0) as file in .osgb format to disk
+        /// </summary>
+        /// <param name="filename">Output file name (e.g. "road_model.osgb")</param>
+        /// <returns>0 on success, -1 on error</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_SaveGeneratedModelToFileVisible(string filename);
+
+        /// <summary>
+        /// Save only visible and filtered part of generated road model as file in .osgb format to disk
+        /// </summary>
+        /// <param name="filename">Output file name (e.g. "road_model.osgb")</param>
+        /// <param name="mask">Optional filter node mask to apply, see NodeMask enum. ~0u (0xffffffff) will behave as SE_SaveGeneratedModelToFileVisible</param>
+        /// <returns>0 on success, -1 on error</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_SaveGeneratedModelToFileFiltered(string filename, uint mask);
+
+        /// <summary>
         /// Add a camera with relative position and orientation (heading and pitch)
         /// </summary>
         /// <param name="x">X coordinate relative vehicle currently in focus</param>

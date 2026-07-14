@@ -23,6 +23,7 @@
 #include <osg/Material>
 #include <osgGA/StateSetManipulator>
 #include <osg/PolygonOffset>
+#include <osg/Geode>
 #include <osgDB/ReadFile>
 #include <osgUtil/SmoothingVisitor>
 #include <osg/ShapeDrawable>
@@ -70,6 +71,8 @@ const static std::string prefix_roadmark    = "roadmark_";
 
 namespace roadgeom
 {
+    static constexpr const char* kTextureSourceFileUserValue = "esmini_texture_file";
+
     class FindNamedNode : public osg::NodeVisitor
     {
     public:
@@ -101,6 +104,74 @@ namespace roadgeom
     protected:
         std::string              _name;
         osg::ref_ptr<osg::Group> _node;
+    };
+
+    class TextureRestoreVisitor : public osg::NodeVisitor
+    {
+    public:
+        TextureRestoreVisitor() : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+        {
+        }
+
+        using osg::NodeVisitor::apply;
+
+        void apply(osg::Node& node) override
+        {
+            RestoreStateSet(node.getStateSet());
+            traverse(node);
+        }
+
+        void apply(osg::Geode& geode) override
+        {
+            RestoreStateSet(geode.getStateSet());
+
+            for (unsigned int i = 0; i < geode.getNumDrawables(); i++)
+            {
+                osg::Drawable* drawable = geode.getDrawable(i);
+                if (drawable)
+                {
+                    RestoreStateSet(drawable->getStateSet());
+                }
+            }
+
+            traverse(geode);
+        }
+
+    private:
+        void RestoreStateSet(osg::StateSet* state_set)
+        {
+            if (state_set == nullptr)
+            {
+                return;
+            }
+
+            const auto& texture_attr_list = state_set->getTextureAttributeList();
+            for (unsigned int unit = 0; unit < texture_attr_list.size(); unit++)
+            {
+                auto* texture = dynamic_cast<osg::Texture2D*>(state_set->getTextureAttribute(unit, osg::StateAttribute::TEXTURE));
+                if (texture == nullptr || texture->getImage() != nullptr)
+                {
+                    continue;
+                }
+
+                std::string texture_file;
+                if (!texture->getUserValue(kTextureSourceFileUserValue, texture_file) || texture_file.empty())
+                {
+                    continue;
+                }
+
+                osg::ref_ptr<osg::Image> image = osgDB::readImageFile(texture_file);
+                if (image)
+                {
+                    texture->setImage(image.get());
+                    texture->setUnRefImageDataAfterApply(false);
+                }
+                else
+                {
+                    LOG_WARN("Failed to reload texture image for model export: {}", texture_file);
+                }
+            }
+        }
     };
 
     bool compare_s_values(double s0, double s1)
@@ -190,6 +261,7 @@ namespace roadgeom
             if (img)
             {
                 tex = new osg::Texture2D(img.get());
+                tex->setUserValue(kTextureSourceFileUserValue, file_path);
                 tex->setUnRefImageDataAfterApply(true);
                 tex->setWrap(osg::Texture2D::WrapParameter::WRAP_S, osg::Texture2D::WrapMode::REPEAT);
                 tex->setWrap(osg::Texture2D::WrapParameter::WRAP_T, osg::Texture2D::WrapMode::REPEAT);
@@ -536,10 +608,8 @@ namespace roadgeom
                        osg::Vec3d              origin,
                        bool                    generate_road_surface,
                        bool                    generate_road_objects,
-                       std::string             exe_path,
-                       bool                    optimize)
-        : environment_(environment),
-          optimize_(optimize)
+                       std::string             exe_path)
+        : environment_(environment)
     {
         if (!generate_road_surface && !generate_road_objects)
         {
@@ -1689,11 +1759,11 @@ namespace roadgeom
                         else
                         {
                             clone = tx != nullptr ? dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::DEEP_COPY_ALL)) : nullptr;
-                            clone->setDataVariance(osg::Object::STATIC);
                         }
 
                         if (clone != nullptr)
                         {
+                            clone->setDataVariance(osg::Object::STATIC);
                             SetNodeName(*clone,
                                         obj_type,
                                         object->GetId(),
@@ -1839,7 +1909,6 @@ namespace roadgeom
 
                         if (tx != nullptr)  // wait with continuous object
                         {
-                            clone->setDataVariance(osg::Object::STATIC);
                             if (LODGroup == 0 || s - lastLODs > 0.5 * LOD_DIST_ROAD_FEATURES)
                             {
                                 // add current LOD and create a new one
@@ -1942,9 +2011,12 @@ namespace roadgeom
             }
         }
 
-        if (optimize_)
+        if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::OPTIMIZE_3D_MODEL))
         {
-            // For some reason this operation ruins the positioning of road objects in exported model
+            // Flattening bakes PAT transforms into world-space geometry, but this breaks
+            // export: the flattened geometry is written with no parent transforms to re-apply,
+            // so on load, world-space coordinates are misinterpreted as local-space.
+            // In effect this operation ruins the positioning of road objects in exported model
             osgUtil::Optimizer optimizer;
             optimizer.optimize(objGroup, osgUtil::Optimizer::FLATTEN_STATIC_TRANSFORMS);
         }
@@ -3160,10 +3232,56 @@ namespace roadgeom
         node.setName(prefix + std::to_string(id) + "_" + label);
     }
 
-    int RoadGeom::SaveToFile(const std::string& filename)
+    int RoadGeom::SaveToFile(const std::string& filename, bool visible, osg::Node::NodeMask mask)
     {
-        osgDB::writeNodeFile(*root_, filename);
-        return 0;
+        // If road model was generated AND user want to save it
+        bool retval = false;
+
+        if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::OPTIMIZE_3D_MODEL))
+        {
+            LOG_WARN("Saved optimized model may contain issues, e.g. malplaced objects. Try without --optimize_3d_model option.");
+        }
+
+        osg::ref_ptr<osgDB::Options> writeOptions = new osgDB::Options();
+        writeOptions->setOptionString("WriteImageHint=IncludeData Compressor=zlib");
+        osg::ref_ptr<osg::Group> copy = dynamic_cast<osg::Group*>(root_->clone(osg::CopyOp::DEEP_COPY_ALL));
+        if (!copy)
+        {
+            LOG_ERROR("Failed to clone generated 3D model for export");
+            return -1;
+        }
+
+        if (visible)
+        {
+            PruneHiddenNodes(copy, mask);
+        }
+
+        // Keep runtime texture optimization, but restore texture images in the export copy.
+        TextureRestoreVisitor texture_restore_visitor;
+        copy->accept(texture_restore_visitor);
+
+        retval = osgDB::writeNodeFile(*copy, filename, writeOptions.get());
+
+        if (retval)
+        {
+            LOG_INFO("Saved {} generated 3D model in \"{}\"", visible ? (mask == ~0u ? "visible" : "filtered") : "complete", filename);
+        }
+        else
+        {
+            LOG_ERROR("Failed to save generated 3D model");
+        }
+
+        return (retval == true ? 0 : -1);
+    }
+
+    int RoadGeom::SaveToFileAll(const std::string& filename)
+    {
+        return SaveToFile(filename, false);
+    }
+
+    int RoadGeom::SaveToFileVisible(const std::string& filename, unsigned int mask)
+    {
+        return SaveToFile(filename, true, mask);
     }
 
     TrafficLightModel* RoadGeom::GetTrafficLightModel(int id)
@@ -3174,6 +3292,28 @@ namespace roadgeom
             return &it->second;
         }
         return nullptr;
+    }
+
+    void RoadGeom::PruneHiddenNodes(osg::Group* group, osg::Node::NodeMask mask)
+    {
+        if (!group)
+        {
+            return;
+        }
+
+        for (int i = group->getNumChildren() - 1; i >= 0; --i)
+        {
+            osg::Node* child = group->getChild(i);
+
+            if ((child->getNodeMask() & mask) == 0)
+            {
+                group->removeChild(i);  // Removes the entire subtree
+            }
+            else if (auto* childGroup = child->asGroup())
+            {
+                PruneHiddenNodes(childGroup, mask);
+            }
+        }
     }
 
 }  // namespace roadgeom

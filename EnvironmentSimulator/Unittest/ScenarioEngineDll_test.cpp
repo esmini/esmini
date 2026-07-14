@@ -5235,6 +5235,43 @@ TEST(APITest, TestFetchImage)
     SE_SaveImagesToRAM(false);
 }
 
+// Briefly show how to save generated model
+// check the various modes, by simply comparing expected file size relations
+#include "roadgeom.hpp"
+TEST(SaveGeneratedModelTest, TestVariantsOfSaveGeneratedModel)
+{
+    const char* scenario_file = "../../../resources/xosc/parking_demo.xosc";
+    const char* args[] =
+        {"--osc", scenario_file, "--headless", "--window", "60", "60", "800", "400", "--path", "../../../resources/models", "--save_generated_model"};
+
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 15);
+
+    SE_SaveGeneratedModelToFileAll("parking_demo_generated_model_all.osgb");
+    SE_SaveGeneratedModelToFileVisible("parking_demo_generated_model_visible.osgb");
+    SE_SaveGeneratedModelToFileFiltered("parking_demo_generated_model_filtered1.osgb", ~0u);
+    SE_SaveGeneratedModelToFileFiltered("parking_demo_generated_model_filtered2.osgb",
+                                        roadgeom::NodeMask::NODE_MASK_ENV_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL);
+
+    struct stat fileStatusAll;
+    EXPECT_EQ(stat("parking_demo_generated_model_all.osgb", &fileStatusAll), 0);
+    EXPECT_GT(fileStatusAll.st_size, 0);
+
+    struct stat fileStatusVisible;
+    EXPECT_EQ(stat("parking_demo_generated_model_visible.osgb", &fileStatusVisible), 0);
+    EXPECT_LT(fileStatusVisible.st_size, fileStatusAll.st_size);
+
+    struct stat fileStatusFiltered1;
+    EXPECT_EQ(stat("parking_demo_generated_model_filtered1.osgb", &fileStatusFiltered1), 0);
+    EXPECT_EQ(fileStatusFiltered1.st_size, fileStatusVisible.st_size);
+
+    struct stat fileStatusFiltered2;
+    EXPECT_EQ(stat("parking_demo_generated_model_filtered2.osgb", &fileStatusFiltered2), 0);
+    EXPECT_LT(fileStatusFiltered2.st_size, fileStatusFiltered1.st_size);
+
+    SE_Close();
+}
+
 #endif  // _USE_OSG
 
 static void paramDeclCallbackSetRoute(void* args)

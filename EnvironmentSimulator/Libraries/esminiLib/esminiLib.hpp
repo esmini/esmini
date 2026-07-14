@@ -1860,6 +1860,28 @@ extern "C"
     SE_WriteTGAImage(const char *filename, int width, int height, const unsigned char *data, int pixelSize, int pixelFormat, bool upsidedown);
 
     /**
+      Save the entire generated road model, including hidden nodes, as file in .osgb format to disk
+      @param filename Output file name (e.g. "road_model.osgb")
+      @return 0 on success, -1 on error
+    */
+    SE_DLL_API int SE_SaveGeneratedModelToFileAll(const char *filename);
+
+    /**
+      Save only visible part of generated road model (excluding only nodes with mask == 0) as file in .osgb format to disk
+      @param filename Output file name (e.g. "road_model.osgb")
+      @return 0 on success, -1 on error
+    */
+    SE_DLL_API int SE_SaveGeneratedModelToFileVisible(const char *filename);
+
+    /**
+      Save only visible and filtered part of generated road model as file in .osgb format to disk
+      @param filename Output file name (e.g. "road_model.osgb")
+      @param mask Optional filter node mask to apply, see NodeMask enum. ~0u (0xffffffff) will behave as SE_SaveGeneratedModelToFileVisible
+      @return 0 on success, -1 on error
+    */
+    SE_DLL_API int SE_SaveGeneratedModelToFileFiltered(const char *filename, unsigned int mask);
+
+    /**
     Add a camera with relative position and orientation (heading and pitch)
     @param x X coordinate relative vehicle currently in focus
     @param y Y coordinate relative vehicle currently in focus

@@ -21,6 +21,7 @@ Key shortcuts \n\
     Delete:        Same as above (Shift + TAB) \n\
     o:             Toggle show / hide OpenDRIVE road feature lines \n\
     u:             Toggle show / hide OSI road lines \n\
+    v:             Save generated model, currently visible parts \n\
     y:             Toggle show / hide OSI road points \n\
     p:             Toggle show / hide environment 3D model \n\
     i:             Toggle info text showing time and speed \n\

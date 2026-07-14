@@ -72,6 +72,8 @@ Options:
       Ignore provided roll values from OSC file and place vehicle relative to road
   --info_text [mode]  (default if option or value omitted: 1)
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
+  --light_mode [mode]  (default if option or value omitted: auto)
+      Show lights for light state actions. Modes: on, off, auto. Toggle key 'L'
   --log_append
       Log all scenarios in the same txt file
   --logfile_path [path]  (default if option or value omitted: log.txt)
@@ -86,6 +88,8 @@ Options:
       Skip log from these modules, all remaining modules will be logged. See User guide for more info
   --osc_str <string>
       OpenSCENARIO XML string
+  --optimize_model
+      Optimize generated OSG road model. Do not set when model is to be exported (--save_generated_model* or 'v')
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
   --osi_compress
@@ -128,6 +132,8 @@ Options:
       Return number of permutations without executing the scenario (-1 = error)
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
+  --save_generated_model_visible
+      Save generated 3D model with visible objects only (n/a when a scenegraph is loaded)
   --save_xosc [mode]  (default if value omitted: continue)
       Save OpenSCENARIO file with any populated parameter values (from distribution). Modes: quit, continue.
   --seed <number>

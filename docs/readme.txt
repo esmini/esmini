@@ -17,14 +17,17 @@ Key shortcuts
     o:             Toggle show / hide OpenDRIVE road feature lines
     O:             Toggle show / hide odr signal bounding boxes
     u:             Toggle show / hide OSI road lines
+    v:             Save generated model, currently visible parts
     y:             Toggle show / hide OSI road points
     p:             Toggle show / hide environment 3D model
     r:             Toggle show / hide sensor view frustums
     R:             Toggle route waypoint visualization
     i:             Toggle on-screen info text modes
     j:             Toggle show trails after vehicles(4 modes: none / dots / lines / both)
+    L (shift + l): Toggle show vehicle lights
     n:             Toggle show active trajectories
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
+    ; (shift + ,): Toggle show/hide object outlines
     K:             Print current camera position and orientation to console
     x:             Cycle axis indicator view mode (off, on, xray)
     ESC:           quit

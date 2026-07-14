@@ -22,6 +22,7 @@ Key shortcuts \n\
     o:             Toggle show / hide OpenDRIVE road feature lines \n\
     O:             Toggle show / hide odr signal bounding boxes \n\
     u:             Toggle show / hide OSI road lines \n\
+    v:             Save generated model, currently visible parts \n\
     y:             Toggle show / hide OSI road points \n\
     p:             Toggle show / hide environment 3D model \n\
     r:             Toggle show / hide sensor view frustums \n\
