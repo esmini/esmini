@@ -10,20 +10,9 @@ execute_process(
     ERROR_QUIET)
 
 message("Version: " ${VERSION})
-if(NOT VERSION OR VERSION STREQUAL "")
-    # git describe returned nothing (fork or shallow clone)
-    set(VERSION "v0.0.0")
-endif()
 
 # Strip prefix "v" and any trailing line break
-string(LENGTH "${VERSION}" _vlen)
-if(_vlen GREATER 1)
-    string(SUBSTRING "${VERSION}" 1 -1 VERSION)
-else()
-    # Fallback: remove leading v manually or leave unchanged
-    set(VERSION "0.0.0")
-endif()
-
+string(SUBSTRING "${VERSION}" 1 -1 VERSION )
 string(STRIP "${VERSION}" VERSION)
 
 set(OSMP_VERSION "1.4.0")
