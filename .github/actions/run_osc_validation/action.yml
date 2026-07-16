@@ -1,14 +1,50 @@
 name: "Run osc-validation"
 description: "Install osc-validation, run pytest suite with HTML report, and collect artifacts"
+inputs:
+  runner:
+    description: "Python script used to run the validation suite"
+    required: true
+  manifest:
+    description: "YAML file defining categorized osc-validation test permutations"
+    required: true
 runs:
   using: "composite"
   steps:
 
+    - name: Set osc-validation pinned ref
+      shell: bash
+      run: |
+        # Single source of truth for the pinned osc-validation tag/ref.
+        # Update this value alone to bump the version used by the steps below.
+        echo "OSC_VALIDATION_REF=v0.2.0" >> "$GITHUB_ENV"
+
+    - name: Check for new osc-validation tags
+      shell: bash
+      run: |
+        PINNED_TAG="$OSC_VALIDATION_REF"
+
+        LATEST_TAG="$(git ls-remote --tags --refs https://github.com/PMSFIT/osc-validation.git \
+          | awk -F'refs/tags/' '{print $2}' \
+          | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+          | sort -V | tail -n1)"
+
+        echo "Pinned osc-validation tag:  $PINNED_TAG"
+        echo "Latest osc-validation tag:  $LATEST_TAG"
+
+        if [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "$PINNED_TAG" ]; then
+          VERSION_TEXT="A newer osc-validation tag is available: $LATEST_TAG (currently pinned to $PINNED_TAG)"
+          echo "::notice::${VERSION_TEXT}."
+
+          echo "VERSION_NOTICE=${VERSION_TEXT}. Consider updating OSC_VALIDATION_REF in .github/actions/run_osc_validation/action.yml and generating an updated osc_validation_manifest.yml using scripts/sync_osc_validation_manifest.py." >> "$GITHUB_ENV"
+        else
+           echo "VERSION_NOTICE=osc-validation is up to date ($PINNED_TAG)." >> "$GITHUB_ENV"
+        fi
+
     - name: Checkout osc-validation
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: PMSFIT/osc-validation
-        ref: v0.2.0
+        ref: ${{ env.OSC_VALIDATION_REF }}
         fetch-depth: 1
         path: osc-validation
 
@@ -18,45 +54,14 @@ runs:
         pushd osc-validation
         python3 -m venv .venv
         source .venv/bin/activate
-        pip install -e . "numpy<2.0"
+        pip install -e . "numpy<2.0" PyYAML
         popd
 
-    - name: Run osc-validation
-      id: run_tests
+    - name: Run explicit permutations
       shell: bash
       run: |
-        pushd osc-validation
-        source .venv/bin/activate
+        "$GITHUB_WORKSPACE/osc-validation/.venv/bin/python" \
+          "$GITHUB_WORKSPACE/${{ inputs.runner }}" \
+          --manifest "$GITHUB_WORKSPACE/${{ inputs.manifest }}" \
+          --validation-prefix "$GITHUB_WORKSPACE/osc-validation"
 
-        SIM_BIN="$(pwd)/../bin/esmini"
-        echo "Using esmini binary: $SIM_BIN"
-
-        mkdir -p osc_validation_results
-
-        set +e
-        osc-validate \
-          --tool ESMini \
-          --toolpath "$SIM_BIN" \
-          --test-profile "$GITHUB_ACTION_PATH/test_profile.toml" \
-          --html osc_validation_results/report.html
-        code=$?
-        echo "exitcode=$code" >> $GITHUB_OUTPUT
-        echo "osc-validation finished with exit code $code"
-
-        popd
-
-    - name: Upload osc-validation artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: osc-validation
-        path: osc-validation/osc_validation_results
-
-    - name: Fail if tests failed
-      if: always()
-      shell: bash
-      run: |
-        if [ "${{ steps.run_tests.outputs.exitcode }}" != "0" ]; then
-          echo "osc-validation failed"
-          exit 1
-        fi

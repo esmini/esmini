@@ -1,0 +1,80 @@
+name: OSCValidation
+
+on:
+  schedule:
+    # This will run the osc validation job Nightly at 0:37AM every day for the dev branch
+    # * is a special character in YAML so you have to quote this string
+    - cron: '37 0 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  osc_validation:
+    strategy:
+      matrix:
+        configuration: [Release]
+        os: [ubuntu-22.04]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.ref }}
+          submodules: true
+          lfs: false
+          fetch-depth: 0  # Fetch all history for proper branch switching
+
+      - name: Conditional Checkout
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            git checkout dev
+          fi
+
+      - name: Check recent commits
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            COUNT=1
+            echo "Job triggered manually via workflow_dispatch"
+          else
+            COUNT=$(git rev-list --count --since="24 hours ago" origin/dev)
+            echo "$COUNT commits over the last 24 hours found on dev"
+          fi
+          echo "commit_count=$COUNT" >> $GITHUB_OUTPUT
+
+      - name: Skip job
+        if: steps.changes.outputs.commit_count == '0'
+        run: |
+          echo "No new commits on dev. Skipping."
+          exit 0
+
+      - uses: ./.github/actions/setup_tools_shared
+        if: steps.changes.outputs.commit_count != '0'
+
+      - name: Cache
+        if: steps.changes.outputs.commit_count != '0'
+        uses: actions/cache@v5
+        with:
+          path: |
+            externals/googletest
+            externals/osg
+            externals/osi
+            externals/sumo
+            resources/models
+          key: ${{ runner.os }}-external-resources
+
+      - name: CMake Configure - Ubuntu
+        if: steps.changes.outputs.commit_count != '0' && runner.os == 'Linux'
+        run: cmake -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+
+      - name: CMake Build
+        if: steps.changes.outputs.commit_count != '0'
+        run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      - name: Run osc-validation
+        if: steps.changes.outputs.commit_count != '0'
+        uses: ./.github/actions/run_osc_validation
+        with:
+          runner: test/osc_validation_test.py
+          manifest: .github/actions/run_osc_validation/osc_validation_manifest.yml
