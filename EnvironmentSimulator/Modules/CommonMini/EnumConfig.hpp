@@ -116,6 +116,7 @@ namespace esmini_options
         OSI_COMPRESS,                    // 105
         SAVE_GENERATED_MODEL_VISIBLE,    // 106
         OPTIMIZE_3D_MODEL,               // 107
+        DISABLE_SHADOWS,                 // 108
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -228,6 +229,7 @@ namespace esmini_options
         {"axis_indicator", AXIS_INDICATOR},
         {"gui", GUI},
         {"optimize_3d_model", OPTIMIZE_3D_MODEL},
+        {"disable_shadows", DISABLE_SHADOWS},
     };
 
     CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key);

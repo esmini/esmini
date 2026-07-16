@@ -1531,8 +1531,14 @@ void EntityModel::UpdatePositionAndOrientation(roadmanager::Position* pos)
 
     txNode_->setAttitude(quat_);
 
-    shadow_bb_->UpdatePositionAndOrientation(pos, viewer_->origin_[0], viewer_->origin_[1]);
-    shadow_model_->UpdatePositionAndOrientation(pos, viewer_->origin_[0], viewer_->origin_[1]);
+    if (shadow_bb_ != nullptr)
+    {
+        shadow_bb_->UpdatePositionAndOrientation(pos, viewer_->origin_[0], viewer_->origin_[1]);
+    }
+    if (shadow_model_ != nullptr)
+    {
+        shadow_model_->UpdatePositionAndOrientation(pos, viewer_->origin_[0], viewer_->origin_[1]);
+    }
 }
 
 const osg::Vec3d* viewer::EntityModel::GetPosition() const
@@ -2891,44 +2897,6 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f;
     double bbMinZ = bbCenter.z() - bbDimensions.z() / 2.0;
 
-    if (shadow_texture_ == nullptr)
-    {
-        const int    tex_size  = 256;  // pixels
-        const double max_alpha = 0.6;  // Max alpha (min trasparency) for the shadow
-
-#if SHADOW_INTERACTION
-        const double roundness = shadow_params.roundness;
-#else
-        const double roundness = 0.3;
-#endif
-
-        shadow_texture_ = new osg::Texture2D(CreateShadowTexture(tex_size, max_alpha, roundness, 2));
-        shadow_texture_->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
-        shadow_texture_->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);
-        shadow_texture_->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
-        shadow_texture_->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
-    }
-
-    Shadow* shadow_model_ = new Shadow("shadow_tx_model",
-                                       xc - refpoint_x_offset,
-                                       tempModelBB._min.z(),
-                                       length,
-                                       width,
-                                       height,
-                                       NodeMask::NODE_MASK_ENTITY_MODEL,
-                                       type == EntityModel::EntityType::VEHICLE,
-                                       shadow_texture_);
-
-    Shadow* shadow_bb_ = new Shadow("shadow_tx_filled_bb",
-                                    xc - refpoint_x_offset,
-                                    bbMinZ,
-                                    bbDimensions.x(),
-                                    bbDimensions.y(),
-                                    bbDimensions.z(),
-                                    NodeMask::NODE_MASK_ENTITY_BB_FILLED,
-                                    type == EntityModel::EntityType::VEHICLE,
-                                    shadow_texture_);
-
     // Draw only wireframe
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
     polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
@@ -2968,8 +2936,51 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
         emodel = new EntityModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name);
     }
 
-    emodel->SetShadowModel(shadow_model_);
-    emodel->SetShadowBB(shadow_bb_);
+    if (shadow_texture_ == nullptr)
+    {
+        const int    tex_size  = 256;  // pixels
+        const double max_alpha = 0.6;  // Max alpha (min trasparency) for the shadow
+
+#if SHADOW_INTERACTION
+        const double roundness = shadow_params.roundness;
+#else
+        const double roundness = 0.3;
+#endif
+
+        shadow_texture_ = new osg::Texture2D(CreateShadowTexture(tex_size, max_alpha, roundness, 2));
+        shadow_texture_->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
+        shadow_texture_->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);
+        shadow_texture_->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+        shadow_texture_->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+    }
+
+    if (!SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::DISABLE_SHADOWS))
+    {
+        Shadow* shadow_model_ = new Shadow("shadow_tx_model",
+                                           xc - refpoint_x_offset,
+                                           tempModelBB._min.z(),
+                                           roadGeom ? roadGeom->ground_plane_z_ : 0.0,
+                                           length,
+                                           width,
+                                           height,
+                                           NodeMask::NODE_MASK_ENTITY_MODEL,
+                                           type == EntityModel::EntityType::VEHICLE,
+                                           shadow_texture_);
+
+        Shadow* shadow_bb_ = new Shadow("shadow_tx_filled_bb",
+                                        xc - refpoint_x_offset,
+                                        bbMinZ,
+                                        roadGeom ? roadGeom->ground_plane_z_ : 0.0,
+                                        bbDimensions.x(),
+                                        bbDimensions.y(),
+                                        bbDimensions.z(),
+                                        NodeMask::NODE_MASK_ENTITY_BB_FILLED,
+                                        type == EntityModel::EntityType::VEHICLE,
+                                        shadow_texture_);
+
+        emodel->SetShadowModel(shadow_model_);
+        emodel->SetShadowBB(shadow_bb_);
+    }
 
     // if file found, set full path, else use the requested filename
     emodel->filename_ = modelFilepath;
@@ -3148,6 +3159,7 @@ osg::ref_ptr<osg::Image> Viewer::CreateShadowTexture(int tex_size, double max_al
 viewer::Shadow::Shadow(std::string                  name,
                        double                       x,
                        double                       z,
+                       double                       ground_plane_z,
                        double                       bb_length,
                        double                       bb_width,
                        double                       bb_height,
@@ -3155,11 +3167,13 @@ viewer::Shadow::Shadow(std::string                  name,
                        bool                         is_vehicle,
                        osg::ref_ptr<osg::Texture2D> texture)
     : z_(z),
+      ground_plane_z_(ground_plane_z),
       p_(0.0),
       r_(0.0),
       length_(bb_length),
       width_(bb_width),
       height_(bb_height),
+      node_mask_(node_mask),
       max_z_(10.0),
       min_alpha_(0.2),
       is_vehicle_(is_vehicle),
@@ -3290,14 +3304,39 @@ void viewer::Shadow::UpdatePositionAndOrientation(roadmanager::Position* pos, do
 {
     bool recalculate = false;
 
-    if (abs(pos->GetZRelative() - z_) > 1e-2)
+    // establish ground level for the shadow, in priority order: road surface, then ground plane
+    // if none of the two is present, skip shadow altogether
+    double z_ground = std::nan("");
+    if (roadmanager::Position::GetOpenDrive()->GetNumOfRoads() > 0)
     {
-        // object elevation above road changed, recalculate shadow intensity and edge fading
-        z_          = pos->GetZRelative();
-        recalculate = true;
+        if (abs(pos->GetZRelative() - z_) > 1e-2)
+        {
+            // object elevation above road changed, recalculate shadow intensity and edge fading
+            z_          = pos->GetZRelative();
+            recalculate = true;
+        }
+        z_ground = pos->GetZRoad();
+    }
+    else if (!std::isnan(ground_plane_z_))
+    {
+        z_ground = ground_plane_z_;
+        z_       = pos->GetZ() - z_ground;
     }
 
-    pat_->setPosition(osg::Vec3(pos->GetX() - origin_x, pos->GetY() - origin_y, pos->GetZRoad()));
+    if (std::isnan(z_ground) || z_ < -SMALL_NUMBER)
+    {
+        // no ground or entity below ground level
+        pat_->setNodeMask(0x0);
+        return;
+    }
+
+    if (pat_->getNodeMask() != static_cast<osg::Node::NodeMask>(node_mask_))
+    {
+        // probably was hidden due to no road or ground plane, now we have one, show it again
+        pat_->setNodeMask(node_mask_);
+    }
+
+    pat_->setPosition(osg::Vec3(pos->GetX() - origin_x, pos->GetY() - origin_y, z_ground));
 
     // for absolute position mode, the pitch offset is included, for relative mode the pitch consider reference line only
     // we need to add an offset for the effect of roll change rate on local pitch

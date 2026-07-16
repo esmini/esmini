@@ -629,6 +629,9 @@ int main(int argc, char** argv)
     opt.AddOption("dir",
                   "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring",
                   "path");
+#ifdef _USE_OSG
+    opt.AddOption("disable_shadows", "Disable shadows");
+#endif
     opt.AddOption("fixed_timestep", "Use fixed timestep for the replay", "s", "");
 #ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);

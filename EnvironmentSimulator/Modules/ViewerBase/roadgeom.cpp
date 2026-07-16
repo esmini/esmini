@@ -3193,8 +3193,7 @@ namespace roadgeom
 
     int RoadGeom::AddGroundSurface()
     {
-        const double margin   = 1E4;
-        const double z_offset = -1.0;
+        const double margin = 1E4;
         // const osg::BoundingSphere bs = environment_->getBound();
 
         osg::ComputeBoundsVisitor cbv;
@@ -3210,12 +3209,12 @@ namespace roadgeom
         {
             bb.set(osg::Vec3d(0.0, 0.0, 0.0), osg::Vec3d(1e4, 1e4, 1e4));
         }
-
+        ground_plane_z_                    = bb.zMin() + ground_plane_default_z_offset_;
         osg::ref_ptr<osg::Geode>    ground = new osg::Geode;
         osg::ref_ptr<osg::Geometry> geom   = osg::createTexturedQuadGeometry(
-            osg::Vec3(bb.xMin() - static_cast<float>(margin), bb.yMin() - static_cast<float>(margin), bb.zMin() + static_cast<float>(z_offset)),
-            osg::Vec3(0.0f, 2.0f * static_cast<float>(margin) + (bb.yMax() - bb.yMin()), bb.zMin() + static_cast<float>(z_offset)),
-            osg::Vec3(2.0f * static_cast<float>(margin) + (bb.xMax() - bb.xMin()), 0.0f, bb.zMin() + static_cast<float>(z_offset)));
+            osg::Vec3(bb.xMin() - static_cast<float>(margin), bb.yMin() - static_cast<float>(margin), static_cast<float>(ground_plane_z_)),
+            osg::Vec3(0.0f, 2.0f * static_cast<float>(margin) + (bb.yMax() - bb.yMin()), static_cast<float>(ground_plane_z_)),
+            osg::Vec3(2.0f * static_cast<float>(margin) + (bb.xMax() - bb.xMin()), 0.0f, static_cast<float>(ground_plane_z_)));
         osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
         color->push_back(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
         geom->setColorArray(color.get());

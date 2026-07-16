@@ -32,6 +32,8 @@ Options:
       Disable controllers
   --disable_log
       Prevent logfile from being created
+  --disable_shadows
+      Disable shadows
   --disable_stdout
       Prevent messages to stdout
   --enforce_generate_model
@@ -88,7 +90,7 @@ Options:
       Skip log from these modules, all remaining modules will be logged. See User guide for more info
   --osc_str <string>
       OpenSCENARIO XML string
-  --optimize_model
+  --optimize_3d_model
       Optimize generated OSG road model. Do not set when model is to be exported (--save_generated_model* or 'v')
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)

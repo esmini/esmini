@@ -346,6 +346,7 @@ namespace viewer
         Shadow(std::string                  name,
                double                       x,
                double                       z,
+               double                       ground_plane_z,
                double                       bb_length,
                double                       bb_width,
                double                       bb_height,
@@ -360,25 +361,27 @@ namespace viewer
         osg::ref_ptr<osg::Vec3Array>                 vertices_;
         osg::ref_ptr<osg::Vec4Array>                 color_;
 
-        double z_                    = 0.0;  // relative elevation of object wrt road surface
-        double p_                    = 0.0;  // relative pitch of object wrt road surface
-        double r_                    = 0.0;  // relative roll of object wrt road surface
-        double scale_x_              = 1.0;  // longitudinal scale factor, wrt object orientation
-        double scale_y_              = 1.0;  // lateral scale factor, wrt object orientation
-        double max_z_                = 0.0;
-        double length_               = 0.0;
-        double width_                = 0.0;
-        double height_               = 0.0;
-        double min_alpha_            = 0.0;
-        bool   is_vehicle_           = false;
-        double height_factor_        = 0.0;
-        double roundness_            = 0.0;  // shift inner shadow edge from circle center outwards [0,1]
-        double collar_min_size_      = 0.0;  // minimum size of the collar (outer area where shadow fades)
-        double collar_max_size_      = 0.0;  // maximum size of the collar
-        double collar_offset_factor_ = 0.0;  // offset factor for the collar, moving collar inwards (-) or outwards (+) [-1,1]
-        double vehicle_z_offset_     = 0.0;  // added Z elevation for vehicle ground clearance
-        double offset_z_factor_      = 0.0;  // adjust collar offset based on added Z elevation [-1, 1]
-        double x_offset_             = 0.0;  // x offset from shadow rectangle center
+        double   z_                    = 0.0;  // relative elevation of object wrt road surface
+        double   p_                    = 0.0;  // relative pitch of object wrt road surface
+        double   r_                    = 0.0;  // relative roll of object wrt road surface
+        double   scale_x_              = 1.0;  // longitudinal scale factor, wrt object orientation
+        double   scale_y_              = 1.0;  // lateral scale factor, wrt object orientation
+        double   max_z_                = 0.0;
+        double   length_               = 0.0;
+        double   width_                = 0.0;
+        double   height_               = 0.0;
+        double   min_alpha_            = 0.0;
+        bool     is_vehicle_           = false;
+        double   height_factor_        = 0.0;
+        double   roundness_            = 0.0;           // shift inner shadow edge from circle center outwards [0,1]
+        double   collar_min_size_      = 0.0;           // minimum size of the collar (outer area where shadow fades)
+        double   collar_max_size_      = 0.0;           // maximum size of the collar
+        double   collar_offset_factor_ = 0.0;           // offset factor for the collar, moving collar inwards (-) or outwards (+) [-1,1]
+        double   vehicle_z_offset_     = 0.0;           // added Z elevation for vehicle ground clearance
+        double   offset_z_factor_      = 0.0;           // adjust collar offset based on added Z elevation [-1, 1]
+        double   x_offset_             = 0.0;           // x offset from shadow rectangle center
+        double   ground_plane_z_       = std::nan("");  // height of ground plane, if any
+        NodeMask node_mask_            = NodeMask::NODE_MASK_NONE;
     };
 
     class EntityModel

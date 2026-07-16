@@ -66,6 +66,9 @@ namespace roadgeom
             BORDER
         };
 
+        const double ground_plane_default_z_offset_ = -1;
+        double       ground_plane_z_                = std::nan("");  // height of any added ground plane
+
         osg::ref_ptr<osg::Group>                                  root_;
         osg::ref_ptr<osg::Vec4Array>                              color_asphalt_ = new osg::Vec4Array;
         std::unordered_map<uint64_t, osg::ref_ptr<osg::Material>> std_materials_ = {};

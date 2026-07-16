@@ -1491,6 +1491,7 @@ int ScenarioPlayer::Init()
                   false);
     opt.AddOption("disable_controllers", "Disable controllers");
     opt.AddOption("disable_log", "Prevent logfile from being created");
+    opt.AddOption("disable_shadows", "Disable shadows");
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
