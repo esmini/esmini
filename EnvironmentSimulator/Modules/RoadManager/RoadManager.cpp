@@ -8593,8 +8593,11 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
 
                                     tpoint_struct& p = tpoint[i][index];
 
+                                    // center_s must be the object reference s (tunnel->s_) since the corner s (p.s) is
+                                    // absolute; resolve_corners computes corner_s = ri.s + (corner_s - center_s), so a
+                                    // zero center_s would add the object s twice and shift the tunnel along the road.
                                     OutlineCorner* corner = static_cast<OutlineCorner*>(
-                                        new OutlineCornerRoad(road->GetId(), p.s, p.t + t_offset, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
+                                        new OutlineCornerRoad(road->GetId(), p.s, p.t + t_offset, 0.0, TUNNEL_HEIGHT, tunnel->s_, 0.0, 0.0));
                                     outline->AddCorner(corner);
                                 }
                             }
@@ -8645,7 +8648,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                                                                                   tmp->t_ + (side == 1 ? TUNNEL_WALL_THICKNESS : 0.0),
                                                                                   TUNNEL_HEIGHT,
                                                                                   TUNNEL_ROOF_THICKNESS,
-                                                                                  0.0,
+                                                                                  tunnel->s_,
                                                                                   0.0,
                                                                                   0.0));
                             outline->AddCorner(corner);
