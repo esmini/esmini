@@ -1,5 +1,31 @@
 ## esmini release notes
 
+### 2026-07-16 Version 3.6.0
+
+New features:
+- Extend export 3d model functionality
+  - keep option to save all created parts (`--save_generated_model`)
+  - add option to show all but permanently hidden parts (visible)
+  - add key command ('v') for saving currently visible parts (filtered)
+  - see brief info under [User guide - Road network visualization](https://esmini.github.io/use-cases.html#_road_network_visualization)
+  - see all options in [esmini](https://esmini.github.io/command-reference.html#_esmini) and [odrviewer](https://esmini.github.io/command-reference.html#_odrviewer) command reference
+  - add esminiLib API functions (`SE_SaveGeneratedModel*()`)
+- Expose TTC computation in esminiLib API ([PR #821](https://github.com/esmini/esmini/issues/821))
+  - move time-to-collision calculations from Condition to Object class
+  - expose it by adding `SE_GetTimeToCollision()` to esminiLib
+
+Improvements and fixes:
+- Improve shadows and add option to disable them ([issue #822](https://github.com/esmini/esmini/issues/822))
+  - consider road and any ground plane height
+  - hide shadow if entity below road/ground
+  - add option `--disable_shadow` to skip shadows altogether
+- Fix wrong s-value of tunnel OSI points
+- Fix road tesselation sometimes missing lane features
+- Decrease road tessellation error at longer segments
+- View osi points of also non driving lanes (toggle key 'y')
+- Add simple curb parking road script example ([create_curb_parking.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/create_curb_parking.py))
+
+
 ### 2026-07-08 Version 3.5.0
 
 New features:
