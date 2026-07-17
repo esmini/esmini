@@ -5,7 +5,7 @@
 New features:
 - Extend export 3d model functionality
   - keep option to save all created parts (`--save_generated_model`)
-  - add option to show all but permanently hidden parts (visible)
+  - add option to save all but permanently hidden parts (visible)
   - add key command ('v') for saving currently visible parts (filtered)
   - see brief info under [User guide - Road network visualization](https://esmini.github.io/use-cases.html#_road_network_visualization)
   - see all options in [esmini](https://esmini.github.io/command-reference.html#_esmini) and [odrviewer](https://esmini.github.io/command-reference.html#_odrviewer) command reference
