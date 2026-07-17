@@ -210,6 +210,25 @@ jobs:
         if: ${{ failure() && env.USE_TMATE == 'true' }}
         uses: mxschmitt/action-tmate@v3
 
+  osc-validation:
+    needs: [test]
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: esmini-bin_Linux
+
+      - name: Extract Ubuntu release binary artifact
+        run: |
+          unzip -q esmini-bin_Linux.zip
+          ln -s esmini/bin bin
+
+      - name: Run osc-validation
+        uses: ./.github/actions/run_osc_validation
+
   test-no-external-modules:
     needs: [lint]
 
