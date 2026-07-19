@@ -675,7 +675,7 @@ namespace esmini
         return copy_state_from_object(object, scenario_engine_->getSimulationTime());
     }
 
-    double OpenScenario::get_time_to_collision(int object_a_id, int object_b_id, bool free_space, int cs, int dist_type) const
+    double OpenScenario::time_to_collision(int object_a_id, int object_b_id, bool free_space, int cs, int dist_type) const
     {
         if (scenario_engine_ == nullptr)
         {
