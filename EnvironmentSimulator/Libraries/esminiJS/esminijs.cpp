@@ -683,21 +683,19 @@ namespace esmini
         }
 
         scenarioengine::Object* obj_a = scenario_engine_->entities_.GetObjectById(object_a_id);
-        scenarioengine::Object* obj_b = scenario_engine_->entities_.GetObjectById(object_b_id);
-        if (obj_a == nullptr || obj_b == nullptr)
+        if (obj_a == nullptr)
         {
             return -1.0;
         }
 
+        scenarioengine::Object* obj_b = scenario_engine_->entities_.GetObjectById(object_b_id);
+
         double ttc = -1.0;
-        if (obj_a->TimeToCollision(obj_b,
-                                   static_cast<roadmanager::CoordinateSystem>(cs),
-                                   static_cast<roadmanager::RelativeDistanceType>(dist_type),
-                                   free_space,
-                                   ttc) != 0)
-        {
-            return -1.0;
-        }
+        obj_a->TimeToCollision(obj_b,
+                               static_cast<roadmanager::CoordinateSystem>(cs),
+                               static_cast<roadmanager::RelativeDistanceType>(dist_type),
+                               free_space,
+                               ttc);
         return ttc;
     }
 
