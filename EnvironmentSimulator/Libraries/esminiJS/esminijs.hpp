@@ -188,7 +188,7 @@ namespace esmini
         bool                             is_quit() const;
         void                             reset();
 
-        double time_to_collision(int object_a_id, int object_b_id, bool free_space = true, int cs = 1, int dist_type = 2) const;
+        double time_to_collision(int object_a_id, int object_b_id, bool free_space, int cs, int dist_type) const;
 
         OpenScenario(const OpenScenario&)            = delete;
         OpenScenario& operator=(const OpenScenario&) = delete;
