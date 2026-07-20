@@ -136,6 +136,7 @@ Main methods on `OpenScenario`:
 - `get_object_count()` returns the current active object count
 - `get_simulation_time()` returns current simulation time in seconds
 - `is_quit()` reports whether the scenario has completed
+- `time_to_collision(object_a_id, object_b_id, free_space, cs, dist_type)` returns the time to collision in seconds from object A to object B, or `-1` when undefined. `cs` and `dist_type` are the integer values of `roadmanager::CoordinateSystem` and `roadmanager::RelativeDistanceType`
 
 Configuration values exposed through embind `value_object` types are passed from JavaScript as plain object literals, for example:
 
