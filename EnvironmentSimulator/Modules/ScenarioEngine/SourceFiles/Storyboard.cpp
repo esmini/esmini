@@ -95,7 +95,9 @@ void StoryBoard::Start(double simTime)
 
 void StoryBoard::Step(double simTime, double dt)
 {
-    EvalTriggers(simTime);
+    // Evaluate start triggers before stepping, so an element/action starting this
+    // tick still gets to execute its own Step() within the same tick.
+    EvalStartTrigger(simTime);
 
     for (auto action : init_.global_action_)
     {
@@ -126,6 +128,11 @@ void StoryBoard::Step(double simTime, double dt)
     }
 
     StoryBoardElement::Step(simTime, dt);
+
+    // Evaluate stop triggers after stepping, so an element/action completing this
+    // tick (e.g. a trajectory reaching its endpoint exactly when the stop trigger
+    // fires) still gets to execute its final Step() before being marked COMPLETE.
+    EvalStopTrigger(simTime);
 }
 
 void Event::Start(double simTime)

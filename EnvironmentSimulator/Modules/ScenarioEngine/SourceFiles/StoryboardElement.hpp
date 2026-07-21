@@ -155,7 +155,13 @@ namespace scenarioengine
 
         virtual void Step(double simTime, double dt);
 
-        virtual void EvalTriggers(double simTime);
+        // Evaluate start triggers only. Called before Step(), so elements starting
+        // this tick still get their Step() executed within the same tick.
+        virtual void EvalStartTrigger(double simTime);
+
+        // Evaluate stop triggers only. Called after Step(), so elements completing
+        // this tick have already had a chance to execute their final Step().
+        virtual void EvalStopTrigger(double simTime);
 
         virtual void Stop();
 

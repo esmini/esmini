@@ -135,6 +135,12 @@ void ScenarioEngine::UpdateGhostMode()
 
 int ScenarioEngine::step(double deltaSimTime)
 {
+    if (storyBoard.GetCurrentState() == StoryBoardElement::State::COMPLETE)
+    {
+        // Scenario already finished and its final state has been recorded in a previous call - nothing more to do
+        return 1;
+    }
+
     UpdateGhostMode();
 
     if (frame_nr_ == 0)
@@ -158,38 +164,6 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
-    storyBoard.Step(simulationTime_, deltaSimTime);
-
-    if (storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
-    {
-        // Check for collisions/overlap after first initialization
-        if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ == 0)
-        {
-            DetectCollisions();
-        }
-    }
-
-    if (storyBoard.GetCurrentState() != StoryBoardElement::State::RUNNING)
-    {
-        return 1;
-    }
-
-    // Step any externally injected actions
-    if (injected_actions_ && injected_actions_->size() > 0)
-    {
-        for (OSCAction* action : *injected_actions_)
-        {
-            if (action->GetCurrentState() == StoryBoardElement::State::INIT || action->GetCurrentState() == StoryBoardElement::State::STANDBY)
-            {
-                action->Start(simulationTime_);
-            }
-            else
-            {
-                action->Step(simulationTime_, deltaSimTime);
-            }
-        }
-    }
-
     // This timestep calculation is due to the Ghost vehicle
     // If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
     // Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
@@ -206,6 +180,38 @@ int ScenarioEngine::step(double deltaSimTime)
     if (simulationTime_ > trueTime_)
     {
         trueTime_ = simulationTime_;
+    }
+
+    storyBoard.Step(simulationTime_, deltaSimTime);
+
+    if (storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
+    {
+        // Check for collisions/overlap after first initialization
+        if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ == 0)
+        {
+            DetectCollisions();
+        }
+    }
+
+    // Note: Do NOT bail out here even if the storyboard just transitioned out of RUNNING (e.g. stop trigger fired).
+    // This tick's simulationTime_ has already been committed above, so its state must still be finalized and
+    // reported this call - otherwise the final simulation instant would never be recorded (see step() guard above
+    // that stops any further ticks once the storyboard has reached COMPLETE).
+
+    // Step any externally injected actions
+    if (injected_actions_ && injected_actions_->size() > 0)
+    {
+        for (OSCAction* action : *injected_actions_)
+        {
+            if (action->GetCurrentState() == StoryBoardElement::State::INIT || action->GetCurrentState() == StoryBoardElement::State::STANDBY)
+            {
+                action->Start(simulationTime_);
+            }
+            else
+            {
+                action->Step(simulationTime_, deltaSimTime);
+            }
+        }
     }
 
     for (size_t i = 0; i < entities_.object_.size(); i++)

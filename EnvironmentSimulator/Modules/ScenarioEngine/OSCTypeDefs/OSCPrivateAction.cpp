@@ -598,7 +598,8 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
     {
         if (object_->IsGhost() || simTime > -SMALL_NUMBER)
         {
-            time_ = (simTime + dt) * timing_scale_;
+            // simTime already represents this tick's committed simulation instant - no further dt advance needed
+            time_ = simTime * timing_scale_;
         }
 
         object_->pos_.SetTrajectoryPosByTime(time_ + timeOffset + timing_offset_);
@@ -1680,7 +1681,9 @@ void LongSpeedProfileAction::Start(double simTime)
 
 void LongSpeedProfileAction::Step(double simTime, double dt)
 {
-    double time = simTime + dt;
+    (void)dt;
+    // simTime already represents this tick's committed simulation instant - no further dt advance needed
+    double time = simTime;
 
     if (time < segment_.back().t + 10 && !(time > segment_.back().t and abs(speed_ - segment_.back().v) < SMALL_NUMBER))
     {

@@ -171,7 +171,26 @@ void StoryBoardElement::Step(double simTime, double dt)
     }
 }
 
-void StoryBoardElement::EvalTriggers(double simTime)
+void StoryBoardElement::EvalStartTrigger(double simTime)
+{
+    if (GetCurrentState() == State::STANDBY)
+    {
+        if (!start_trigger_ || start_trigger_->Evaluate(simTime))
+        {
+            Start(simTime);
+        }
+    }
+
+    if (GetCurrentState() == State::RUNNING)
+    {
+        for (auto child : *GetChildren())
+        {
+            child->EvalStartTrigger(simTime);
+        }
+    }
+}
+
+void StoryBoardElement::EvalStopTrigger(double simTime)
 {
     if (GetCurrentState() == State::RUNNING && stop_trigger_)
     {
@@ -187,19 +206,11 @@ void StoryBoardElement::EvalTriggers(double simTime)
         }
     }
 
-    if (GetCurrentState() == State::STANDBY)
-    {
-        if (!start_trigger_ || start_trigger_->Evaluate(simTime))
-        {
-            Start(simTime);
-        }
-    }
-
     if (GetCurrentState() == State::RUNNING)
     {
         for (auto child : *GetChildren())
         {
-            child->EvalTriggers(simTime);
+            child->EvalStopTrigger(simTime);
         }
     }
 }
