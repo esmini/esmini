@@ -17,6 +17,24 @@ set(CMAKE_CXX_STANDARD
 
 project(${TARGET})
 
+# Generate CommonMini/version.cpp for the standalone esminiJS build.
+#
+# CommonMini.cpp references the symbols ESMINI_GIT_REV, ESMINI_GIT_TAG, ESMINI_GIT_BRANCH and ESMINI_BUILD_VERSION, which are *defined* in a generated
+# version.cpp (produced from version.cpp.in by CommonMini/version.cmake). The full esmini build generates it via CommonMini/CMakeLists.txt; this
+# standalone build never did, so linking failed with "undefined symbol: ESMINI_GIT_REV" (and the other three). The COMMONMINI_SOURCES glob below
+# already matches version.cpp once it exists, so generating it here is sufficient.
+set(COMMON_MINI_SOURCE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/CommonMini")
+if(NOT
+   DEFINED
+   ESMINI_BUILD_VERSION)
+    set(ESMINI_BUILD_VERSION
+        "N/A")
+endif()
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -DESMINI_BUILD_VERSION=${ESMINI_BUILD_VERSION} -P ${COMMON_MINI_SOURCE_DIR}/version.cmake
+    WORKING_DIRECTORY ${COMMON_MINI_SOURCE_DIR})
+
 set(SCENARIOENGINE_INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/ScenarioEngine/SourceFiles"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/ScenarioEngine/OSCTypeDefs")
