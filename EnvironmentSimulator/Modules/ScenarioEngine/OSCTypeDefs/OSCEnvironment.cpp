@@ -308,6 +308,41 @@ bool OSCEnvironment::IsRoadConditionSet() const
     return roadcondition_.has_value();
 }
 
+bool OSCEnvironment::IsWetnessSet() const
+{
+    return IsRoadConditionSet() && roadcondition_->wetness.has_value();
+}
+
+WetnessType OSCEnvironment::GetWetness() const
+{
+    return roadcondition_->wetness.value();
+}
+
+double OSCEnvironment::GetWaterFilmHeight() const
+{
+    if (!IsWetnessSet())
+    {
+        return OSCWetnessDryWaterFilm;  // default to dry road
+    }
+
+    switch (GetWetness())
+    {
+        case WetnessType::DRY:
+            return OSCWetnessDryWaterFilm;
+        case WetnessType::MOIST:
+            return OSCWetnessMoistWaterFilm;
+        case WetnessType::WETWITHPUDDLES:
+            return OSCWetnessWetWithPuddlesWaterFilm;
+        case WetnessType::LOWFLOODED:
+            return OSCWetnessLowFloodedWaterFilm;
+        case WetnessType::HIGHFLOODED:
+            return OSCWetnessHighFloodedWaterFilm;
+        default:
+            LOG_WARN("Unknown wetness type, setting water film height to dry road");
+            return OSCWetnessDryWaterFilm;
+    }
+}
+
 void OSCEnvironment::UpdateEnvironment(const OSCEnvironment& new_environment)
 {
     if (new_environment.IsAtmosphericPressureSet())

@@ -2782,10 +2782,13 @@ int OSIReporter::UpdateOSIRoadLane()
                     source_reference->add_identifier(t_road_s);
                     source_reference->add_identifier(t_lane_id);
 
+                    // Water film height defaults to dry road, updated from the OpenSCENARIO RoadCondition wetness
+                    // in UpdateEnvironmentRoadCondition()
+                    osi_lane->mutable_classification()->mutable_road_condition()->set_surface_water_film(OSCWetnessDryWaterFilm);
+
                     // STILL TO DO:
                     double temp = 0;
                     osi_lane->mutable_classification()->mutable_road_condition()->set_surface_temperature(temp);
-                    osi_lane->mutable_classification()->mutable_road_condition()->set_surface_water_film(temp);
                     osi_lane->mutable_classification()->mutable_road_condition()->set_surface_freezing_point(temp);
                     osi_lane->mutable_classification()->mutable_road_condition()->set_surface_ice(temp);
                     osi_lane->mutable_classification()->mutable_road_condition()->set_surface_roughness(temp);
@@ -3690,7 +3693,29 @@ void OSIReporter::UpdateEnvironment(const OSCEnvironment &environment)
         {
             UpdateEnvironmentTimeOfDay(environment);
         }
+        if (environment.IsRoadConditionSet())
+        {
+            UpdateEnvironmentRoadCondition(environment);
+        }
     }
+}
+
+void OSIReporter::UpdateEnvironmentRoadCondition(const OSCEnvironment &environment)
+{
+    // water film height is derived from the wetness of the road condition, dry road if no wetness given
+    const double water_film = environment.GetWaterFilmHeight();
+    if (surface_water_film_.has_value() && water_film == surface_water_film_.value())
+    {
+        return;  // no change, avoid looping over all lanes
+    }
+
+    // OpenSCENARIO defines the wetness globally, while OSI defines the road condition per lane.
+    // Hence apply the same water film height to all lanes.
+    for (int i = 0; i < obj_osi_internal.static_gt->lane_size(); i++)
+    {
+        obj_osi_internal.static_gt->mutable_lane(i)->mutable_classification()->mutable_road_condition()->set_surface_water_film(water_film);
+    }
+    surface_water_film_ = water_film;
 }
 
 void OSIReporter::UpdateEnvironmentWeather(const OSCEnvironment &environment)
