@@ -33,6 +33,13 @@ namespace scenarioengine
     double const OSCSunIntensityMax  = 100000.0;  // lux
     double const OSCSunIntensityMin  = 0.0;       // lux
 
+    // Water film height representing each OpenSCENARIO wetness level, reported as OSI lane road condition surface_water_film
+    double const OSCWetnessDryWaterFilm            = 0.0;   // mm
+    double const OSCWetnessMoistWaterFilm          = 0.1;   // mm
+    double const OSCWetnessWetWithPuddlesWaterFilm = 1.0;   // mm
+    double const OSCWetnessLowFloodedWaterFilm     = 10.0;  // mm
+    double const OSCWetnessHighFloodedWaterFilm    = 50.0;  // mm
+
     /*
     Class PrecipitationType
     Represents the different types of precipitations
@@ -61,7 +68,7 @@ namespace scenarioengine
     enum class WetnessType
     {
         DRY,
-        MOSIT,
+        MOIST,
         WETWITHPUDDLES,
         LOWFLOODED,
         HIGHFLOODED
@@ -142,7 +149,7 @@ namespace scenarioengine
     Represents the state of the wind
 
     frictionscalefactor 	    double      the friction scale factor
-    wetness                     wetness      the wetness of the road (optional) NOT IMPLEMENTED YET
+    wetness                     wetness     the wetness of the road (optional)
     properties                  Properties  additional properties of the RoadCondition (optional) NOT IMPLEMENTED YET
 
     */
@@ -213,6 +220,9 @@ namespace scenarioengine
         void          SetRoadCondition(const double friction);
         RoadCondition GetRoadCondition() const;
         bool          IsRoadConditionSet() const;
+        bool          IsWetnessSet() const;
+        WetnessType   GetWetness() const;
+        double        GetWaterFilmHeight() const;  // mm, derived from the wetness level
 
         void UpdateEnvironment(const OSCEnvironment& new_environment);
         bool IsEnvironment() const;
