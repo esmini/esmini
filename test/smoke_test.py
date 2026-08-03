@@ -219,16 +219,6 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^.11.010.* BrakeCondition: true, delay: 0.00, 11.0100 > 11.0000, edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^.17.010.* BrakeCondition: true, delay: 0.00, 17.0100 > 17.0000, edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^.20.010.* Brake2Condition: true, delay: 0.00, 20.0100 > 20.0000, edge: rising', log, re.MULTILINE))
-        # Change from 21.260 -> 21.250 & 33.260 -> 33.250
-        # Old behavior (in order):
-        # ScenEngine: Step Storyboard
-        # Storyboard: Eval start/stop triggers -> step actions etc.
-        # ScenEngine: Return if storyboard != running, else do stuff then step dt, done
-        # New behavior (in order):
-        # ScenEngine: Return if storyboard != running, else step dt then step storyboard
-        # Storyboard: Eval start triggers -> step actions etc. -> eval stop triggers
-        # ScenEngine: Moves all cars, done
-        # Summary: New behavior will step time then allow all updates with new time, then bail out next iteration before stepping dt. old behavior did all updates then updated to next time before bailing out in next iteration
         self.assertTrue(re.search('^.21.250.* StopCondition: true, delay: 12.00, TargetBrake2Event, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^.33.250.* StopCondition: true', log, re.MULTILINE))
 
@@ -620,7 +610,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^34.860, 0, Car, 299.667, -1.535, 0.000, 0.000, 0.000, 0.000, 22.222', csv, re.MULTILINE))
 
     def test_collision_condition1(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
             '--disable_controllers')
 
         # Explicit collision detection in condition when global collision detection is disabled
@@ -629,9 +619,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*test-collision-detection.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^.5.250.* CollisionTrigger: true, delay: 0.00, 1 collision\\(s\\): Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
-        self.assertFalse(re.search('^.6.260.* Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.6.260.* CollisionTrigger: true, delay: 0.00, 2 collision\\(s\\): Ego and NPC1, Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.260.* CollisionTrigger: true, delay: 0.00, 1 collision\\(s\\): Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
+        self.assertFalse(re.search('^.6.270.* Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.6.270.* CollisionTrigger: true, delay: 0.00, 2 collision\\(s\\): Ego and NPC1, Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -641,7 +631,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^20.000, 2, NPC2, 30.000, 1.535, 0.000, 3.142, 0.000, 0.000, 1.000, 0.000, 0.594', csv, re.MULTILINE))
 
     def test_collision_condition2(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
             '--disable_controllers --collision')
 
         # Same as previous, but making use of enabled global collision detection in condition
@@ -651,9 +641,9 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('^.5.250.* Collision between Ego and NPC2', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.5.250.* CollisionTrigger: true, delay: 0.00, 1 collision\\(s\\): Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.5.260.* CollisionTrigger: true, delay: 0.00, 1 collision\\(s\\): Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.6.260.* Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.6.260.* CollisionTrigger: true, delay: 0.00, 2 collision\\(s\\): Ego and NPC1, Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.6.270.* CollisionTrigger: true, delay: 0.00, 2 collision\\(s\\): Ego and NPC1, Ego and NPC2, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.7.100.* Collision between Ego and NPC2 dissolved', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
@@ -678,7 +668,7 @@ class TestSuite(unittest.TestCase):
             print('skipping collision checks on mac due to replayer graphics dependencies not working on CI macOS image ', end='', file=sys.stderr)
 
     def test_add_delete_entity(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*add_delete_entity.xosc', log)  is not None)
@@ -1846,7 +1836,7 @@ class TestSuite(unittest.TestCase):
     def test_action_injection(self):
         # this test case exercises the action injection mechanism
 
-        log, duration, cpu_time, _ = run_scenario(esmini_arguments='--osc ../resources/xosc/cut-in.xosc ' + COMMON_ESMINI_ARGS, application='code-examples-bin/action_injection')
+        log, _, _, _ = run_scenario(esmini_arguments='--osc ../resources/xosc/cut-in.xosc ' + COMMON_ESMINI_ARGS, application='code-examples-bin/action_injection')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
@@ -1959,7 +1949,7 @@ class TestSuite(unittest.TestCase):
     def test_ad_hoc_traffic(self):
         # this test case exercises the action injection mechanism
 
-        log, duration, cpu_time, _ = run_scenario(esmini_arguments='--headless', application='code-examples-bin/ad_hoc_traffic')
+        log, _, _, _ = run_scenario(esmini_arguments='--headless', application='code-examples-bin/ad_hoc_traffic')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ad_hoc_traffic/empty_scenario.xosc', log)  is not None)
@@ -2630,17 +2620,17 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^33.300, 2, Car3, -124.726, 235.481, 5.822, 3.752, 0.035, 5.236, 58.333, 0.024, 5.653', csv, re.MULTILINE))
 
     def test_angle_condition(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/angle_condition.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/angle_condition.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*angle_condition.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^.3.700.* AngleCondition1: true, delay: 0.00, angle: 0.10 \\(0.10 <= 0.10 <= 0.30\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.7.900.* AngleCondition2: true, delay: 0.00, angle: 0.12 \\(0.05 <= 0.12 <= 0.15\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.10.600.* AngleCondition3: true, delay: 0.00, angle: 5.78 \\(-0.70 <= 5.78 <= -0.50\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.32.900.* Quit: true, delay: 0.00, angle: 0.10 \\(0.10 <= 0.10 <= 0.20\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.32.900.* Closing', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.800.* AngleCondition1: true, delay: 0.00, angle: 0.10 \\(0.10 <= 0.10 <= 0.30\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.8.000.* AngleCondition2: true, delay: 0.00, angle: 0.12 \\(0.05 <= 0.12 <= 0.15\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.10.700.* AngleCondition3: true, delay: 0.00, angle: 5.78 \\(-0.70 <= 5.78 <= -0.50\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.33.000.* Quit: true, delay: 0.00, angle: 0.10 \\(0.10 <= 0.10 <= 0.20\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.33.000.* Closing', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()

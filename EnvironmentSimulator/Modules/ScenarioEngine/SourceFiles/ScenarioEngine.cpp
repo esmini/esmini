@@ -184,13 +184,10 @@ int ScenarioEngine::step(double deltaSimTime)
 
     storyBoard.Step(simulationTime_, deltaSimTime);
 
-    if (storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
+    if (frame_nr_ == 0 && SE_Env::Inst().GetCollisionDetection() && storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
     {
         // Check for collisions/overlap after first initialization
-        if (SE_Env::Inst().GetCollisionDetection() && frame_nr_ == 0)
-        {
-            DetectCollisions();
-        }
+        DetectCollisions();
     }
 
     // Note: Do NOT bail out here even if the storyboard just transitioned out of RUNNING (e.g. stop trigger fired).
@@ -199,7 +196,7 @@ int ScenarioEngine::step(double deltaSimTime)
     // that stops any further ticks once the storyboard has reached COMPLETE).
 
     // Step any externally injected actions
-    if (injected_actions_ && injected_actions_->size() > 0)
+    if (injected_actions_ != nullptr && injected_actions_->size() > 0)
     {
         for (OSCAction* action : *injected_actions_)
         {
@@ -1163,7 +1160,7 @@ int ScenarioEngine::DetectCollisions()
                 if (std::find(obj0->collisions_.begin(), obj0->collisions_.end(), obj1) == obj0->collisions_.end())
                 {
                     // was not overlapping last timestep, but are now
-                    LOG_WARN("Collision between {} and {}", obj0->GetName(), obj1->GetName());
+                    LOG_INFO("Collision between {} and {}", obj0->GetName(), obj1->GetName());
                     obj0->collisions_.push_back(obj1);
                     obj1->collisions_.push_back(obj0);
                 }
@@ -1173,7 +1170,7 @@ int ScenarioEngine::DetectCollisions()
                 if (std::find(obj0->collisions_.begin(), obj0->collisions_.end(), obj1) != obj0->collisions_.end())
                 {
                     // was overlapping last frame, but not anymore
-                    LOG_WARN("Collision between {} and {} dissolved", obj0->GetName(), obj1->GetName());
+                    LOG_INFO("Collision between {} and {} dissolved", obj0->GetName(), obj1->GetName());
                     obj0->collisions_.erase(std::remove(obj0->collisions_.begin(), obj0->collisions_.end(), obj1), obj0->collisions_.end());
                     obj1->collisions_.erase(std::remove(obj1->collisions_.begin(), obj1->collisions_.end(), obj0), obj1->collisions_.end());
                 }
