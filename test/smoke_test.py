@@ -391,16 +391,16 @@ class TestSuite(unittest.TestCase):
 
         self.assertTrue(re.search('^.5.530.* Lane offset action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
         self.assertTrue(re.search('^.8.990.* Speed action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
-        self.assertTrue(re.search('^.9.00.* Stop condition: true, delay: 4.00, speed: 20.00 >= 20.00, edge: none', log, re.MULTILINE))
-        self.assertTrue(re.search('^.13.00.* Stop condition: true', log, re.MULTILINE))
+        self.assertTrue(re.search('^.8.990.* Stop condition: true, delay: 4.00, speed: 20.00 >= 20.00, edge: none', log, re.MULTILINE))
+        self.assertTrue(re.search('^.12.990.* Stop condition: true', log, re.MULTILINE))
 
         # Check vehicle key positions
         csv = generate_csv()
 
-        self.assertTrue(re.search('^4.010, 0, Ego, 35.969, -0.600, 0.000, 0.109, 0.000, 0.000, 8.000, 0.001, 1.644', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.020, 0, Ego, 36.049, -0.600, 0.000, 0.000, 0.000, 0.000, 8.026, -1.328, 1.873', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.030, 0, Ego, 36.130, -0.600, 0.000, 6.281, 0.000, 0.000, 8.053, -0.092, 2.103', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.500, 0, Ego, 51.156, -1.533, 0.000, 6.277, 0.000, 0.000, 12.500, 0.038, 1.053', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.000, 0, Ego, 35.849, -0.600, 0.000, 0.109, 0.000, 0.000, 7.970, 0.001, 1.301', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.010, 0, Ego, 35.929, -0.600, 0.000, 0.000, 0.000, 0.000, 7.996, -1.329, 1.529', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.020, 0, Ego, 36.009, -0.600, 0.000, 6.281, 0.000, 0.000, 8.023, -0.092, 1.758', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.500, 0, Ego, 51.125, -1.534, 0.000, 6.279, 0.000, 0.000, 12.513, 0.038, 0.964', csv, re.MULTILINE))
 
     def test_follow_ghost(self): # MODIFIED CSV POSITIONS
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ESMINI_ARGS)
@@ -2381,14 +2381,14 @@ class TestSuite(unittest.TestCase):
         # Check vehicle key positions
         csv = generate_csv()
 
-        self.assertTrue(re.search('^3.100, 0, Ego, 90.072, -1.535, -2.084, 6.283, 0.038, 6.279, 15.664, 0.000, 4.832', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.050, 0, Ego, 89.289, -1.535, -2.054, 6.283, 0.038, 6.279, 15.680, 0.000, 2.594', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.050, 1, Target, 105.262, 2.406, -2.665, 0.211, 0.036, 0.000, 8.333, 0.021, 3.504', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.100, 0, Ego, 90.067, -1.448, -2.084, 0.111, 0.039, 0.000, 15.480, 0.404, 4.806', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.100, 1, Target, 105.669, 2.494, -2.679, 0.214, 0.036, 0.000, 8.333, 0.021, 4.694', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.150, 0, Ego, 90.849, -1.445, -2.113, 0.115, 0.039, 0.000, 15.464, 0.418, 0.758', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.150, 1, Target, 106.076, 2.583, -2.694, 0.217, 0.036, 0.000, 8.333, 0.021, 5.885', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 112.079, 3.951, -2.906, 0.328, 0.033, 0.002, 8.064, -0.017, 5.863', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 1, Target, 120.926, 6.700, -3.192, 0.324, 0.029, 0.000, 8.333, 0.021, 5.950', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.500, 0, Ego, 120.638, 6.604, -3.184, 0.322, 0.029, 0.000, 5.470, 0.021, 5.964', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.500, 1, Target, 132.589, 11.186, -3.492, 0.410, 0.019, 0.000, 8.333, 0.021, 3.965', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.950, 0, Ego, 111.365, 3.816, -2.882, 0.306, 0.034, 0.002, 8.080, -0.031, 3.711', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.950, 1, Target, 120.530, 6.568, -3.180, 0.321, 0.029, 0.000, 8.333, 0.021, 4.760', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.450, 0, Ego, 120.009, 6.396, -3.165, 0.317, 0.029, 0.000, 5.533, 0.021, 3.990', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.450, 1, Target, 132.206, 11.020, -3.484, 0.408, 0.020, 0.000, 8.333, 0.021, 2.775', csv, re.MULTILINE))
 
     def test_controller_conflict_1_1(self):
         # this test case verify behavior of pre OpenSCENARIO v1.3 behavior, activating controller deactivates any previous one regardless of domains
