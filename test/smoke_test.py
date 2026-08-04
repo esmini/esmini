@@ -24,16 +24,17 @@ class TestSuite(unittest.TestCase):
         return result.stdout.find("CMAKE_BUILD_TYPE:STRING=" + build_type) != -1
 
     def test_cut_in(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('0.010.* CutInActStart: true, delay: 0.00, 0.0100 > 0.0000, edge: none', log)  is not None)
-        self.assertTrue(re.search('\\n.7.740.* BrakeCondition_HWT_0.7: true, delay: 0.00, HWT: 0.70 > 0.70, edge rising', log)  is not None)
-        self.assertTrue(re.search('\\n.16.740.* StopCondition: true, delay: 5.00, CutInManeuver, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising\\n', log)  is not None)
-        self.assertTrue(re.search('\\n.21.740.* StopCondition: true\\n', log)  is not None)
+        # Below condition triggers 5 samples earlier, because of 1 sample start earlier of target which propagates to an earlier THW
+        self.assertTrue(re.search('\\n.7.690.* BrakeCondition_HWT_0.7: true, delay: 0.00, HWT: 0.70 > 0.70, edge rising', log)  is not None)
+        self.assertTrue(re.search('\\n.16.680.* StopCondition: true, delay: 5.00, CutInManeuver, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising\\n', log)  is not None)
+        self.assertTrue(re.search('\\n.21.680.* StopCondition: true\\n', log)  is not None)
 
     def test_ltap_od(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS \
@@ -403,25 +404,25 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^5.500, 0, Ego, 51.125, -1.534, 0.000, 6.279, 0.000, 0.000, 12.513, 0.038, 0.964', csv, re.MULTILINE))
 
     def test_follow_ghost(self): # MODIFIED CSV POSITIONS
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ESMINI_ARGS)
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*follow_ghost.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^.3.050.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.060.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.510.* LaneChangeCondition1: true, delay: 0.00, 3.5100 > 3.5000, edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.13.510.* StopCondition: true, delay: 6.00, StopEvent, COMPLETE / END_TRANSITION == COMPLETE, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.19.510.* StopCondition: true$', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.13.500.* StopCondition: true, delay: 6.00, StopEvent, COMPLETE / END_TRANSITION == COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.19.500.* StopCondition: true$', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
         self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 8.211, 60.020, -0.057, 1.567, 0.002, 0.000, 10.000, -0.000, 3.582', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.060, 1, Ego_ghost, 8.390, 102.068, -0.141, 1.566, 0.002, 0.000, 22.800, -0.000, 4.338', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.550, 0, Ego, 8.280, 77.215, -0.089, 1.567, 0.002, 0.000, 18.516, -0.000, 2.975', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.500, 0, Ego, 6.108, 179.087, -0.309, 1.635, 0.002, 0.000, 27.778, -0.009, 5.510', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.255, 357.605, -0.640, 1.549, 0.002, 0.000, 5.100, -0.000, 0.221', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.500, 0, Ego, 10.961, 343.582, -0.613, 1.551, 0.002, 0.000, 10.001, -0.000, 4.277', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.500, 0, Ego, 6.088, 179.086, -0.309, 1.634, 0.002, 0.000, 27.778, -0.009, 5.510', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.250, 357.378, -0.640, 1.549, 0.002, 0.000, 5.000, -0.000, 5.853', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.490, 0, Ego, 10.956, 343.299, -0.612, 1.551, 0.002, 0.000, 10.001, -0.000, 3.468', csv, re.MULTILINE))
 
     def test_heading_trig(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ESMINI_ARGS)
@@ -575,7 +576,7 @@ class TestSuite(unittest.TestCase):
 
 
     def test_drop_bike(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drop-bike.xosc'), COMMON_ESMINI_ARGS)
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drop-bike.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*drop-bike.xosc', log)  is not None)
@@ -585,11 +586,11 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('^4.300, 1, Target, 216.950, -1.535, 0.000, 0.000, 0.000, 0.000, 40.000, 0.000, 3.448', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.300, 2, bike, 215.750, -2.135, 0.200, 1.570, 0.000, 0.000, 40.000, 0.000, 3.162', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.310, 2, bike, 216.150, -2.135, 0.200, 1.570, 0.000, 0.000, 40.000, 0.000, 4.305', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.320, 2, bike, 216.150, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 4.305', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.330, 2, bike, 216.150, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 4.305', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 1, Target, 217.050, -1.535, 0.000, 0.000, 0.000, 0.000, 40.000, 0.000, 3.733', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 2, bike, 215.850, -2.135, 0.200, 1.570, 0.000, 0.000, 40.000, 0.000, 3.448', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.310, 2, bike, 215.850, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 3.448', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.320, 2, bike, 215.850, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 3.448', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.330, 2, bike, 215.850, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 3.448', csv, re.MULTILINE))
 
     def test_speed_over_distance(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/speed_over_distance.xosc'), COMMON_ESMINI_ARGS)
@@ -804,7 +805,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^10.000, 0, Ego, 199.766, 1.535, 0.000, 0.000, 0.000, 0.000, -13.889, -0.000, -5.686', csv, re.MULTILINE))
 
     def test_ghost_restart(self): # MODIFIED GHOST POSITION AT 1.010 AND EGO POS AT 5.000
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ghost_restart.xosc', log)  is not None)
@@ -814,7 +815,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^.1.000.* Set parameter myparam = true', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.1.010.* new parameter: true, delay: 0.00, myparam true == true, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.1.010.* new parameter: true$', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.1.010.* Pos\\(60.10, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 s 60.10 offset -0.00 t -11.50', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.010.* Pos\\(60.00, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 s 60.00 offset -0.00 t -11.50', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.1.010.* AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.2.500.* newspeed runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
@@ -822,16 +823,16 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('^-0.500, 0, Ego, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.023, -10.625, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.594', csv, re.MULTILINE))
-        self.assertTrue(re.search('^1.010, -1, Ego_ghost_-1, 65.100, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^1.020, 1, Ego_ghost, 65.121, -10.608, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.880', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.000, 0, Ego, 69.847, -9.937, 0.000, 0.222, 0.000, 0.000, 10.000, 0.005, 0.851', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.000, 1, Ego_ghost, 74.770, -8.893, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 3.747', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 99.646, -8.043, 0.000, 6.283, 0.000, 0.000, 10.000, 0.008, 4.884', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.000, 1, Ego_ghost, 64.923, -10.625, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.308', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.000, -1, Ego_ghost_-1, 65.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.158', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.021, -10.608, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.594', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 0, Ego, 69.844, -9.915, 0.000, 0.222, 0.000, 0.000, 10.000, 0.004, 0.851', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 1, Ego_ghost, 74.769, -8.875, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 3.747', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.646, -8.043, 0.000, 0.000, 0.000, 0.000, 10.000, 0.008, 4.884', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.000, 1, Ego_ghost, 104.691, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.497', csv, re.MULTILINE))
 
     def test_ghost_restart2(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart2.xosc'), COMMON_ESMINI_ARGS)
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart2.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ghost_restart2.xosc', log)  is not None)
@@ -840,7 +841,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^.-2.000.* Car New position:\\n.-2.000.* Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 20.00 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.000.* Set parameter myparam = 1', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.010.* EventBrake1StartCondition: true, delay: 0.00, myparam 1 == 1, edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.3.010.* Car_ghost New position:\\n.3.010.* Pos\\(50.10, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 50.10 offset -0.00 t -1.54', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.010.* Car_ghost New position:\\n.3.010.* Pos\\(50.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 50.00 offset -0.00 t -1.54', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.010.* AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.5.010.* BrakeAction1 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
@@ -859,26 +860,27 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^0.010, 0, Car, 20.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.571', csv, re.MULTILINE))
         self.assertTrue(re.search('^0.010, 1, Car2, 20.150, 1.535, 0.000, 6.283, 0.000, 0.000, 14.979, 0.000, 0.428', csv, re.MULTILINE))
         self.assertTrue(re.search('^0.010, 2, Car_ghost, 40.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.880', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.010, 0, Car, 50.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, -?0.000, 4.604', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.010, 1, Car2, 55.410, 1.535, 0.000, 6.283, 0.000, 0.000, 8.550, -?0.000, 0.642', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.010, 2, Car_ghost, 67.129, -1.535, 0.000, 0.000, 0.000, 0.000, 7.143, 0.000, 3.301', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.010, -1, Car_ghost_-1, 70.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, -?0.000, 4.913', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.020, 0, Car, 50.199, -1.535, 0.000, 0.001, 0.000, 0.000, 9.900, 0.018, 4.884', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.020, 1, Car2, 55.496, 1.535, 0.000, 6.283, 0.000, 0.000, 8.529, 0.000, 0.886', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.020, 2, Car_ghost, 67.200, -1.535, 0.000, 0.000, 0.000, 0.000, 7.129, 0.000, 3.504', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.010, 0, Car, 65.379, -1.534, 0.000, 6.283, 0.000, 0.000, 6.145, 0.000, 4.167', csv, re.MULTILINE))
+
+        self.assertTrue(re.search('^3.000, 0, Car, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 4.319', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, 1, Car2, 55.325, 1.535, 0.000, 6.283, 0.000, 0.000, 8.571, 0.000, 0.398', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, 2, Car_ghost, 67.029, -1.535, 0.000, 0.000, 0.000, 0.000, 7.143, 0.000, 3.015', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, -1, Car_ghost_-1, 70.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 4.627', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.010, 0, Car, 50.099, -1.535, 0.000, 0.001, 0.000, 0.000, 9.900, 0.018, 4.599', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.010, 1, Car2, 55.410, 1.535, 0.000, 6.283, 0.000, 0.000, 8.550, 0.000, 0.642', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.010, 2, Car_ghost, 67.100, -1.535, 0.000, 0.000, 0.000, 0.000, 7.129, 0.000, 3.219', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Car, 65.279, -1.534, 0.000, 6.283, 0.000, 0.000, 6.145, 0.000, 3.881', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 1, Car2, 68.161, 1.535, 0.000, 6.283, 0.000, 0.000, 4.286, 0.000, 5.655', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 2, Car_ghost, 71.333, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.657', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, -2, Car_ghost_-2, 78.443, -1.535, 0.000, 0.000, 0.000, 0.000, 4.286, 0.000, 4.211', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.010, 0, Car, 65.340, -1.534, 0.000, 0.000, 0.000, 0.000, 6.045, 0.014, 4.051', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.010, 1, Car2, 68.203, 1.535, 0.000, 6.283, 0.000, 0.000, 4.264, 0.000, 5.777', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.010, 2, Car_ghost, 71.433, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.943', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.010, -2, Car_ghost_-2, 78.543, -1.535, 0.000, 0.000, 0.000, 0.000, 4.286, 0.000, 4.497', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.020, 0, Car, 65.440, -1.534, 0.000, 0.000, 0.000, 0.000, 6.045, 0.014, 4.337', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.020, 1, Car2, 68.246, 1.535, 0.000, 6.283, 0.000, 0.000, 4.243, 0.000, 5.898', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.020, 2, Car_ghost, 71.433, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.943', csv, re.MULTILINE))
-        self.assertTrue(re.search('^8.010, 0, Car, 67.282, -1.534, 0.000, 0.000, 0.000, 0.000, 0.000, -0.000, 3.144', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.010, 2, Car_ghost, 71.333, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.657', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.010, 0, Car, 67.182, -1.534, 0.000, 0.000, 0.000, 0.000, 0.000, -0.000, 2.858', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.010, 1, Car2, 72.425, 1.535, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 5.272', csv, re.MULTILINE))
-        self.assertTrue(re.search('^8.010, 2, Car_ghost, 71.433, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.943', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.010, 2, Car_ghost, 71.333, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.657', csv, re.MULTILINE))
 
     def test_ghost_restart_on_override_deactivation(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart_on_override_deactivation.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart_on_override_deactivation.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ghost_restart_on_override_deactivation.xosc', log)  is not None)
@@ -895,18 +897,18 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('^-2.000, 0, Ego, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-2.000, 1, Ego_ghost, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.700, 0, Ego, 77.000, -1.481, 0.000, 0.026, 0.000, 0.000, 10.000, 0.026, 1.745', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.700, 1, Ego_ghost, 95.866, 0.331, 0.000, 6.235, 0.000, 0.000, 10.000, -0.070, 0.076', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.700, -1, Ego_ghost_-1, 96.726, 1.242, 0.000, 0.171, 0.000, 0.000, 10.000, -0.074, 2.339', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.200, 0, Ego, 91.879, 0.283, 0.000, 0.162, 0.000, 0.000, 10.000, -0.014, 0.619', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.200, 1, Ego_ghost, 110.748, -1.487, 0.000, 6.213, 0.000, 0.000, 10.000, 0.062, 5.234', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.700, 0, Ego, 76.999, -1.447, 0.000, 0.036, 0.000, 0.000, 10.000, 0.032, 1.745', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.700, 1, Ego_ghost, 95.863, 0.250, 0.000, 6.213, 0.000, 0.000, 10.000, -0.067, 0.076', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.700, -1, Ego_ghost_-1, 96.716, 1.368, 0.000, 0.142, 0.000, 0.000, 10.000, -0.087, 2.339', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.100, 0, Ego, 90.879, 0.283, 0.000, 0.162, 0.000, 0.000, 10.000, -0.014, 4.046', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.100, 1, Ego_ghost, 109.748, -1.487, 0.000, 6.213, 0.000, 0.000, 10.000, 0.062, 2.377', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.100, -1, Ego_ghost_-1, 110.706, 1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 4.640', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.200, 0, Ego, 91.867, 0.439, 0.000, 0.155, 0.000, 0.000, 10.000, -0.021, 0.619', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.200, 1, Ego_ghost, 110.747, -1.523, 0.000, 6.235, 0.000, 0.000, 10.000, 0.067, 5.234', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.200, -1, Ego_ghost_-1, 111.706, 1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.214', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.300, 0, Ego, 92.867, 0.439, 0.000, 0.155, 0.000, 0.000, 10.000, -0.021, 3.477', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.300, 1, Ego_ghost, 111.747, -1.523, 0.000, 6.235, 0.000, 0.000, 10.000, 0.067, 1.808', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.300, -1, Ego_ghost_-1, 112.706, 1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 4.071', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 99.735, 0.639, 0.000, 6.183, 0.000, 0.000, 10.000, -0.085, 4.341', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.728, 0.522, 0.000, 6.161, 0.000, 0.000, 10.000, -0.066, 4.341', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.000, 1, Ego_ghost, 118.746, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 2.958', csv, re.MULTILINE))
-        self.assertTrue(re.search('^8.100, 0, Ego, 130.601, -1.614, 0.000, 0.004, 0.000, 0.000, 10.000, 0.003, 4.948', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.100, 0, Ego, 130.601, -1.610, 0.000, 0.005, 0.000, 0.000, 10.000, 0.002, 4.948', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.100, 1, Ego_ghost, 149.746, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 3.565', csv, re.MULTILINE))
 
     def test_maneuver_groups_x_3(self):
@@ -1802,18 +1804,18 @@ class TestSuite(unittest.TestCase):
     def test_drive_when_close(self):
         # this test case exercises restarting events within same maneuver. A car will drive only when near another specific one, otherwise stop.
 
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drive_when_close.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1 --disable_controllers")
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drive_when_close.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1 --disable_controllers")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*drive_when_close.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('.6.000.* DriveCondition: true, delay: 0.00, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('.9.900.* SpeedAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.10.000.* StopCondition: true, delay: 0.00, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('.30.000.* DriveCondition: true, delay: 0.00, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('.34.000.* StopCondition: true, delay: 0.00, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('.37.900.* StopEvent runningState -> endTransition -> standbyState', log)  is not None)
+        self.assertTrue(re.search('.6.100.* DriveCondition: true, delay: 0.00, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.10.000.* SpeedAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.10.100.* StopCondition: true, delay: 0.00, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.30.100.* DriveCondition: true, delay: 0.00, rel_dist: 29.50 < 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.34.100.* StopCondition: true, delay: 0.00, rel_dist: 30.50 > 30.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.38.000.* StopEvent runningState -> endTransition -> standbyState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -2329,12 +2331,12 @@ class TestSuite(unittest.TestCase):
 
         self.assertTrue(re.search('^2.000, 0, Ego, 52.719, -0.593, 0.000, 0.082, 0.000, 0.000, 14.682, 0.002, 5.614', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.000, 1, LeadVehicle, 80.000, -1.535, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 4.033', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.000, 0, Ego, 84.853, -0.851, 0.000, 6.118, 0.000, 0.000, 15.472, -0.007, 3.677', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.000, 1, LeadVehicle, 107.525, -1.535, 0.000, 0.000, 0.000, 0.000, 10.050, 0.000, 0.994', csv, re.MULTILINE))
-        self.assertTrue(re.search('^10.000, 0, Ego, 131.934, -1.764, 0.000, 6.276, 0.000, 0.000, 7.002, 0.000, 0.064', csv, re.MULTILINE))
-        self.assertTrue(re.search('^10.000, 1, LeadVehicle, 150.440, -1.535, 0.000, 0.000, 0.000, 0.000, 7.000, 0.000, 4.228', csv, re.MULTILINE))
-        self.assertTrue(re.search('^35.010, 0, Ego, 371.772, -3.415, 0.000, 6.276, 0.000, 0.000, 5.021, 0.000, 0.466', csv, re.MULTILINE))
-        self.assertTrue(re.search('^35.010, 1, LeadVehicle, 387.300, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 2.387', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.000, 0, Ego, 84.853, -0.851, 0.000, 6.118, 0.000, 0.000, 15.466, -0.007, 3.677', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.000, 1, LeadVehicle, 107.475, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.851', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.000, 0, Ego, 131.850, -1.766, 0.000, 6.276, 0.000, 0.000, 7.004, 0.000, 6.108', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.000, 1, LeadVehicle, 150.360, -1.535, 0.000, 0.000, 0.000, 0.000, 7.000, 0.000, 4.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^35.010, 0, Ego, 371.673, -3.437, 0.000, 6.276, 0.000, 0.000, 5.021, 0.000, 0.181', csv, re.MULTILINE))
+        self.assertTrue(re.search('^35.010, 1, LeadVehicle, 387.200, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 2.101', csv, re.MULTILINE))
 
     def test_osi_traffic_command(self):
         if use_package("OSI"):
@@ -2447,23 +2449,23 @@ class TestSuite(unittest.TestCase):
 
             elif platform == "linux" or platform == "linux2":
                 # vehicle models are randomized differently on linux
-                self.assertTrue(re.search('^22.000, 0, Ego, 8.546, 131.996, -0.209, 1.565, 0.002, 0.000, 17.450, -0.000, 3.649', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 1, Target1, 5.557, 142.501, -0.233, 1.543, 0.002, 6.283, 25.000, -0.005, 2.229', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 2, car1, 14.801, 284.642, -0.500, 1.558, 0.000, 0.000, 14.720, 0.000, 3.506', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 3, bus1, -5.162, 102.463, -0.140, 4.707, 0.000, 0.000, 13.840, 0.000, 1.751', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 4, truck1, -4.528, 199.247, -0.346, 4.703, 0.005, 0.000, 14.041, -0.000, 4.474', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 5, car2, 14.079, 223.659, -0.390, 1.561, 0.000, 0.000, 13.017, 0.000, 5.180', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 6, car3, 13.872, 202.079, -0.350, 1.563, 0.000, 0.000, 13.323, -0.000, 6.237', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 7, car4, 13.670, 176.972, -0.305, 1.563, 6.278, 0.000, 14.603, 0.000, 4.314', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 0, Ego, 8.538, 130.496, -0.206, 1.565, 0.002, 0.000, 17.450, -0.000, 5.647', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 1, Target1, 5.554, 142.001, -0.232, 1.543, 0.002, 6.283, 25.000, -0.005, 0.800', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 2, car1, 14.706, 277.304, -0.489, 1.557, 6.278, 0.000, 14.704, -0.000, 1.328', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 3, bus1, -5.126, 109.394, -0.160, 4.707, 0.000, 0.000, 13.843, 0.000, 0.829', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 4, truck1, -4.467, 206.277, -0.360, 4.703, 0.000, 0.000, 14.054, 0.000, 3.265', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 5, car2, 14.014, 217.168, -0.380, 1.561, 0.000, 0.000, 12.974, -0.001, 5.435', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 6, car3, 13.815, 195.416, -0.340, 1.563, 0.000, 0.000, 13.411, -0.000, 6.054', csv, re.MULTILINE))
+                self.assertTrue(re.search('^21.500, 7, car4, 13.616, 169.620, -0.290, 1.563, 0.000, 0.000, 14.827, -0.000, 2.303', csv, re.MULTILINE))
 
-                self.assertTrue(re.search('^33.000, 0, Ego, 11.107, 350.701, -0.627, 1.550, 0.002, 0.000, 20.000, -0.000, 0.259', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 1, Target1, 12.843, 417.357, -0.748, 1.539, 0.002, 0.000, 25.000, -0.001, 2.545', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 2, car1, 18.680, 446.019, -0.790, 1.534, 0.000, 0.000, 14.690, -0.000, 6.278', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 3, bus1, 6.910, 44.418, -0.030, 1.560, 0.000, 0.000, 13.826, 0.000, 3.629', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 0, Ego, 11.290, 359.199, -0.643, 1.549, 0.002, 0.000, 20.000, -0.000, 5.695', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 1, Target1, 13.244, 429.349, -0.767, 1.536, 0.001, 0.000, 25.000, -0.001, 5.415', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 2, car1, 18.681, 446.036, -0.790, 1.534, 0.000, 0.000, 14.693, -0.000, 0.242', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 3, bus1, 6.910, 44.412, -0.030, 1.560, 0.000, 0.000, 13.881, 0.000, 3.693', csv, re.MULTILINE))
                 self.assertTrue(re.search('^33.000, 4, truck1, -5.394, 44.610, -0.030, 4.709, 0.000, 0.000, 14.047, -0.000, 0.137', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 5, car2, 16.278, 366.520, -0.660, 1.549, 0.000, 0.000, 12.971, -0.001, 5.207', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 6, car3, 13.803, 346.028, -0.620, 1.549, 0.000, 0.000, 12.965, -0.001, 2.379', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 7, car4, 12.867, 325.249, -0.579, 1.559, 6.278, 0.000, 13.042, -0.000, 5.838', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 5, car2, 16.278, 366.499, -0.660, 1.549, 0.000, 0.000, 13.003, -0.001, 5.248', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 6, car3, 13.762, 346.007, -0.620, 1.551, 0.000, 0.000, 12.989, -0.000, 2.513', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 7, car4, 12.055, 325.263, -0.579, 1.560, 6.278, 0.000, 13.055, -0.002, 5.899', csv, re.MULTILINE))
         else:
             print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 
