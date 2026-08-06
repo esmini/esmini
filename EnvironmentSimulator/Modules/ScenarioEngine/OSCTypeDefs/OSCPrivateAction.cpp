@@ -416,6 +416,10 @@ void FollowTrajectoryAction::Start(double simTime)
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
     time_ = traj_->GetTime();
 
+    // Save states for relative timing domain
+    traj_start_time_ = time_;
+    start_time_      = simTime;
+
     // establish speed sign / driving direction, default is driving forward
     double speedSign = 1.0;
     if (timing_domain_ == TimingDomain::NONE)
@@ -580,7 +584,8 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
     }
     else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
     {
-        time_ += timing_scale_ * dt;
+        // Relative timing domain: trajectory time runs relative to when THIS action started,
+        time_ = traj_start_time_ + (simTime - start_time_) * timing_scale_;
         object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
 
         // calculate and update actual speed only while not reached end of trajectory,
