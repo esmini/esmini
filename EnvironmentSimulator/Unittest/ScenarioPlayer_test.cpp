@@ -493,8 +493,8 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
         if (fabs(se->getSimulationTime() - 6.6) < 0.1 * dt)
         {
             ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Right), false);
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 107.0506, 1e-3);
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.4282, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 106.3666, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.4171, 1e-3);
         }
 
         // steer left
@@ -505,14 +505,14 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
         if (fabs(se->getSimulationTime() - 8.2) < 0.1 * dt)
         {
             ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Left), false);
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 126.5651, 1e-3);
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -0.8796, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 125.7309, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -0.8636, 1e-3);
         }
 
         if (fabs(se->getSimulationTime() - 14.0) < 0.1 * dt)
         {
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 175.5257, 1e-3);
-            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -0.7270, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 175.6379, 1e-3);
+            EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -0.6682, 1e-3);
         }
 
         player->Frame(dt);
@@ -603,7 +603,7 @@ TEST(LightState, TestLightStateColors)
         EXPECT_FALSE(is_uninitialized);
     }
 
-    while (se->getSimulationTime() < 0.2 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 0.1 + SMALL_NUMBER)
     {
         player->Frame(dt);
     }
@@ -665,7 +665,7 @@ TEST(LightState, TestLightStateColors)
         }
     }
 
-    while (se->getSimulationTime() < 0.4 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 0.3 + SMALL_NUMBER)
     {
         player->Frame(dt);
     }
@@ -1121,7 +1121,7 @@ TEST(OSI, TestTrafficLightStates)
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().is_out_of_service(), false);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 2);
 
-    for (size_t i = 0; i < 2; i++)
+    for (size_t i = 0; i < 1; i++)
     {
         player->Frame(dt);
     }

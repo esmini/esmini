@@ -68,7 +68,6 @@
                                                 <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
                                                 <Wind direction="3.1415" speed="10"/>
                                             </Weather>
-                                            <RoadCondition frictionScaleFactor="0.9"/>
                                         </Environment>
                                     </EnvironmentAction>
                                 </GlobalAction>
@@ -91,6 +90,7 @@
                                     <EnvironmentAction>
                                         <Environment name="weather2">
                                             <Weather fractionalCloudCover="oneOktas"/>
+                                            <RoadCondition frictionScaleFactor="0.9"/>
                                         </Environment>
                                     </EnvironmentAction>
                                 </GlobalAction>
