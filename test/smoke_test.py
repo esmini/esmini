@@ -84,15 +84,15 @@ class TestSuite(unittest.TestCase):
 
             # Check vehicle key positions
             csv = generate_csv()
-            self.assertTrue(re.search('\\n4.050, 1, Target, 128.603, 13.562, -3.435, 0.497, 0.022, 0.002, 24.524, 0.231, 5.062', csv))
+            self.assertTrue(re.search('\\n4.050, 1, Target, 128.603, 13.562, -3.435, 0.497, 0.022, 0.002, 24.524, 0.231, 5.913', csv))
             self.assertTrue(re.search('\\n4.100, 0, Ego, 115.042, 4.864, -3.006, 0.281, 0.032, 0.000, 16.000', csv))
-            self.assertTrue(re.search('\\n4.100, 1, Target, 129.644, 14.211, -3.462, 0.558, 0.020, 0.003, 24.524, -0.000, 2.282', csv))
+            self.assertTrue(re.search('\\n4.100, 1, Target, 129.644, 14.211, -3.462, 0.558, 0.020, 0.003, 24.524, -0.000, 3.133', csv))
             self.assertTrue(re.search('\\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
-            self.assertTrue(re.search('\\n11.000, 1, Target, 207.372, 65.150, -2.504, 2.661, 0.001, 6.263, 17.500, -0.237, 1.326', csv))
+            self.assertTrue(re.search('\\n11.100, 1, Target, 205.882, 66.066, -2.503, 2.520, 6.281, 6.263, 17.500, -0.236, 0.894', csv))
             self.assertTrue(re.search('\\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
-            self.assertTrue(re.search('\\n17.240, 1, Target, 210.568, 156.745, 1.236, 1.218, 6.216, 0.032, 14.899, 0.048, 0.565', csv))
+            self.assertTrue(re.search('\\n17.240, 1, Target, 210.568, 156.745, 1.236, 1.218, 6.216, 0.032, 14.899, 0.048, 1.417', csv))
             self.assertTrue(re.search('\\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
-            self.assertTrue(re.search('\\n25.000, 1, Target, 215.887, 306.936, 6.657, 0.976, 6.215, 6.283, 21.101, -0.030, 3.699', csv))
+            self.assertTrue(re.search('\\n25.000, 1, Target, 215.887, 306.936, 6.657, 0.976, 6.215, 6.283, 21.101, -0.030, 4.550', csv))
         else:
             print('skipping test_trajectory check for non OSI builds ', end='', file=sys.stderr)
 

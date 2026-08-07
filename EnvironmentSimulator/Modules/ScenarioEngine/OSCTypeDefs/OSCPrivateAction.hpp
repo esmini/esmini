@@ -1162,6 +1162,7 @@ namespace scenarioengine
         int                        movingDirection_;
         bool                       explicit_h_active_;
         bool                       ignore_heading_for_motion_;
+        bool                       first_step_;
 
         FollowTrajectoryAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY,
@@ -1179,7 +1180,8 @@ namespace scenarioengine
               initialHeadingSign_(1),
               movingDirection_(1),
               explicit_h_active_(false),
-              ignore_heading_for_motion_(false)
+              ignore_heading_for_motion_(false),
+              first_step_(true)
         {
         }
 
@@ -1202,6 +1204,7 @@ namespace scenarioengine
             movingDirection_           = action.movingDirection_;
             explicit_h_active_         = action.explicit_h_active_;
             ignore_heading_for_motion_ = action.ignore_heading_for_motion_;
+            first_step_                = true;
         }
 
         ~FollowTrajectoryAction();

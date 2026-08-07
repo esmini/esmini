@@ -419,6 +419,7 @@ void FollowTrajectoryAction::Start(double simTime)
     // Save states for relative timing domain
     traj_start_time_ = time_;
     start_time_      = simTime;
+    first_step_      = true;
 
     // establish speed sign / driving direction, default is driving forward
     double speedSign = 1.0;
@@ -592,7 +593,15 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         // since the movement is based on remaining length of trajectory, not speed
         if (time_ + timing_offset_ < traj_->GetStartTime() + traj_->GetDuration() + SMALL_NUMBER)
         {
-            if (dt > SMALL_NUMBER)  // only update speed if some time has passed
+            if (first_step_)
+            {
+                // This is the first step right after the action started (same tick as Start()).
+                // simTime == start_time_ here, so the entity correctly remains at the trajectory's
+                // first point (time == traj_start_time_) without any advance. Keep the initial speed
+                // established in Start() instead of deriving it from a (necessarily zero) displacement.
+                first_step_ = false;
+            }
+            else if (dt > SMALL_NUMBER)  // only update speed if some time has passed
             {
                 movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
                 object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
