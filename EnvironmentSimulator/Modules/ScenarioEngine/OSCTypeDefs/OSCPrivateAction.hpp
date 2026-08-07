@@ -1156,6 +1156,7 @@ namespace scenarioengine
         double                     timing_offset_;
         double                     time_;
         double                     start_time_;
+        double                     start_speed_;
         double                     traj_start_time_;
         double                     initialDistanceOffset_;
         int                        initialHeadingSign_;
@@ -1175,6 +1176,7 @@ namespace scenarioengine
               timing_offset_(0),
               time_(0),
               start_time_(0),
+              start_speed_(0),
               traj_start_time_(0),
               initialDistanceOffset_(0),
               initialHeadingSign_(1),
@@ -1199,6 +1201,7 @@ namespace scenarioengine
             following_mode_            = action.following_mode_;
             time_                      = 0;
             start_time_                = 0;
+            start_speed_               = 0;
             traj_start_time_           = 0;
             initialHeadingSign_        = action.initialHeadingSign_;
             movingDirection_           = action.movingDirection_;

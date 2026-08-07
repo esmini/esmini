@@ -409,6 +409,8 @@ void FollowTrajectoryAction::Start(double simTime)
         return;
     }
 
+    start_speed_ = object_->GetSpeed();
+
     traj_->Freeze(following_mode_, object_->GetSpeed(), &object_->pos_);
     object_->pos_.SetTrajectory(traj_);
 
@@ -593,18 +595,17 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         // since the movement is based on remaining length of trajectory, not speed
         if (time_ + timing_offset_ < traj_->GetStartTime() + traj_->GetDuration() + SMALL_NUMBER)
         {
-            if (first_step_)
+            if (dt > SMALL_NUMBER)  // only update speed if some time has passed
             {
-                // This is the first step right after the action started (same tick as Start()).
-                // simTime == start_time_ here, so the entity correctly remains at the trajectory's
-                // first point (time == traj_start_time_) without any advance. Keep the initial speed
-                // established in Start() instead of deriving it from a (necessarily zero) displacement.
-                first_step_ = false;
-            }
-            else if (dt > SMALL_NUMBER)  // only update speed if some time has passed
-            {
-                movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
-                object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
+                if (first_step_)
+                {
+                    object_->SetSpeed(start_speed_);
+                }
+                else
+                {
+                    movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
+                    object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
+                }
             }
         }
     }
@@ -621,9 +622,15 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         if ((dt > SMALL_NUMBER) &&  // skip speed update if timestep is zero
             (time_ + timeOffset < traj_->GetStartTime() + traj_->GetDuration() + SMALL_NUMBER))
         {
-            // don't calculate and update actual speed when reached end of trajectory,
-            // since the movement is based on remaining length of trajectory, not speed
-            object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
+            if (first_step_)
+            {
+                object_->SetSpeed(start_speed_);
+            }
+            else
+            {
+                movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
+                object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
+            }
         }
     }
 
@@ -646,6 +653,11 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         {
             object_->pos_.SetHeading(GetAngleInInterval2PI(object_->pos_.GetH() + M_PI));
         }
+    }
+
+    if (first_step_)
+    {
+        first_step_ = false;
     }
 }
 
