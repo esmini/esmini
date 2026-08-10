@@ -247,13 +247,16 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
             start = end + 1;
         }
         args.push_back(esmini_args.substr(start).c_str());
-        int         argc = static_cast<int>(args.size());
-        const char* argv[argc];
-        for (int i = 0; i < argc; i++)
+
+        // create the argv array for SE_InitWithArgs
+        int argc = static_cast<int>(args.size());
+        std::vector<const char*> argv;
+        argv.reserve(argc);
+        for (const auto& arg : args)
         {
-            argv[i] = args.at(i).c_str();
+            argv.push_back(arg.c_str());
         }
-        if (SE_InitWithArgs(argc, argv) != 0)
+        if (SE_InitWithArgs(argc, argv.data()) != 0)
         {
             std::cerr << "Failed to initialize the scenario" << std::endl;
             return fmi2Error;
