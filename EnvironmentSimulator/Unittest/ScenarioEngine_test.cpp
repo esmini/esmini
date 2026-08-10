@@ -681,6 +681,7 @@ TEST(TrajectoryTest, PolyLineContinuosSpeed)
     double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/brake_by_trajectory_100-0.xosc");
     ASSERT_NE(se, nullptr);
+    scenario_step(se, 0.0);
 
     while (se->getSimulationTime() < 1.05)
     {
