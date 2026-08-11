@@ -139,6 +139,31 @@ jobs:
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
+      - name: Create source archives before generators and test runs
+        if: runner.os == 'Linux' && matrix.configuration == 'Release'
+        shell: bash
+        run: |
+          REPO_NAME="$(basename "$PWD")"
+          REPO_PARENT="$(dirname "$PWD")"
+          EXCLUDE_ITEMS=(.git build OSMP_FMU/build bin code-examples-bin esmini-demo resources/models externals/googletest externals/osg externals/osi externals/sumo externals/implot)
+          SEVENZ_EXCLUDES=()
+
+          # Expand 7z recursive excludes from one shared list.
+          for item in "${EXCLUDE_ITEMS[@]}"; do
+            SEVENZ_EXCLUDES+=("-xr!${REPO_NAME}/${item}")
+          done
+
+          pushd "${REPO_PARENT}" >/dev/null
+          7z a /tmp/esmini-fullsrc.zip "${REPO_NAME}" "${SEVENZ_EXCLUDES[@]}"
+          popd >/dev/null
+
+      - name: Upload source archives artifact
+        if: runner.os == 'Linux' && matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v7
+        with:
+          name: esmini-fullsrc
+          path: /tmp/esmini-fullsrc.zip
+
       - name: Compile minimal C example
         if: runner.os == 'Linux'
         run: |
@@ -329,15 +354,33 @@ jobs:
         with:
           name: esmini-demo_${{ runner.os }}
 
+      - uses: actions/download-artifact@v8
+        if: runner.os == 'Linux'
+        with:
+          name: esmini-fullsrc
+          path: /tmp
+
       - name: Determine version from tag
         shell: bash
         run: echo "ESMINI_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - id: release_files
+        name: Determine release files
+        shell: bash
+        run: |
+          {
+            echo 'files<<EOF'
+            echo "esmini-bin_${{ runner.os }}.zip"
+            echo "esmini-demo_${{ runner.os }}.zip"
+            if [ "${RUNNER_OS}" = "Linux" ]; then
+              echo '/tmp/esmini-fullsrc.zip'
+            fi
+            echo EOF
+          } >> $GITHUB_OUTPUT
 
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
           name: 'esmini ${{ env.ESMINI_VERSION }} (build ${{ env.BUILD_NUMBER }})'
           body: 'Demo and binaries. For information about changes and new features see [release notes](https://github.com/esmini/esmini/blob/master/release_notes.md).'
-          files: |
-            esmini-bin_${{ runner.os }}.zip
-            esmini-demo_${{ runner.os }}.zip
+          files: ${{ steps.release_files.outputs.files }}
