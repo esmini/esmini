@@ -9328,7 +9328,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
 
         unsigned int jFirst, jSecond, kFirst, kSecond;
 
-        if (crossP < 0)
+        if (crossP < SMALL_NUMBER)
         {
             // Positive dot product means closest OSI point is behind
             osip_first = osip_closest;
