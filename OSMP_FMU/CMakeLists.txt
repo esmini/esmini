@@ -9,6 +9,10 @@ execute_process(
     OUTPUT_VARIABLE VERSION
     ERROR_QUIET)
 
+if("${VERSION}" STREQUAL "")
+    set(VERSION "N/A")
+endif()
+
 message("Version: " ${VERSION})
 
 # Strip prefix "v" and any trailing line break
