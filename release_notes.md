@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2026-08-14 Version 3.7.0
+
+New features:
+- Support OSI 3.8
+  - released on [esmini-dependencies](https://github.com/esmini/esmini-dependencies)
+  - OSI 3.5 is still the default (for now)
+  - pick 3.8 by cmake argument `-D OSI_VERSION=3.8.0`
+  - see [User guide - OSI versions](https://esmini.github.io/build-guide.html#_osi_versions) for more info
+- Expose TTC computation to esminiJS API ([PR #824](https://github.com/esmini/esmini/issues/824))
+
+Improvements and fixes:
+- Add full source archive including submodules, to releases ([issue #820](https://github.com/esmini/esmini/issues/820))
+- Handle OSMP_FMU cmake fail due to missing git
+  - version is based on git tag and commit ID
+  - when git is not available set version to n/a instead of crashing
+- Fix shadow not aligned with road at s=0 issue
+
 ### 2026-07-16 Version 3.6.0
 
 New features:
