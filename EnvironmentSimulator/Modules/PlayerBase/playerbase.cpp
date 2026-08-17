@@ -1634,24 +1634,38 @@ int ScenarioPlayer::Init()
     {
         LOG_INFO("Re-using parameter distribution {}", dist.GetFilename());
     }
-    else if (opt.IsOptionArgumentSet("param_dist") || opt.IsOptionArgumentSet("osc"))
+    else if (opt.IsOptionArgumentSet("param_dist") || opt.IsOptionArgumentSet("osc") || opt.IsOptionArgumentSet("osc_str"))
     {
         if (dist.GetNumPermutations() == 0)
         {
-            std::string strParamDist = "";
-            if (opt.IsOptionArgumentSet("param_dist"))
-            {  // use the param_dist to read the distribution and scenario file
-                strParamDist = opt.GetOptionValue("param_dist");
-            }
-            else if (opt.IsOptionArgumentSet("osc"))
-            {  // use osc to read the distribution and scenario file
-                strParamDist     = opt.GetOptionValue("osc");
-                dist.IsParamDist = false;
-            }
-
-            if (LoadParameterDistribution(strParamDist) != 0)
+            if (opt.IsOptionArgumentSet("osc_str"))
             {
-                return -1;
+                pugi::xml_document doc;
+                if (ConvertScenarioStringToXmlDoc(opt.GetOptionValue("osc_str"), &doc) != 0 || LoadParameterDistribution(doc) != 0)
+                {
+                    return -1;
+                }
+
+                // Remove osc_str argument and load scenario instead
+                opt.SetOptionValue("osc_str", "");
+                opt.SetOptionValue("osc", dist.GetScenarioFileName());
+            }
+            else
+            {
+                std::string strParamDist = "";
+                if (opt.IsOptionArgumentSet("param_dist"))
+                {  // use the param_dist to read the distribution and scenario file
+                    strParamDist = opt.GetOptionValue("param_dist");
+                }
+                else if (opt.IsOptionArgumentSet("osc"))
+                {  // use osc to read the distribution and scenario file
+                    strParamDist     = opt.GetOptionValue("osc");
+                    dist.IsParamDist = false;
+                }
+                if (LoadParameterDistribution(strParamDist) != 0)
+                {
+                    return -1;
+                }
             }
         }
     }
@@ -1848,8 +1862,7 @@ int ScenarioPlayer::Init()
         {
             // parse XML string as document
             pugi::xml_document doc;
-            std::string        xml_str(arg_str);
-            if (!doc.load_buffer(xml_str.c_str(), xml_str.length()))
+            if (ConvertScenarioStringToXmlDoc(arg_str, &doc) != 0)
             {
                 return -1;
             }
@@ -2266,6 +2279,37 @@ int ScenarioPlayer::SetParameterValue(const char* name, const char* value)
 int ScenarioPlayer::SetParameterValue(const char* name, bool value)
 {
     return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
+int ScenarioPlayer::ConvertScenarioStringToXmlDoc(const std::string& scenario, pugi::xml_document* doc)
+{
+    std::string xml_str(scenario);
+    if (!doc->load_buffer(xml_str.c_str(), xml_str.length()))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+int ScenarioPlayer::LoadParameterDistribution(pugi::xml_document& doc)
+{
+    OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+
+    if (dist.GetNumPermutations() > 0)
+    {
+        LOG_INFO("Parameter distribution already loaded, reusing it");
+        return -2;
+    }
+    else
+    {
+        if (dist.Load(doc) != 0)
+        {
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 int ScenarioPlayer::LoadParameterDistribution(std::string filename)

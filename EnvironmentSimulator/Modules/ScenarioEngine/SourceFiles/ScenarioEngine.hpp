@@ -58,6 +58,7 @@ namespace scenarioengine
         void InitScenarioCommon(bool disable_controllers);
         int  InitScenario(std::string oscFilename, bool disable_controllers = false);
         int  InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
+
         void SetInjectedActionsPtr(std::vector<OSCAction *> *injected_actions)
         {
             injected_actions_ = injected_actions;

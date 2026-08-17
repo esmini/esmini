@@ -43,6 +43,8 @@ namespace scenarioengine
         static OSCParameterDistribution& Inst();
 
         int          Load(std::string filename);
+        int          Load(pugi::xml_document& doc);
+        int          Parse();
         unsigned int GetNumPermutations();
         unsigned int GetNumParameters();
         void         Reset();

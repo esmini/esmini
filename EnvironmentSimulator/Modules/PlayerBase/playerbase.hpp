@@ -232,7 +232,9 @@ namespace scenarioengine
         {
             return frame_counter_;
         }
+        int ConvertScenarioStringToXmlDoc(const std::string &scenario, pugi::xml_document *doc);
         int LoadParameterDistribution(std::string filename);
+        int LoadParameterDistribution(pugi::xml_document &doc);
 
         int                     GetNumberOfProperties(int index);
         const char             *GetPropertyName(int index, int propertyIndex);
