@@ -29,6 +29,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
+        with:
+          lfs: false
 
       - name: Install Python and dependencies
         uses: actions/setup-python@v6
@@ -101,6 +103,8 @@ jobs:
         with:
           submodules: true
           fetch-tags: true
+          # lfs: ${{ github.ref_type == 'tag' && matrix.os == 'ubuntu-22.04' && matrix.configuration == 'Release' }}  # Fetch LFS objects only for Linux release builds
+          lfs: false  # replace by above when LFS quota is restored
           fetch-depth: 0
           ref: ${{ github.ref }}
 
@@ -249,6 +253,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
+          lfs: false
 
       - uses: ./.github/actions/setup_tools_shared
 
@@ -341,6 +346,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          lfs: false
           ref: ${{ github.ref }}
 
       # Generate build number based on offset from former AppVeyor CI machine

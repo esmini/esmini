@@ -22,6 +22,7 @@ jobs:
         with:
           ref: ${{ github.event.ref }}
           submodules: true
+          lfs: false
           fetch-depth: 0  # Fetch all history for proper branch switching
 
       - name: Conditional Checkout
