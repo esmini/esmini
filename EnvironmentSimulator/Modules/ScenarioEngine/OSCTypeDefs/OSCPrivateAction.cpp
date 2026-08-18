@@ -2451,12 +2451,6 @@ void TeleportAction::Start(double simTime)
     OSCAction::End();
 }
 
-void TeleportAction::Step(double simTime, double dt) const;
-{
-    (void)simTime;
-    (void)dt;
-}
-
 void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 {
     if (object_ == obj1)

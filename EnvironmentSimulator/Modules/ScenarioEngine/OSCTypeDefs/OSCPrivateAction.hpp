@@ -1000,7 +1000,6 @@ namespace scenarioengine
             return "TeleportAction";
         };
 
-        void Step(double simTime, double dt) const;
         void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
