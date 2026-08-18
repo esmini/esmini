@@ -49,12 +49,6 @@ void EnvironmentAction::Start(double simTime)
 {
     environment_->UpdateEnvironment(new_environment_);
     OSCAction::Start(simTime);
-}
-
-void EnvironmentAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
     OSCAction::Stop();
 }
 
@@ -63,13 +57,6 @@ void ParameterSetAction::Start(double simTime)
     LOG_INFO("Set parameter {} = {}", name_, value_);
     parameters_->setParameterValueByString(name_, value_);
     OSCAction::Start(simTime);
-}
-
-void ParameterSetAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::Stop();
 }
 
@@ -77,13 +64,6 @@ void TrafficSignalStateAction::Start(double simTime)
 {
     trafficlight_->UpdateState(value_);
     OSCAction::Start(simTime);
-}
-
-void TrafficSignalStateAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::Stop();
 }
 
@@ -153,13 +133,6 @@ void VariableSetAction::Start(double simTime)
     LOG_INFO("Set variable {} = {}", name_, value_);
     variables_->setParameterValueByString(name_, value_);
     OSCAction::Start(simTime);
-}
-
-void VariableSetAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::Stop();
 }
 
@@ -189,13 +162,6 @@ void VariableAddAction::Start(double simTime)
     }
 
     OSCAction::Start(simTime);
-}
-
-void VariableAddAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::Stop();
 }
 
@@ -224,13 +190,6 @@ void VariableMultiplyByAction::Start(double simTime)
     }
 
     OSCAction::Start(simTime);
-}
-
-void VariableMultiplyByAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::Stop();
 }
 
@@ -258,13 +217,6 @@ void AddEntityAction::Start(double simTime)
     LOG_INFO("Added entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
-}
-
-void AddEntityAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::Stop();
 }
 
@@ -285,12 +237,6 @@ void DeleteEntityAction::Start(double simTime)
     LOG_INFO("Deleted entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
-}
-
-void DeleteEntityAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
     OSCAction::Stop();
 }
 

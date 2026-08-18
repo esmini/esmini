@@ -3216,6 +3216,11 @@ void LightStateAction::Step(double simTime, double dt)
     bool end_action = false;
 
     bool instantTransition = NEAR_NUMBERS(transitionTime_, 0.0);
+    if (!instantTransition)
+    {
+        transitionTimer_ += dt;
+    }
+
     if ((instantTransition || transitionTimer_ > transitionTime_ - SMALL_NUMBER) && !transitioned_)
     {
         if (!instantTransition)
@@ -3292,8 +3297,6 @@ void LightStateAction::Step(double simTime, double dt)
                     lightState.previousMaxRgb_[i] + (lightState.maxRgb_[i] - lightState.previousMaxRgb_[i]) * transitionFactor;
             }
         }
-
-        transitionTimer_ += dt;
     }
 
     if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)

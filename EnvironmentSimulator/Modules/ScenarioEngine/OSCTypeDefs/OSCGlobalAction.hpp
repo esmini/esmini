@@ -85,7 +85,6 @@ namespace scenarioengine
         };
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void print()
         {
@@ -119,7 +118,6 @@ namespace scenarioengine
         };
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void print()
         {
@@ -153,7 +151,6 @@ namespace scenarioengine
         };
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void print()
         {
@@ -191,7 +188,6 @@ namespace scenarioengine
         };
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void print()
         {
@@ -234,7 +230,6 @@ namespace scenarioengine
         }
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void SetEntities(Entities* entities)
         {
@@ -272,7 +267,6 @@ namespace scenarioengine
         }
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void SetEntities(Entities* entities)
         {
@@ -308,7 +302,6 @@ namespace scenarioengine
         };
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
         void SetEnvironment(OSCEnvironment* environment)
         {
             environment_ = environment;
@@ -359,7 +352,6 @@ namespace scenarioengine
         void SetSignalState();
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void print()
         {

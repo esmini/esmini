@@ -409,9 +409,10 @@ int ScenarioEngine::step(double deltaSimTime)
 
     frame_nr_++;
 
-    // Combine
-    storyBoard.EvalStartTrigger(simulationTime_);
-    storyBoard.EvalStopTrigger(simulationTime_);
+    // Check both start and stop triggers
+    storyBoard.EvalTriggers(simulationTime_);
+
+    // Dont return if stop yet, so playerbase has a chance to write logfiles etc.
 
     return 0;
 }
