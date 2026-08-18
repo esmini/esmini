@@ -409,8 +409,6 @@ void FollowTrajectoryAction::Start(double simTime)
         return;
     }
 
-    start_speed_ = object_->GetSpeed();
-
     traj_->Freeze(following_mode_, object_->GetSpeed(), &object_->pos_);
     object_->pos_.SetTrajectory(traj_);
 
@@ -421,7 +419,6 @@ void FollowTrajectoryAction::Start(double simTime)
     // Save states for relative timing domain
     traj_start_time_ = time_;
     start_time_      = simTime;
-    first_step_      = true;
 
     // establish speed sign / driving direction, default is driving forward
     double speedSign = 1.0;
@@ -597,15 +594,8 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         {
             if (dt > SMALL_NUMBER)  // only update speed if some time has passed
             {
-                if (first_step_)
-                {
-                    object_->SetSpeed(start_speed_);
-                }
-                else
-                {
-                    movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
-                    object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
-                }
+                movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
+                object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
             }
         }
     }
@@ -622,15 +612,8 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         if ((dt > SMALL_NUMBER) &&  // skip speed update if timestep is zero
             (time_ + timeOffset < traj_->GetStartTime() + traj_->GetDuration() + SMALL_NUMBER))
         {
-            if (first_step_)
-            {
-                object_->SetSpeed(start_speed_);
-            }
-            else
-            {
-                movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
-                object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
-            }
+            movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
+            object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
         }
     }
 
@@ -653,11 +636,6 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         {
             object_->pos_.SetHeading(GetAngleInInterval2PI(object_->pos_.GetH() + M_PI));
         }
-    }
-
-    if (first_step_)
-    {
-        first_step_ = false;
     }
 }
 
@@ -1281,6 +1259,11 @@ void LongSpeedAction::Start(double simTime)
 
     // Set initial state
     object_->SetSpeed(transition_.Evaluate());
+
+    if (transition_.shape_ == DynamicsShape::STEP)
+    {
+        OSCAction::End();
+    }
 }
 
 void LongSpeedAction::Step(double simTime, double dt)
@@ -2464,14 +2447,14 @@ void TeleportAction::Start(double simTime)
     object_->pos_.Print();
 
     object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::TELEPORT);
+
+    OSCAction::End();
 }
 
-void TeleportAction::Step(double simTime, double dt)
+void TeleportAction::Step(double simTime, double dt) const;
 {
     (void)simTime;
     (void)dt;
-
-    OSCAction::End();
 }
 
 void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)

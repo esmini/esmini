@@ -135,6 +135,13 @@ void ScenarioEngine::UpdateGhostMode()
 
 int ScenarioEngine::step(double deltaSimTime)
 {
+    /* Desired flow:
+     - Update time
+     - Step actions (currentl active)
+     - Step default controller
+     - Evaluate triggers
+     - Start triggered actions (DONT step)
+     * */
     if (storyBoard.GetCurrentState() == StoryBoardElement::State::COMPLETE)
     {
         // Scenario already finished and its final state has been recorded in a previous call - nothing more to do
@@ -164,6 +171,25 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
+    if (frame_nr_ == 0 && SE_Env::Inst().GetCollisionDetection() && storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
+    {
+        // Check for collisions/overlap after first initialization
+        DetectCollisions();
+    }
+
+    simulationTime_ += deltaSimTime;
+    if (simulationTime_ < 0.0 && simulationTime_ > -SMALL_NUMBER)
+    {
+        // Avoid -0.000
+        simulationTime_ = 0.0;
+    }
+
+    if (simulationTime_ > trueTime_)
+    {
+        trueTime_ = simulationTime_;
+    }
+
+    storyBoard.Step(simulationTime_, deltaSimTime);
 
     for (size_t i = 0; i < entities_.object_.size(); i++)
     {
@@ -322,26 +348,6 @@ int ScenarioEngine::step(double deltaSimTime)
     // Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from
     // there
 
-    simulationTime_ += deltaSimTime;
-    if (simulationTime_ < 0.0 && simulationTime_ > -SMALL_NUMBER)
-    {
-        // Avoid -0.000
-        simulationTime_ = 0.0;
-    }
-
-    if (simulationTime_ > trueTime_)
-    {
-        trueTime_ = simulationTime_;
-    }
-
-    storyBoard.Step(simulationTime_, deltaSimTime);
-
-    if (frame_nr_ == 0 && SE_Env::Inst().GetCollisionDetection() && storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
-    {
-        // Check for collisions/overlap after first initialization
-        DetectCollisions();
-    }
-
     // Note: Do NOT bail out here even if the storyboard just transitioned out of RUNNING (e.g. stop trigger fired).
     // This tick's simulationTime_ has already been committed above, so its state must still be finalized and
     // reported this call - otherwise the final simulation instant would never be recorded (see step() guard above
@@ -402,6 +408,10 @@ int ScenarioEngine::step(double deltaSimTime)
     }
 
     frame_nr_++;
+
+    // Combine
+    storyBoard.EvalStartTrigger(simulationTime_);
+    storyBoard.EvalStopTrigger(simulationTime_);
 
     return 0;
 }

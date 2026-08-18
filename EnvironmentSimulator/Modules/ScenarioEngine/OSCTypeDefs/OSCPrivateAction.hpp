@@ -1000,7 +1000,7 @@ namespace scenarioengine
             return "TeleportAction";
         };
 
-        void Step(double simTime, double dt);
+        void Step(double simTime, double dt) const;
         void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -1156,14 +1156,12 @@ namespace scenarioengine
         double                     timing_offset_;
         double                     time_;
         double                     start_time_;
-        double                     start_speed_;
         double                     traj_start_time_;
         double                     initialDistanceOffset_;
         int                        initialHeadingSign_;
         int                        movingDirection_;
         bool                       explicit_h_active_;
         bool                       ignore_heading_for_motion_;
-        bool                       first_step_;
 
         FollowTrajectoryAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY,
@@ -1176,14 +1174,12 @@ namespace scenarioengine
               timing_offset_(0),
               time_(0),
               start_time_(0),
-              start_speed_(0),
               traj_start_time_(0),
               initialDistanceOffset_(0),
               initialHeadingSign_(1),
               movingDirection_(1),
               explicit_h_active_(false),
-              ignore_heading_for_motion_(false),
-              first_step_(true)
+              ignore_heading_for_motion_(false)
         {
         }
 
@@ -1201,13 +1197,11 @@ namespace scenarioengine
             following_mode_            = action.following_mode_;
             time_                      = 0;
             start_time_                = 0;
-            start_speed_               = 0;
             traj_start_time_           = 0;
             initialHeadingSign_        = action.initialHeadingSign_;
             movingDirection_           = action.movingDirection_;
             explicit_h_active_         = action.explicit_h_active_;
             ignore_heading_for_motion_ = action.ignore_heading_for_motion_;
-            first_step_                = true;
         }
 
         ~FollowTrajectoryAction();
