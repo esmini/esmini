@@ -716,7 +716,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     // Update wheel rotations of internal scenario objects
                     if (!obj->dirty_.Check(Object::DirtyBit::WHEEL_ANGLE))
                     {
-                        if (fabs(obj->GetSpeed()) > SMALL_NUMBER)
+                        if (fabs(obj->GetSpeed()) > SMALL_NUMBER && !NEAR_NUMBERS(v->rear_axle_speed_, 0.0))
                         {
                             // Calculate steering angle according to simple bicycle model
                             obj->wheel_angle_ =
@@ -728,7 +728,8 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     if (!obj->dirty_.Check(Object::DirtyBit::WHEEL_ROTATION))
                     {
                         // Update wheel rotation based on sign of rear axle speed and magnitude of reference point speed
-                        obj->wheel_rot_ = fmod(obj->wheel_rot_ + SIGN(v->rear_axle_speed_) * fabs(obj->GetSpeed()) * dt / WHEEL_RADIUS, 2 * M_PI);
+                        const double rear_sign = NEAR_NUMBERS(v->rear_axle_speed_, 0.0) ? 0.0 : SIGN(v->rear_axle_speed_);
+                        obj->wheel_rot_        = fmod(obj->wheel_rot_ + rear_sign * fabs(obj->GetSpeed()) * dt / WHEEL_RADIUS, 2 * M_PI);
                         obj->dirty_.SetBits(Object::DirtyBit::WHEEL_ROTATION);
                     }
                 }

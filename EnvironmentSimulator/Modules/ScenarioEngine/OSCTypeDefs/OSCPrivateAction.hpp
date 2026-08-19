@@ -1047,7 +1047,6 @@ namespace scenarioengine
             return "ConnectTrailerAction";
         };
 
-        void Step(double simTime, double dt);
         void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -1084,7 +1083,6 @@ namespace scenarioengine
             return "ConnectTrailerAction";
         };
 
-        void Step(double simTime, double dt);
         void Start(double simTime);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -1268,7 +1266,6 @@ namespace scenarioengine
         };
 
         void Start(double simTime);
-        void Step(double simTime, double dt);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
     };

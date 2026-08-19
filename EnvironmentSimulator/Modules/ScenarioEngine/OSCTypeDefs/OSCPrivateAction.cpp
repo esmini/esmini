@@ -694,13 +694,6 @@ void AcquirePositionAction::Start(double simTime)
     object_->dirty_.SetBits(Object::DirtyBit::ROUTE);
 
     OSCAction::Start(simTime);
-}
-
-void AcquirePositionAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::End();
 }
 
@@ -2490,13 +2483,6 @@ void ConnectTrailerAction::Start(double simTime)
     {
         LOG_INFO("No trailer to disconnect from {}", object_->GetName());
     }
-}
-
-void ConnectTrailerAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::End();
 }
 
@@ -2526,13 +2512,6 @@ void DisconnectTrailerAction::Start(double simTime)
     {
         LOG_WARN("DisconnectTrailerAction: No trailer connected, ignoring action");
     }
-}
-
-void DisconnectTrailerAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
-
     OSCAction::End();
 }
 
