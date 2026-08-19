@@ -8252,7 +8252,21 @@ void OpenDrive::SetRoadMarkOSIPoints()
                         }
                         else
                         {
+                            // apply this roadmark definition until next roadmark segment
                             s_end_roadmark = MAX(0, lsec->GetS() + lane->GetLaneRoadMarkByIdx(m + 1)->GetSOffset() - SMALL_NUMBER);
+
+                            // but not beyond end of lane section
+                            if (s_end_roadmark > lsec_end + SMALL_NUMBER)
+                            {
+                                LOG_WARN("Roadmark (road {} lsec {} lane {} marking {}) passed ({}) end of lane section ({}), truncating",
+                                         road->GetId(),
+                                         k,
+                                         lane->GetId(),
+                                         m + 1,
+                                         s_end_roadmark,
+                                         lsec_end);
+                                s_end_roadmark = lsec_end;
+                            }
                         }
 
                         // create point and lines for the road marks
