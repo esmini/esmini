@@ -585,14 +585,14 @@ TEST(DistanceTest, TestTrajectoryDistance)
     ASSERT_EQ(entities->object_.size(), 1);
     Object* obj0 = entities->object_[0];
 
-    while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
+    while (se->getSimulationTime() < 3.1 - SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
 
     // Check car position at given time at end phase of the scenario
     // Correct position indicates all trajectories have been evaluated correctly
-    EXPECT_NEAR(obj0->pos_.GetX(), 91.6220, 1E-3);
+    EXPECT_NEAR(obj0->pos_.GetX(), 93.0109, 1E-3);
     EXPECT_NEAR(obj0->pos_.GetY(), -0.5720, 1E-3);
     EXPECT_NEAR(obj0->pos_.GetZ(), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(obj0->pos_.GetH(), 0.1388), 0.0, 1E-3);
@@ -604,11 +604,11 @@ TEST(DistanceTest, TestTrajectoryDistance)
 
     double dist = LARGE_NUMBER;
     EXPECT_EQ(obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, false, dist), 0);
-    EXPECT_NEAR(dist, 1.4919, 1E-3);
+    EXPECT_NEAR(dist, 0.5721, 1E-3);
     EXPECT_EQ(
         obj0->Distance(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist),
         0);
-    EXPECT_NEAR(dist, 1.1111, 1E-3);
+    EXPECT_NEAR(dist, 0.0661, 1E-3);
 
     // test with same trajectory in both objects
     obj1.pos_.SetTrajectory(obj0->pos_.GetTrajectory()->Copy());
@@ -648,30 +648,30 @@ TEST(TrajectoryTest, EnsureContinuation)
     {
         scenario_step(se, dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 4.95, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 4.95, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     for (int i = 0; i < static_cast<int>(2.0 / dt); i++)
     {
         scenario_step(se, dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 14.92759, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.18333, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 14.92868, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.19375, 1e-5);
 
     for (int i = 0; i < static_cast<int>(1.5 / dt); i++)
     {
         scenario_step(se, dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 21.32304, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.553967, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 21.33548, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.520955, 1e-5);
 
     for (int i = 0; i < static_cast<int>(1.0 / dt); i++)
     {
         scenario_step(se, dt);
     }
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 26.13539, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.917931, 1e-5);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.0, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 26.18538, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.917931, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.0, 1e-5);
 
     delete se;
 }

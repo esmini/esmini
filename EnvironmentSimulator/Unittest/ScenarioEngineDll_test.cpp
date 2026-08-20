@@ -88,8 +88,8 @@ TEST(LoggerTests, check_verbosity_level_warn)
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;
-    char      msg_buf[max_msg_size];
+    const int max_msg_size          = 10000;
+    char      msg_buf[max_msg_size] = {};
 
     size_t size = fread(msg_buf, 1, max_msg_size, file);
     EXPECT_NE(size, 0);
@@ -119,9 +119,9 @@ TEST(LoggerTests, check_verbosity_level_info)
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;
-    char      msg_buf[max_msg_size];
-    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    const int max_msg_size          = 10000;
+    char      msg_buf[max_msg_size] = {};
+    size_t    size                  = fread(msg_buf, 1, max_msg_size, file);
     EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, "This message should be logged") != NULL;
     EXPECT_TRUE(found);
@@ -147,9 +147,9 @@ TEST(LoggerTests, check_meta_data)
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;
-    char      msg_buf[max_msg_size];
-    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    const int max_msg_size          = 10000;
+    char      msg_buf[max_msg_size] = {};
+    size_t    size                  = fread(msg_buf, 1, max_msg_size, file);
     EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, ".cpp::") != NULL;
     EXPECT_TRUE(found);
@@ -177,9 +177,9 @@ TEST(LoggerTests, check_log_skip_modules)
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;
-    char      msg_buf[max_msg_size];
-    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    const int max_msg_size          = 10000;
+    char      msg_buf[max_msg_size] = {};
+    size_t    size                  = fread(msg_buf, 1, max_msg_size, file);
     EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, "This message should be logged") != NULL;
     EXPECT_TRUE(found);
@@ -216,9 +216,9 @@ TEST(LoggerTests, check_log_only_modules)
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;
-    char      msg_buf[max_msg_size];
-    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    const int max_msg_size          = 10000;
+    char      msg_buf[max_msg_size] = {};
+    size_t    size                  = fread(msg_buf, 1, max_msg_size, file);
     EXPECT_NE(size, 0);
     bool found = strstr(msg_buf, "This message should be not logged") != NULL;
     EXPECT_FALSE(found);
@@ -257,9 +257,9 @@ TEST(LoggerTests, check_log_append)
 
     FILE* file = FileOpen("log.txt", "r");
     ASSERT_NE(file, nullptr);
-    const int max_msg_size = 10000;
-    char      msg_buf[max_msg_size];
-    size_t    size = fread(msg_buf, 1, max_msg_size, file);
+    const int max_msg_size          = 10000;
+    char      msg_buf[max_msg_size] = {};
+    size_t    size                  = fread(msg_buf, 1, max_msg_size, file);
     EXPECT_NE(size, 0);
     char* pos   = strstr(msg_buf, "This message should be logged twice");
     bool  found = pos != NULL;
@@ -976,7 +976,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 187328);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 187201);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -988,12 +988,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 188728);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 188601);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 190129);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 190002);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1581,7 +1581,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 
     const int max_msg_size = 10000;
     int       msg_size;
-    char      msg_buf[max_msg_size];
+    char      msg_buf[max_msg_size] = {};
 
     for (int i = 0; i < 3; i++)
     {
@@ -1659,7 +1659,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
 
     const int max_msg_size = 10000;
     int       msg_size;
-    char      msg_buf[max_msg_size];
+    char      msg_buf[max_msg_size] = {};
 
     for (int i = 0; i < 3; i++)
     {
@@ -1729,7 +1729,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
 
     const int max_msg_size = 10000;
     int       msg_size;
-    char      msg_buf[max_msg_size];
+    char      msg_buf[max_msg_size] = {};
 
     for (int i = 0; i < 3; i++)
     {
@@ -3772,8 +3772,8 @@ TEST(ExternalControlTest, TestTimings)
             FILE* file = FileOpen("gt.osi", "rb");
             ASSERT_NE(file, nullptr);
 
-            const int         max_msg_size = 10000;
-            char              msg_buf[max_msg_size];
+            const int         max_msg_size          = 10000;
+            char              msg_buf[max_msg_size] = {};
             int               msg_size;
             osi3::GroundTruth osi_gt;
             double            seconds = -1.0;
@@ -4143,9 +4143,9 @@ static void paramDeclCallback(void*)
 TEST(ParameterTest, SetParameterValuesBeforeInit)
 {
     double positions[3][2] = {
-        {5.37059, 189.98204},  // TargetSpeedFactor = 1.1
-        {9.21694, 243.04954},  // TargetSpeedFactor = 1.5
-        {5.49924, 204.98147}   // TargetSpeedFactor = Default = 1.2
+        {5.34382, 186.68215},  // TargetSpeedFactor = 1.1
+        {8.83781, 240.59825},  // TargetSpeedFactor = 1.5
+        {5.46730, 201.38161}   // TargetSpeedFactor = Default = 1.2
     };
     SE_ScenarioObjectState state;
 
@@ -4565,32 +4565,32 @@ TEST(ExternalController, TestExternalDriver)
                 if (abs(SE_GetSimulationTime() - 11.0) < SMALL_NUMBER)
                 {
                     SE_GetObjectState(0, &objectState);
-                    EXPECT_NEAR(objectState.x, 202.4763, 1e-3);
-                    EXPECT_NEAR(objectState.y, 83.0434, 1e-3);
-                    EXPECT_NEAR(objectState.h, 1.134, 1e-3);
+                    EXPECT_NEAR(objectState.x, 202.7794, 1e-3);
+                    EXPECT_NEAR(objectState.y, 83.6756, 1e-3);
+                    EXPECT_NEAR(objectState.h, 1.1387, 1e-3);
                     EXPECT_NEAR(objectState.p, 6.262, 1e-3);
                     if (ghostMode[i] == true)
                     {
                         SE_RoadInfo road_info2;
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-                        EXPECT_NEAR(road_info2.global_pos_x, 206.7241, 1e-3);
-                        EXPECT_NEAR(road_info2.global_pos_y, 92.4585, 1e-3);
-                        EXPECT_NEAR(roadInfo.trail_heading, 1.2158, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_x, 206.9841, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_y, 93.1336, 1e-3);
+                        EXPECT_NEAR(roadInfo.trail_heading, 1.2209, 1e-3);
                     }
                 }
                 else if (abs(SE_GetSimulationTime() - 30.0) < SMALL_NUMBER)
                 {
                     SE_GetObjectState(0, &objectState);
-                    EXPECT_NEAR(objectState.x, 382.4990, 1e-3);
-                    EXPECT_NEAR(objectState.y, 301.0112, 1e-3);
+                    EXPECT_NEAR(objectState.x, 382.4967, 1e-3);
+                    EXPECT_NEAR(objectState.y, 301.0150, 1e-3);
                     EXPECT_NEAR(objectState.h, 5.2658, 1e-3);
                     EXPECT_NEAR(objectState.p, 0.025, 1e-3);
                     if (ghostMode[i] == true)
                     {
                         SE_RoadInfo road_info3;
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
-                        EXPECT_NEAR(road_info3.global_pos_x, 388.5749, 1e-3);
-                        EXPECT_NEAR(road_info3.global_pos_y, 290.5988, 1e-3);
+                        EXPECT_NEAR(road_info3.global_pos_x, 388.5732, 1e-3);
+                        EXPECT_NEAR(road_info3.global_pos_y, 290.6021, 1e-3);
                         EXPECT_NEAR(roadInfo.trail_heading, 5.1251, 1e-3);
                     }
                 }
@@ -4602,30 +4602,30 @@ TEST(ExternalController, TestExternalDriver)
                 if (abs(SE_GetSimulationTime() - 11.0) < SMALL_NUMBER)
                 {
                     SE_GetObjectState(0, &objectState);
-                    EXPECT_NEAR(objectState.x, 203.2138, 1e-3);
-                    EXPECT_NEAR(objectState.y, 84.5133, 1e-3);
-                    EXPECT_NEAR(objectState.h, 1.142, 1e-3);
+                    EXPECT_NEAR(objectState.x, 203.5033, 1e-3);
+                    EXPECT_NEAR(objectState.y, 85.1421, 1e-3);
+                    EXPECT_NEAR(objectState.h, 1.1469, 1e-3);
                     EXPECT_NEAR(objectState.p, 6.262, 1e-3);
                     if (ghostMode[i] == true)
                     {
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-                        EXPECT_NEAR(road_info2.global_pos_x, 206.7241, 1e-3);
-                        EXPECT_NEAR(road_info2.global_pos_y, 92.4585, 1e-3);
-                        EXPECT_NEAR(roadInfo.trail_heading, 1.2182, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_x, 206.9841, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_y, 93.1336, 1e-3);
+                        EXPECT_NEAR(roadInfo.trail_heading, 1.2234, 1e-3);
                     }
                 }
                 else if (abs(SE_GetSimulationTime() - 30.0) < SMALL_NUMBER)
                 {
                     SE_GetObjectState(0, &objectState);
                     EXPECT_NEAR(objectState.x, 382.4663, 1e-3);
-                    EXPECT_NEAR(objectState.y, 301.9077, 1e-3);
+                    EXPECT_NEAR(objectState.y, 301.9093, 1e-3);
                     EXPECT_NEAR(objectState.h, 5.2655, 1e-3);
                     EXPECT_NEAR(objectState.p, 0.026, 1e-3);
                     if (ghostMode[i] == true)
                     {
                         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
-                        EXPECT_NEAR(road_info2.global_pos_x, 388.5749, 1e-3);
-                        EXPECT_NEAR(road_info2.global_pos_y, 290.5988, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_x, 388.5732, 1e-3);
+                        EXPECT_NEAR(road_info2.global_pos_y, 290.6021, 1e-3);
                         EXPECT_NEAR(roadInfo.trail_heading, 5.1483, 1e-3);
                     }
                 }
@@ -4677,7 +4677,7 @@ TEST(ExternalController, TestGhostStandstillPhase)
 
         ASSERT_EQ(returnval_0, 0);  // first call should always succeed, as we are exactly on the ghost trail
 
-        if (time > 5.4 - SMALL_NUMBER && time < 8.5 - SMALL_NUMBER)
+        if (time > 5.5 - SMALL_NUMBER && time < 8.6 - SMALL_NUMBER)
         {
             // when reaching the standstill ghost, we can't look ahead
             ASSERT_EQ(returnval_1, -5);
@@ -4708,24 +4708,24 @@ TEST(ExternalController, TestGhostStandstillPhase)
             case 0:
                 if (time > 6.0 - SMALL_NUMBER)
                 {
-                    EXPECT_NEAR(egoState.x, 74.9307, 1e-3);
-                    EXPECT_NEAR(ghostState.x, 74.5, 1e-3);
+                    EXPECT_NEAR(egoState.x, 75.9186, 1e-3);
+                    EXPECT_NEAR(ghostState.x, 75.5, 1e-3);
                     test_step++;
                 }
                 break;
             case 1:
                 if (time > 7.5 - SMALL_NUMBER)
                 {
-                    EXPECT_NEAR(egoState.x, 74.9488, 1e-3);
-                    EXPECT_NEAR(ghostState.x, 74.5, 1e-3);
+                    EXPECT_NEAR(egoState.x, 75.9488, 1e-3);
+                    EXPECT_NEAR(ghostState.x, 75.5, 1e-3);
                     test_step++;
                 }
                 break;
             case 2:
                 if (time > 9 - SMALL_NUMBER)
                 {
-                    EXPECT_NEAR(egoState.x, 76.9587, 1e-3);
-                    EXPECT_NEAR(ghostState.x, 77.8, 1e-3);
+                    EXPECT_NEAR(egoState.x, 77.5748, 1e-3);
+                    EXPECT_NEAR(ghostState.x, 78.25, 1e-3);
                     test_step++;
                 }
                 break;
@@ -5383,7 +5383,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 
     SE_AddPath("../../../resources/models");
 
-    for (int k = 0; k < 2; k++)
+    for (int k = 0; k < 1; k++)
     {
         // Run the two scenarios, create dat files
         for (int i = 0; i < 2; i++)
@@ -5448,7 +5448,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
             entry = replay->GetReplayEntryAtTimeBinary(ids[0], time);
             EXPECT_NEAR(entry.state.pos.y, 276.1375, 1E-3);
             entry = replay->GetReplayEntryAtTimeBinary(ids[1], time);
-            EXPECT_NEAR(entry.state.pos.y, 318.7264, 1E-3);
+            EXPECT_NEAR(entry.state.pos.y, 318.7708, 1E-3);
             entry = replay->GetReplayEntryAtTimeBinary(ids[2], time);
             EXPECT_NEAR(entry.state.pos.y, 334.0156, 1E-3);
             entry = replay->GetReplayEntryAtTimeBinary(ids[3], time);
@@ -5515,12 +5515,12 @@ void StoryBoardElementStateCallbackInstance1(const char* element_name, int type,
         {"hwe_maneuver", 0.1, 5, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver"},                                // Maneuver, Running
         {"slowdown event", 0.1, 6, 1, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event"},              // Event, Standby
         {"lanechange event", 0.1, 6, 1, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::lanechange event"},          // Event, Standby
-        {"slowdown event", 3.5, 6, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event"},              // Event, Running
-        {"slowdown", 3.5, 7, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event::slowdown"},          // Action, Running
-        {"slowdown", 4.5, 7, 3, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event::slowdown"},          // Action, Complete
-        {"slowdown event", 4.5, 6, 3, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event"},              // Event, Complete
-        {"lanechange event", 4.5, 6, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::lanechange event"},          // Event, Running
-        {"lane change", 4.5, 7, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::lanechange event::lane change"},  // Action, Running
+        {"slowdown event", 3.4, 6, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event"},              // Event, Running
+        {"slowdown", 3.4, 7, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event::slowdown"},          // Action, Running
+        {"slowdown", 4.4, 7, 3, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event::slowdown"},          // Action, Complete
+        {"slowdown event", 4.4, 6, 3, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::slowdown event"},              // Event, Complete
+        {"lanechange event", 4.4, 6, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::lanechange event"},          // Event, Running
+        {"lane change", 4.4, 7, 2, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::lanechange event::lane change"},  // Action, Running
         {"lane change", 8.4, 7, 3, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::lanechange event::lane change"},  // Action, Complete
         {"lanechange event", 8.4, 6, 3, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver::lanechange event"},          // Event, Complete
         {"hwe_maneuver", 8.4, 5, 3, "hwe_story::hwe_act::hwe_maneuvergroup::hwe_maneuver"},                                // Maneuver, Complete

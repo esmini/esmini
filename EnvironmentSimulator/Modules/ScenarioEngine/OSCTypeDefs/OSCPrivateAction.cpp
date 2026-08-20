@@ -3187,6 +3187,9 @@ void LightStateAction::Start(double simTime)
     }
 
     OSCAction::Start(simTime);
+
+    // All states are updated inside Step currently...
+    Step(simTime, 0.0);
 }
 
 void LightStateAction::Step(double simTime, double dt)
