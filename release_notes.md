@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2026-08-20 Version 3.7.1
+
+New features:
+- Add FollowRoad controller
+  - lookahead for pro-active steering
+  - slow down approaching and navigating through curves
+  - example scenario: [follow_road_controller.xosc](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/follow_road_controller.xosc)
+
+Improvements and fixes:
+- Fix so SE_InitWithString works on a param dist
+- Detect and truncate any roadmarks out of s-bounds ([issue #834](https://github.com/esmini/esmini/issues/834))
+- Update [esminiRMUnityUtil.cs](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs) for recent lib double precision upgrade
+- Reduce LFS usage
+  - remove obsolete road info images (better use odr inspection tools)
+  - strip LFS rules from `.gitattributes` to enforce explicit tracking per file
+
 ### 2026-08-14 Version 3.7.0
 
 New features:
