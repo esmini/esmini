@@ -6630,7 +6630,9 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
                      connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END &&
                      link[i]->GetContactPointType() == ContactPointType::CONTACT_POINT_JUNCTION && link[i]->GetElementId() != junction->GetId()))
                 {
-                    LOG_ERROR("Expected direct junction linkedRoad to connect back to junction id {}, found id {}", link[i]->GetElementId());
+                    LOG_ERROR("Expected direct junction linkedRoad to connect back to junction id {}, found id {}",
+                              junction->GetId(),
+                              link[i]->GetElementId());
                     return -1;
                 }
 
