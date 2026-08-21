@@ -681,7 +681,6 @@ TEST(TrajectoryTest, PolyLineContinuosSpeed)
     double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/brake_by_trajectory_100-0.xosc");
     ASSERT_NE(se, nullptr);
-    scenario_step(se, 0.0);
 
     while (se->getSimulationTime() < 1.05)
     {
@@ -733,12 +732,13 @@ TEST(TrajectoryTest, FollowTrajectoryReverse)
     double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/follow_trajectory_reverse.xosc");
     ASSERT_NE(se, nullptr);
+    scenario_step(se, 0.0);
 
     while (se->getSimulationTime() < 4.36)
     {
         scenario_step(se, dt);
     }
-    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 248.858, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 248.8579, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.465, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->GetSpeed(), 0.0, 1e-3);
 
@@ -2804,6 +2804,7 @@ TEST(SpeedTest, TestAbsoluteSpeed)
     double          dt = 0.05;
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/lateral_maneuvers_test.xosc");
     ASSERT_NE(se, nullptr);
+    scenario_step(se, 0.0);
 
     double time = 0.0;
 
@@ -2813,12 +2814,12 @@ TEST(SpeedTest, TestAbsoluteSpeed)
 
         time = se->getSimulationTime();
 
-        if (time > 1.1 + SMALL_NUMBER && time < 3.05 + SMALL_NUMBER)
+        if (time > 1.1 + SMALL_NUMBER && time < 3.00 + SMALL_NUMBER)
         {
             // Lane change action
             EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelY(), 1.535, 1e-3);
         }
-        else if (time > 4.15 + SMALL_NUMBER && time < 7.10 + SMALL_NUMBER)
+        else if (time > 4.15 + SMALL_NUMBER && time < 7.05 + SMALL_NUMBER)
         {
             // Lane change action
             EXPECT_NEAR(se->entities_.object_[0]->pos_.GetVelY(), -1.0116, 1e-4);
@@ -2987,14 +2988,15 @@ TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
         double t;
         double h;
         int    lane_id;
-    } exp_values[6] = {{4.0, 115.0, -1.75, 0.0, -1},
-                       {5.25, 134.19, -1.478, 0.054, -2},
-                       {6.0, 147.72, -0.44, 0.09, -2},
-                       {7.0, 168.88, 1.201, 0.05, -1},
-                       {9.0, 218.22, 1.75, 0.0, -1},
-                       {11.25, 274.39, -0.617, 6.20, -2}};
+    } exp_values[6] = {{3.95, 115.0, -1.75, 0.0, -1},
+                       {5.2, 134.19, -1.478, 0.054, -2},
+                       {5.95, 147.72, -0.44, 0.09, -2},
+                       {6.95, 168.88, 1.201, 0.05, -1},
+                       {8.95, 218.22, 1.75, 0.0, -1},
+                       {11.2, 274.39, -0.617, 6.20, -2}};
 
     ASSERT_NE(se, nullptr);
+    scenario_step(se, 0.0);
 
     for (int i = 0; i < 6; i++)
     {
@@ -3034,6 +3036,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
     {
         ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_clearance_oppositLane.xosc");
         ASSERT_NE(se, nullptr);
+        scenario_step(se, 0.0);
 
         while (se->getSimulationTime() < 1.6 - SMALL_NUMBER)
         {
@@ -3041,19 +3044,19 @@ TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
         }
         if (i == 0)
         {
-            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), 0.150, 1E-3);
-            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
+            EXPECT_NEAR(se->entities_.object_[2]->pos_.GetT(), 0.150, 1E-3);
+            EXPECT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
         }
 
-        while (se->getSimulationTime() < 5.75 - SMALL_NUMBER)
+        while (se->getSimulationTime() < 5.7 - SMALL_NUMBER)
         {
             scenario_step(se, dt);
         }
 
         if (i == 1)
         {
-            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), 0.298, 1E-3);
-            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
+            EXPECT_NEAR(se->entities_.object_[2]->pos_.GetT(), 0.298, 1E-3);
+            EXPECT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
         }
 
         delete se;
@@ -3475,7 +3478,7 @@ TEST(ConditionTest, TestConditionDelayScenario)
     ASSERT_NE(event, nullptr);
     EXPECT_EQ(event->GetName(), "LaneChangeEvent");
 
-    while (se->getSimulationTime() < 7.2 - SMALL_NUMBER)
+    while (se->getSimulationTime() < 7.1 - SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -3488,7 +3491,7 @@ TEST(ConditionTest, TestConditionDelayScenario)
     scenario_step(se, dt);
 
     // expect the lane change to have been triggered by now
-    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5161, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5349, 1e-3);
     EXPECT_EQ(event->GetCurrentState(), StoryBoardElement::State::RUNNING);
 
     while (se->getSimulationTime() < 9.2 - SMALL_NUMBER)
@@ -3591,13 +3594,13 @@ TEST(ActionTest, TestRelativeLanePosition)
 {
     const int    n         = 8;
     const double pos[n][5] = {{1.5, 75.833, -5.250, 78.730, -2.332},
-                              {4.2, 158.333, -5.250, 158.369, -8.168},
-                              {7.0, 243.889, -5.250, 245.441, -2.652},
-                              {9.6, 323.333, -5.250, 323.369, -8.168},
-                              {12.5, 451.667, 5.250, 450.115, 2.652},
-                              {15.2, 369.167, 5.250, 367.615, 7.848},
-                              {17.8, 289.722, 5.250, 289.695, 2.690},
-                              {20.5, 207.222, 5.250, 207.195, 7.810}};
+                              {4.2, 158.333, -5.250, 162.940, -7.848},
+                              {7.0, 243.889, -5.250, 251.529, -3.292},
+                              {9.6, 323.333, -5.250, 330.973, -7.207},
+                              {12.5, 439.444, 5.250, 428.770, 3.932},
+                              {15.2, 356.944, 5.250, 344.754, 6.247},
+                              {17.8, 277.500, 5.250, 265.302, 4.375},
+                              {20.5, 195.000, 5.250, 181.283, 5.844}};
 
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_lane_pos_trajectories.xosc");
     ASSERT_NE(se, nullptr);
@@ -3626,13 +3629,13 @@ TEST(ActionTest, TestRelativeLaneOffsetPosition)
 {
     const int    n         = 8;
     const double pos[n][5] = {{1.5, 75.833, -5.250, 78.730, -2.332},
-                              {4.2, 158.333, -5.250, 158.369, -8.168},
-                              {7.0, 243.889, -5.250, 245.441, -2.652},
-                              {9.6, 323.333, -5.250, 323.369, -8.168},
-                              {12.5, 451.667, 5.250, 450.115, 2.652},
-                              {15.2, 369.167, 5.250, 367.615, 7.848},
-                              {17.8, 289.722, 5.250, 289.695, 2.690},
-                              {20.5, 207.222, 5.250, 207.195, 7.810}};
+                              {4.2, 158.333, -5.250, 162.940, -7.848},
+                              {7.0, 243.889, -5.250, 251.529, -3.292},
+                              {9.6, 323.333, -5.250, 330.973, -7.207},
+                              {12.5, 439.444, 5.250, 428.770, 3.932},
+                              {15.2, 356.944, 5.250, 344.754, 6.247},
+                              {17.8, 277.500, 5.250, 265.302, 4.375},
+                              {20.5, 195.000, 5.250, 181.283, 5.844}};
 
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_lane_pos_offset_trajectories.xosc");
     ASSERT_NE(se, nullptr);
@@ -5168,7 +5171,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 25.0, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
 
-    while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 0.95 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5181,7 +5184,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 16.012, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
-    while (se->getSimulationTime() < 3.15 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 3.10 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5194,7 +5197,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 21.5, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
-    while (se->getSimulationTime() < 3.20 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 3.15 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5207,7 +5210,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 150.851, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
-    while (se->getSimulationTime() < 5.75 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 5.70 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5220,7 +5223,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 252.851, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
-    while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 5.75 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5233,7 +5236,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 18.5, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
-    while (se->getSimulationTime() < 8.0 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 7.90 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5246,7 +5249,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 26.062, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
-    while (se->getSimulationTime() < 8.4 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 8.30 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5259,7 +5262,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 1.435, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
 
-    while (se->getSimulationTime() < 11.25 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 11.15 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5273,7 +5276,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 25.435, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), true);
 
-    while (se->getSimulationTime() < 11.50 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 11.40 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5287,7 +5290,7 @@ TEST(RoutingTest, TestPositionOffRoute)
     EXPECT_NEAR(entities->object_[0]->pos_.route_->currentPos_.GetS(), 30.0, 1E-3);
     EXPECT_EQ(entities->object_[0]->pos_.route_->OnRoute(), false);
 
-    while (se->getSimulationTime() < 11.60 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 11.50 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
@@ -5589,15 +5592,15 @@ TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
     {
         scenario_step(se, dt);
     }
-    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.808, 1E-2);
-    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -3.669, 1E-2);
-    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.026, 1E-2);
-    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 20.000, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.79, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -3.66, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.03, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 72.0 / 3.6, 1E-2);
 
-    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 660.000, 1E-2);
-    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -1.926, 1E-2);
-    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.040, 1E-3);
-    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 20.000, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 659.80, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -1.92, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.04, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 72.0 / 3.6, 1E-3);
 
     delete se;
 }

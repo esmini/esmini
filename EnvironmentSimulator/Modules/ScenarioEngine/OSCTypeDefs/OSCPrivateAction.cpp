@@ -1253,7 +1253,8 @@ void LongSpeedAction::Start(double simTime)
     // Set initial state
     object_->SetSpeed(transition_.Evaluate());
 
-    if (transition_.shape_ == DynamicsShape::STEP)
+    if (transition_.shape_ == DynamicsShape::STEP &&
+        !(target_->type_ == Target::TargetType::RELATIVE_SPEED && (static_cast<TargetRelative*>(target_.get()))->continuous_ == true))
     {
         OSCAction::End();
     }
