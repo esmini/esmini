@@ -4438,17 +4438,15 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                                                                roadMark_width,
                                                                                roadMark_height,
                                                                                roadMark_fade);
-                                lane->AddLaneRoadMark(lane_roadMark);
-
                                 // sub_type
                                 LaneRoadMarkType* lane_roadMarkType = 0;
                                 pugi::xml_node    sub_type          = roadMark.child("type");
+                                bool              skip              = sub_type != nullptr;  // track whether valid line definitions exists
                                 if (sub_type != nullptr)
                                 {
                                     std::string sub_type_name  = sub_type.attribute("name").value();
                                     double      sub_type_width = atof(sub_type.attribute("width").value());
                                     lane_roadMarkType          = new LaneRoadMarkType(sub_type_name, sub_type_width);
-                                    lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
 
                                     for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
                                     {
@@ -4459,9 +4457,12 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
 
                                         if (s_offset_l > r->GetLength() - SMALL_NUMBER)
                                         {
-                                            LOG_ERROR("Roadmark line sOffset {:.2f} beyond road length {:.2f}, ignoring roadmark line",
-                                                      s_offset_l,
-                                                      r->GetLength());
+                                            LOG_ERROR(
+                                                "Roadmark line sOffset {:.2f} beyond road length {:.2f}, ignoring roadmark line for lane {} road {}",
+                                                s_offset_l,
+                                                r->GetLength(),
+                                                lane->GetId(),
+                                                r->GetId());
                                             continue;
                                         }
                                         else if (s_offset_l < 0.0)
@@ -4507,7 +4508,15 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
 
                                         LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
                                             new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width, roadMark_color);
+
                                         lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>(lane_roadMarkTypeLine));
+
+                                        skip = false;  // at least one line added
+                                    }
+
+                                    if (lane_roadMarkType->GetNumberOfRoadMarkTypeLines() > 0)
+                                    {
+                                        lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
                                     }
                                 }
 
@@ -4561,7 +4570,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                     }
                                 }
 
-                                if (lane_roadMark->GetNumberOfRoadMarkTypes() == 0)
+                                if (lane_roadMark->GetNumberOfRoadMarkTypes() == 0 && !skip)
                                 {
                                     // no type or explicit elements - create standin type according to the specified roadMark type
                                     int side = lane->GetId() < 1 ? -1 : 1;
@@ -4648,6 +4657,15 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                             lane_id,
                                             roadMark_type);
                                     }
+                                }
+
+                                if (lane_roadMark->GetNumberOfRoadMarkTypes() > 0)
+                                {
+                                    lane->AddLaneRoadMark(lane_roadMark);
+                                }
+                                else
+                                {
+                                    delete lane_roadMark;
                                 }
                             }
 
@@ -8483,7 +8501,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                         }
                         else
                         {
-                            LOG_ERROR("Unexpected missing roadmark type or explicit element!");
+                            LOG_ERROR("Unexpected missing roadmark type or explicit element for lane {} road {}!", lane->GetId(), road->GetId());
                         }
                     }
                 }
