@@ -137,7 +137,6 @@ macro(set_project_os_specific_paths)
                 "")
         endif()
     endif()
-
     if(MSVC)
         set(EXTERNALS_DIRENT_INCLUDES
             "${EXTERNALS_DIRENT_PATH}/win")
@@ -155,8 +154,11 @@ macro(set_project_includes)
     set(EXTERNALS_OSG_INCLUDES
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/build/include
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/include)
+
+    # Split CI output layout for OSI 3.8 artifacts.
     set(EXTERNALS_OSI_INCLUDES
         ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/include)
+
     set(EXTERNALS_SUMO_INCLUDES
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
     set(EXTERNALS_GOOGLETEST_INCLUDES

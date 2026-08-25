@@ -38,6 +38,12 @@ OSCParameterDistribution::~OSCParameterDistribution()
 {
     Reset();
 }
+int OSCParameterDistribution::Load(pugi::xml_document& doc)
+{
+    doc_ = std::move(doc);
+
+    return Parse();
+}
 
 int OSCParameterDistribution::Load(std::string filename)
 {
@@ -92,7 +98,11 @@ int OSCParameterDistribution::Load(std::string filename)
         LOG_INFO("Loaded {}", filename_);
     }
 
-    // Parse
+    return Parse();
+}
+
+int OSCParameterDistribution::Parse()
+{
     pugi::xml_node node = doc_.child("OpenSCENARIO");
     if (!node)
     {
@@ -133,7 +143,6 @@ int OSCParameterDistribution::Load(std::string filename)
         else
         {
             scenario_filename_ = (fs::path(filename_).parent_path() / fs::path(scenario_filename_)).string();
-            file_name_candidates.push_back(scenario_filename_);
         }
     }
 

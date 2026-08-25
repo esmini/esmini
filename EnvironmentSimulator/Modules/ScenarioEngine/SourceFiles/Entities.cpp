@@ -46,9 +46,9 @@ Object::Object(Type type)
       color_(""),
       source_reference_({})
 {
-    sensor_pos_[0] = 0;
-    sensor_pos_[1] = 0;
-    sensor_pos_[2] = 0;
+    lookahead_sensor_pos_[0] = 0;
+    lookahead_sensor_pos_[1] = 0;
+    lookahead_sensor_pos_[2] = 0;
 
     state_old.pos_x  = 0;
     state_old.pos_y  = 0;
@@ -365,6 +365,28 @@ void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 {
     pos_.SetAngularAcc(h_acc, p_acc, r_acc);
     dirty_.SetBits(DirtyBit::ANGULAR_ACC);
+}
+
+idx_t Object::AddCustomSensor(const float (&color)[3], const double (&pos)[3], double radius)
+{
+    idx_t index = static_cast<idx_t>(custom_sensor_.size());
+    custom_sensor_.push_back({color[0], color[1], color[2], pos[0], pos[1], pos[2], radius});
+    return index;
+}
+
+int Object::SetCustomSensorPosition(idx_t index, double x, double y, double z)
+{
+    if (index >= custom_sensor_.size())
+    {
+        LOG_ERROR("Invalid sensor index {}, only {} are available", index, custom_sensor_.size());
+        return -1;
+    }
+
+    custom_sensor_[index].x = x;
+    custom_sensor_[index].y = y;
+    custom_sensor_[index].z = z;
+
+    return 0;
 }
 
 void Object::SetJunctionSelectorAngle(double angle)

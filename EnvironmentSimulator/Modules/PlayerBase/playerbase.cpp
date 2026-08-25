@@ -511,13 +511,38 @@ void ScenarioPlayer::ViewerFrame()
 
             viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
 
-            if (mov->steering_sensor_ && mov->steering_sensor_->IsVisible())
+            for (size_t j = 0; j < obj->custom_sensor_.size(); j++)
             {
-                viewer_->SensorSetPivotPos(mov->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-                viewer_->SensorSetTargetPos(mov->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
-                viewer_->UpdateSensor(mov->steering_sensor_);
+                if (j >= mov->custom_sensor_.size())
+                {
+                    // add sensor to viewer if not already present
+                    mov->custom_sensor_.push_back(
+                        viewer_->CreateSensor({obj->custom_sensor_[j].r, obj->custom_sensor_[j].g, obj->custom_sensor_[j].b},
+                                              {obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ()},
+                                              true,
+                                              false,
+                                              obj->custom_sensor_[j].radius,
+                                              3));
+                }
+                if (mov->custom_sensor_[j]->IsVisible())
+                {
+                    viewer_->SensorSetPivotPos(mov->custom_sensor_[j], obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+                    viewer_->SensorSetTargetPos(mov->custom_sensor_[j], obj->custom_sensor_[j].x, obj->custom_sensor_[j].y, obj->custom_sensor_[j].z);
+                    viewer_->UpdateSensor(mov->custom_sensor_[j]);
+                }
             }
-            if (mov->trail_sensor_ && mov->steering_sensor_->IsVisible())
+
+            if (mov->lookahead_sensor_ && mov->lookahead_sensor_->IsVisible())
+            {
+                viewer_->SensorSetPivotPos(mov->lookahead_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+                viewer_->SensorSetTargetPos(mov->lookahead_sensor_,
+                                            obj->lookahead_sensor_pos_[0],
+                                            obj->lookahead_sensor_pos_[1],
+                                            obj->lookahead_sensor_pos_[2]);
+                viewer_->UpdateSensor(mov->lookahead_sensor_);
+            }
+
+            if (mov->trail_sensor_ && mov->trail_sensor_->IsVisible())
             {
                 viewer_->SensorSetPivotPos(mov->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
                 viewer_->SensorSetTargetPos(mov->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
@@ -1329,26 +1354,35 @@ int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(const Object* obj) const
 void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
 {
     // Add a sensor to show when query road info ahead
-    model->steering_sensor_ = viewer_->CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GREEN), true, true, 0.4, 3);
-    viewer_->SensorSetPivotPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-    viewer_->SensorSetTargetPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+    model->lookahead_sensor_ = viewer_->CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GREEN),
+                                                     {obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ()},
+                                                     true,
+                                                     true,
+                                                     0.4,
+                                                     3);
+
     if (obj->ghost_)
     {
-        // Show steering sensor when following a ghost
-        model->steering_sensor_->Show();
+        // Show lookahead sensor when following a ghost
+        model->lookahead_sensor_->Show();
     }
     else
     {
         // Otherwise hide it (as default)
-        model->steering_sensor_->Hide();
+        model->lookahead_sensor_->Hide();
     }
 
-    // If following a ghost vehicle, add visual representation of speed and steering sensors
+    // If following a ghost vehicle, add visual representation of closest point on ghost trail
     if (obj->GetGhost())
     {
         if (odr_manager->GetNumOfRoads() > 0)
         {
-            model->trail_sensor_ = viewer_->CreateSensor(SE_Color::Color2RBG(SE_Color::Color::RED), true, false, 0.4, 3);
+            model->trail_sensor_ = viewer_->CreateSensor(SE_Color::Color2RBG(SE_Color::Color::RED),
+                                                         {obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ()},
+                                                         true,
+                                                         false,
+                                                         0.4,
+                                                         3);
         }
     }
     else if (obj->IsGhost())
@@ -1396,7 +1430,7 @@ void ScenarioPlayer::AddOSIDetection(int object_index)
 #endif
 }
 
-void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
+void ScenarioPlayer::LookaheadSensorSetVisible(int object_index, bool value)
 {
     (void)object_index;
     (void)value;
@@ -1414,11 +1448,11 @@ void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
         {
             if (value == true)
             {
-                reinterpret_cast<viewer::MovingModel*>(m)->steering_sensor_->Show();
+                reinterpret_cast<viewer::MovingModel*>(m)->lookahead_sensor_->Show();
             }
             else
             {
-                reinterpret_cast<viewer::MovingModel*>(m)->steering_sensor_->Hide();
+                reinterpret_cast<viewer::MovingModel*>(m)->lookahead_sensor_->Hide();
             }
         }
     }
@@ -1634,24 +1668,38 @@ int ScenarioPlayer::Init()
     {
         LOG_INFO("Re-using parameter distribution {}", dist.GetFilename());
     }
-    else if (opt.IsOptionArgumentSet("param_dist") || opt.IsOptionArgumentSet("osc"))
+    else if (opt.IsOptionArgumentSet("param_dist") || opt.IsOptionArgumentSet("osc") || opt.IsOptionArgumentSet("osc_str"))
     {
         if (dist.GetNumPermutations() == 0)
         {
-            std::string strParamDist = "";
-            if (opt.IsOptionArgumentSet("param_dist"))
-            {  // use the param_dist to read the distribution and scenario file
-                strParamDist = opt.GetOptionValue("param_dist");
-            }
-            else if (opt.IsOptionArgumentSet("osc"))
-            {  // use osc to read the distribution and scenario file
-                strParamDist     = opt.GetOptionValue("osc");
-                dist.IsParamDist = false;
-            }
-
-            if (LoadParameterDistribution(strParamDist) != 0)
+            if (opt.IsOptionArgumentSet("osc_str"))
             {
-                return -1;
+                pugi::xml_document doc;
+                if (ConvertScenarioStringToXmlDoc(opt.GetOptionValue("osc_str"), &doc) != 0 || LoadParameterDistribution(doc) != 0)
+                {
+                    return -1;
+                }
+
+                // Remove osc_str argument and load scenario instead
+                opt.SetOptionValue("osc_str", "");
+                opt.SetOptionValue("osc", dist.GetScenarioFileName());
+            }
+            else
+            {
+                std::string strParamDist = "";
+                if (opt.IsOptionArgumentSet("param_dist"))
+                {  // use the param_dist to read the distribution and scenario file
+                    strParamDist = opt.GetOptionValue("param_dist");
+                }
+                else if (opt.IsOptionArgumentSet("osc"))
+                {  // use osc to read the distribution and scenario file
+                    strParamDist     = opt.GetOptionValue("osc");
+                    dist.IsParamDist = false;
+                }
+                if (LoadParameterDistribution(strParamDist) != 0)
+                {
+                    return -1;
+                }
             }
         }
     }
@@ -1848,8 +1896,7 @@ int ScenarioPlayer::Init()
         {
             // parse XML string as document
             pugi::xml_document doc;
-            std::string        xml_str(arg_str);
-            if (!doc.load_buffer(xml_str.c_str(), xml_str.length()))
+            if (ConvertScenarioStringToXmlDoc(arg_str, &doc) != 0)
             {
                 return -1;
             }
@@ -2266,6 +2313,37 @@ int ScenarioPlayer::SetParameterValue(const char* name, const char* value)
 int ScenarioPlayer::SetParameterValue(const char* name, bool value)
 {
     return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
+int ScenarioPlayer::ConvertScenarioStringToXmlDoc(const std::string& scenario, pugi::xml_document* doc)
+{
+    std::string xml_str(scenario);
+    if (!doc->load_buffer(xml_str.c_str(), xml_str.length()))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+int ScenarioPlayer::LoadParameterDistribution(pugi::xml_document& doc)
+{
+    OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+
+    if (dist.GetNumPermutations() > 0)
+    {
+        LOG_INFO("Parameter distribution already loaded, reusing it");
+        return -2;
+    }
+    else
+    {
+        if (dist.Load(doc) != 0)
+        {
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 int ScenarioPlayer::LoadParameterDistribution(std::string filename)

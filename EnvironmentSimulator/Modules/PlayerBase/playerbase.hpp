@@ -177,7 +177,7 @@ namespace scenarioengine
         void InitVehicleModel(Object *obj, viewer::CarModel *model);
 #endif
         void AddOSIDetection(int object_index);
-        void SteeringSensorSetVisible(int object_index, bool value);
+        void LookaheadSensorSetVisible(int object_index, bool value);
         void SetFixedTimestep(double timestep)
         {
             fixed_timestep_ = timestep;
@@ -232,7 +232,9 @@ namespace scenarioengine
         {
             return frame_counter_;
         }
+        int ConvertScenarioStringToXmlDoc(const std::string &scenario, pugi::xml_document *doc);
         int LoadParameterDistribution(std::string filename);
+        int LoadParameterDistribution(pugi::xml_document &doc);
 
         int                     GetNumberOfProperties(int index);
         const char             *GetPropertyName(int index, int propertyIndex);

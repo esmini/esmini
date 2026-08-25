@@ -84,6 +84,7 @@ If you need to (re)build a 3rd party lib for some reason, e.g. for an yet unsupp
 - https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[esmini/scripts/generate_osg_libs.sh]
 - https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[esmini/scripts/generate_sumo_libs.sh]
 - https://github.com/esmini/esmini-dependencies/blob/main/osi/generate_osi_3_5_libs.sh[esmini-dependencies/osi/generate_osi_3_5_libs.sh]
+- https://github.com/esmini/esmini-dependencies/blob/main/osi/generate_osi_3_8_libs.sh[esmini-dependencies/osi/generate_osi_3_8_libs.sh]
 
 or this script that builds all `sumo` and `osg` libs, combining a selection of the above ones:
 
@@ -107,12 +108,35 @@ The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforce
 
 Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
 
-For `osi` and `implot`, the supported versions can be found in https://github.com/esmini/esmini/blob/master/support/cmake/common/version_mapping.cmake[support/cmake/common/version_mapping.cmake].
-
 A few additional notes:
 
 - Although dependent libraries are provided, nothing stops you from building them yourself, e.g. for an unsupported system or need for a specific version or customized build.
 - The dependencies are built using as old compiler and toolset as possible to maximize compatibility with systems. Baseline is oldest https://github.com/actions/runner-images[image] supported by GitHub actions. The assumption being that a binary built on an older generation will run on a newer generation of a platform, but not vice versa. E.g. a binary built with on ubuntu 22.04 (e.g. with g++ v9) will run fine on Ubuntu 24.04.
+
+==== OSI versions
+
+Current supported versions:
+
+[cols="1,1,1,1", options="header"]
+|===
+| CMake flag | OSI version | Google Protobuf version | Abseil version
+| `-D OSI_VERSION=3.5.0` (default) | v3.5.0 | v3.15.2 | N/A
+| `-D OSI_VERSION=3.8.0` | v3.8.0 | v5.29.3 | 20240722.1
+|===
+
+Example:
+
+`cmake .. -D OSI_VERSION=3.5.0`
+
+==== Implot versions
+
+Current supported versions:
+
+[cols="1,1,1,1", options="header"]
+|===
+| CMake flag | Implot version | ImGui version | GLFW version
+| `-D IMPLOT_VERSION=0.16` | v0.16 | v1.89.8 | 3.3.8
+|===
 
 === Additional platform dependencies
 

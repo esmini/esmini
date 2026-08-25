@@ -1,12 +1,12 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#ifdef _USE_OSI
-#include "osi_common.pb.h"
-#include "osi_object.pb.h"
-#include "osi_sensorview.pb.h"
-#include "osi_version.pb.h"
-#endif  // _USE_OSI
+#if _RUN_OSI_TESTS
+#include <osi_common.pb.h>
+#include <osi_object.pb.h>
+#include <osi_sensorview.pb.h>
+#include <osi_version.pb.h>
+#endif  // _RUN_OSI_TESTS
 #include "Replay.hpp"
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
@@ -706,7 +706,7 @@ TEST(ProgramOptions, ParsesBoolValues)
 
 // OSI tests
 
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
 
 TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 {
@@ -3998,7 +3998,12 @@ TEST(EnvironmentTest, OSISurfaceWaterFilm)
     SE_Close();
 }
 
-#endif  // _USE_OSI
+#else
+TEST(OSI, Tests)
+{
+    GTEST_SKIP();
+}
+#endif  // _RUN_OSI_TESTS
 
 TEST(ParameterTest, GetTypedParameterValues)
 {
@@ -5747,7 +5752,7 @@ TEST(RoadmanagerTest, CheckPreviousRoadIsCleared)
 
 TEST(ParamDistTest, TestRunAll)
 {
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
     std::vector<std::string> gt = {
         "gt_1_of_12.osi",
         "gt_2_of_12.osi",
@@ -5762,7 +5767,7 @@ TEST(ParamDistTest, TestRunAll)
         "gt_11_of_12.osi",
         "gt_12_of_12.osi",
     };
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
 
     std::vector<std::string> dat = {
         "cut-in_1_of_12.dat",
@@ -5833,18 +5838,18 @@ TEST(ParamDistTest, TestRunAll)
     {
         SE_Init(scenario_file.c_str(), 0, 0, 0, 1);
 
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
         SE_EnableOSIFile("gt.osi");
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
 
         for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
         {
             SE_StepDT(0.1);
         }
 
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
         SE_DisableOSIFile();
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
 
         SE_Close();
     }
@@ -5854,11 +5859,11 @@ TEST(ParamDistTest, TestRunAll)
     // Check that files have been created as expected
     for (unsigned int i = 0; i < SE_GetNumberOfPermutations(); i++)
     {
-#ifdef _USE_OSI
+#if _RUN_OSI_TESTS
         EXPECT_EQ(stat(gt[i].c_str(), &fileStatus), 0);
         EXPECT_GE(fileStatus.st_mtime, oldModTime);
         EXPECT_GE(fileStatus.st_size, 0);
-#endif  // _USE_OSI
+#endif  // _RUN_OSI_TESTS
         EXPECT_EQ(stat(dat[i].c_str(), &fileStatus), 0);
         EXPECT_GE(fileStatus.st_mtime, oldModTime);
 
@@ -5900,6 +5905,127 @@ TEST(ParamDistTest, TestRunAll)
     EXPECT_EQ(fileStatus.st_mtime, time_sample1);
     EXPECT_EQ(stat(log[5].c_str(), &fileStatus), 0);
     EXPECT_GE(fileStatus.st_mtime, time_sample2);
+
+    SE_ResetParameterDistribution();
+}
+
+TEST(ParamDistTest, TestRunAllWithSE_Init)
+{
+#if _RUN_OSI_TESTS
+    std::vector<std::string> gt = {
+        "gt_1_of_12.osi",
+        "gt_2_of_12.osi",
+        "gt_3_of_12.osi",
+        "gt_4_of_12.osi",
+        "gt_5_of_12.osi",
+        "gt_6_of_12.osi",
+        "gt_7_of_12.osi",
+        "gt_8_of_12.osi",
+        "gt_9_of_12.osi",
+        "gt_10_of_12.osi",
+        "gt_11_of_12.osi",
+        "gt_12_of_12.osi",
+    };
+#endif  // _RUN_OSI_TESTS
+
+    std::vector<std::string> dat = {
+        "cut-in_parameter_set_1_of_12.dat",
+        "cut-in_parameter_set_2_of_12.dat",
+        "cut-in_parameter_set_3_of_12.dat",
+        "cut-in_parameter_set_4_of_12.dat",
+        "cut-in_parameter_set_5_of_12.dat",
+        "cut-in_parameter_set_6_of_12.dat",
+        "cut-in_parameter_set_7_of_12.dat",
+        "cut-in_parameter_set_8_of_12.dat",
+        "cut-in_parameter_set_9_of_12.dat",
+        "cut-in_parameter_set_10_of_12.dat",
+        "cut-in_parameter_set_11_of_12.dat",
+        "cut-in_parameter_set_12_of_12.dat",
+    };
+
+    std::vector<std::string> log = {
+        "log_1_of_12.txt",
+        "log_2_of_12.txt",
+        "log_3_of_12.txt",
+        "log_4_of_12.txt",
+        "log_5_of_12.txt",
+        "log_6_of_12.txt",
+        "log_7_of_12.txt",
+        "log_8_of_12.txt",
+        "log_9_of_12.txt",
+        "log_10_of_12.txt",
+        "log_11_of_12.txt",
+        "log_12_of_12.txt",
+    };
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
+
+    // Fetch timestamp of any old run
+    struct stat fileStatus;
+    long long   oldModTime = 0;
+
+    if (stat(log[0].c_str(), &fileStatus) == 0)
+    {
+        oldModTime = fileStatus.st_mtime;
+    }
+
+    if (stat(dat[0].c_str(), &fileStatus) == 0)
+    {
+        if (fileStatus.st_mtime > oldModTime)
+        {
+            oldModTime = fileStatus.st_mtime;
+        }
+    }
+
+    if (stat(log[0].c_str(), &fileStatus) == 0)
+    {
+        if (fileStatus.st_mtime > oldModTime)
+        {
+            oldModTime = fileStatus.st_mtime;
+        }
+    }
+
+    std::string  scenario_file = "../../../resources/xosc/cut-in_parameter_set.xosc";
+    unsigned int i             = 0;
+    for (;; i++)
+    {
+        EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 1), 0);
+
+#if _RUN_OSI_TESTS
+        SE_EnableOSIFile("gt.osi");
+#endif  // _RUN_OSI_TESTS
+
+        for (int j = 0; j < 50 && SE_GetQuitFlag() == 0; j++)
+        {
+            SE_StepDT(0.1);
+        }
+
+#if _RUN_OSI_TESTS
+        SE_DisableOSIFile();
+#endif  // _RUN_OSI_TESTS
+
+        SE_Close();
+
+        if (i == SE_GetNumberOfPermutations() - 1)
+        {
+            break;
+        }
+    }
+
+    for (i = 0; i < SE_GetNumberOfPermutations(); i++)
+    {
+#if _RUN_OSI_TESTS
+        EXPECT_EQ(stat(gt[i].c_str(), &fileStatus), 0);
+        EXPECT_GE(fileStatus.st_mtime, oldModTime);
+        EXPECT_GE(fileStatus.st_size, 0);
+#endif  // _RUN_OSI_TESTS
+        EXPECT_EQ(stat(dat[i].c_str(), &fileStatus), 0);
+        EXPECT_GE(fileStatus.st_mtime, oldModTime);
+
+        EXPECT_EQ(stat(log[i].c_str(), &fileStatus), 0);
+        EXPECT_GE(fileStatus.st_mtime, oldModTime);
+    }
 
     SE_ResetParameterDistribution();
 }

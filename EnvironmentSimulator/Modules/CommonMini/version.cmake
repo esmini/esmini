@@ -1,7 +1,7 @@
 # Credit: https://www.mattkeeter.com/blog/2018-01-06-versioning/
 #
 execute_process(
-    COMMAND git describe --long --dirty --broken
+    COMMAND git describe --long --dirty --broken --always
     OUTPUT_VARIABLE GIT_REV
     ERROR_QUIET)
 

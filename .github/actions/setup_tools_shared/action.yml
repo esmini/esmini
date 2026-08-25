@@ -5,6 +5,15 @@ runs:
   using: 'composite'
 
   steps:
+    # Github Actions' azure apt caching proxy unreliable (https://github.com/actions/runner-images/issues/7048)
+    - name: Add Ubuntu mirrors
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        printf 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
+        curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+        sudo sed -i 's~http://azure.archive.ubuntu.com/ubuntu/~mirror+file:/etc/apt/mirrors.txt~' /etc/apt/sources.list
+
     - if: runner.os == 'Linux'
       shell: bash
       run: sudo apt-get update -q

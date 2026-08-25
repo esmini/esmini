@@ -146,7 +146,7 @@ def use_package(pack_name):
         check=True,
         shell=False
     )
-    return result.stdout.find("USE_" + pack_name + ":BOOL=ON") != -1
+    return result.stdout.find("RUN_" + pack_name + "_TESTS:BOOL=TRUE" or "RUN_" + pack_name + "_TESTS:BOOL=ON") != -1
 
 def generate_csv(filename=DAT_FILENAME):
 

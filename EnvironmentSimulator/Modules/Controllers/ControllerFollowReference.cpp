@@ -16,7 +16,6 @@
  * The purpose is purely to demonstrate how to implement a controller.
  */
 
-// #include "playerbase.hpp"
 #include "ControllerFollowReference.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
@@ -75,7 +74,7 @@ ControllerFollowReference::ControllerFollowReference(InitArgs* args) : Controlle
 
 void ControllerFollowReference::Init()
 {
-    // FollowGhost controller forced into override mode - will not perform any scenario actions
+    // FollowReference controller forced into override mode - will not perform any scenario actions
     if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
         LOG_INFO("FollowReference controller mode \"{}\" not applicable. Using override mode instead.", Mode2Str(mode_));
@@ -151,8 +150,8 @@ int ControllerFollowReference::Activate(const ControlActivationMode (&mode)[stat
     {
         LOG_ERROR("{} activation mode: lat {} long {}, but is only valid on both domains in combination",
                   GetName(),
-                  mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)] == ControlActivationMode::ON ? "On" : "Off",
-                  mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)] == ControlActivationMode::ON ? "On" : "Off");
+                  mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)] == ControlActivationMode::ON ? "On" : "Off",
+                  mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)] == ControlActivationMode::ON ? "On" : "Off");
     }
 
     if (object_)
@@ -168,9 +167,7 @@ int ControllerFollowReference::Activate(const ControlActivationMode (&mode)[stat
         vehicle_.SetPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
         vehicle_.speed_ = object_->GetSpeed();
 
-        object_->sensor_pos_[0] = object_->pos_.GetX();
-        object_->sensor_pos_[1] = object_->pos_.GetY();
-        object_->sensor_pos_[2] = object_->pos_.GetZ();
+        object_->SetLookaheadSensorPosition(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ());
 
         wheelbase_ = object_->front_axle_.positionX;
 

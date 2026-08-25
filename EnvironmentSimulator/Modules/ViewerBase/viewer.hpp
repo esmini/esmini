@@ -465,12 +465,13 @@ namespace viewer
     class MovingModel : public EntityModel
     {
     public:
-        PointSensor*       road_sensor_;
-        PointSensor*       lane_sensor_;
-        PointSensor*       route_sensor_;
-        PointSensor*       trail_sensor_;
-        PointSensor*       steering_sensor_;
-        virtual EntityType GetType() override
+        PointSensor*              road_sensor_;
+        PointSensor*              lane_sensor_;
+        PointSensor*              route_sensor_;
+        PointSensor*              trail_sensor_;
+        PointSensor*              lookahead_sensor_;
+        std::vector<PointSensor*> custom_sensor_;
+        virtual EntityType        GetType() override
         {
             return EntityType::MOVING;
         }
@@ -756,7 +757,12 @@ namespace viewer
         int          GetNodeMaskBit(int mask);
         int          GetNodeMask();  // return current mask setting
         void         SetCameraTrackNode(osg::ref_ptr<osg::Node> xform, bool calcDistance = false);
-        PointSensor* CreateSensor(const float (&color)[3], bool create_ball, bool create_line, double ball_radius, double line_width);
+        PointSensor* CreateSensor(const float (&color)[3],
+                                  const double (&pos)[3],
+                                  bool   create_ball,
+                                  bool   create_line,
+                                  double ball_radius,
+                                  double line_width);
         bool         CreateRoadSensors(MovingModel* moving_model);
         void         SetWindowTitle(std::string title);
         void         SetWindowTitleFromArgs(std::vector<std::string>& arg);

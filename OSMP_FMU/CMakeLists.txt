@@ -5,9 +5,13 @@ project(${TARGET})
 
 execute_process(
     # fetch latest esmini tag (release)
-    COMMAND git describe --abbrev=0
+    COMMAND git describe --abbrev=0 --always
     OUTPUT_VARIABLE VERSION
     ERROR_QUIET)
+
+if("${VERSION}" STREQUAL "")
+    set(VERSION "N/A")
+endif()
 
 message("Version: " ${VERSION})
 
@@ -153,9 +157,10 @@ if(STATIC_LINKING)
         ON)
     add_subdirectory(../externals/fmt fmt)
 
+    set(FMT_LIBRARIES fmt)
     if(LINUX)
         # add link lib for missing filesystem functions in case gcc 7.5 is usedAdd commentMore actions
-        set(FMT_LIBRARIES ${FMT_LIBRARIES} "-lstdc++fs")
+        set(FMT_LIBRARIES ${FMT_LIBRARIES} stdc++fs)
     endif()
 
 
@@ -173,9 +178,8 @@ if(STATIC_LINKING)
                 ${SUMO_LIBRARIES}
                 ${OSG_LIBRARIES}
                 ${IMPLOT_LIBRARIES}
-                fmt
+                ${FMT_LIBRARIES}
                 pugixml_lib
-                stdc++fs
                 ${ADDITIONAL_LIBS})
 else()
     message("Link esmini dynamically")

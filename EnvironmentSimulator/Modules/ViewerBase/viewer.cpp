@@ -1421,11 +1421,11 @@ MovingModel::MovingModel(Viewer*                  viewer,
                          std::string              name)
     : EntityModel(viewer, group, parent, trail_parent, traj_parent, dot_node, route_waypoint_parent, trail_color, name)
 {
-    road_sensor_     = 0;
-    lane_sensor_     = 0;
-    steering_sensor_ = 0;
-    route_sensor_    = 0;
-    trail_sensor_    = 0;
+    road_sensor_      = nullptr;
+    lane_sensor_      = nullptr;
+    route_sensor_     = nullptr;
+    trail_sensor_     = nullptr;
+    lookahead_sensor_ = nullptr;
 }
 
 CarModel::CarModel(Viewer*                  viewer,
@@ -1509,9 +1509,13 @@ CarModel::~CarModel()
     {
         delete trail_sensor_;
     }
-    if (steering_sensor_)
+    if (lookahead_sensor_)
     {
-        delete steering_sensor_;
+        delete lookahead_sensor_;
+    }
+    for (auto& sensor : custom_sensor_)
+    {
+        delete sensor;
     }
 }
 
@@ -3815,14 +3819,19 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
 bool Viewer::CreateRoadSensors(MovingModel* moving_model)
 {
-    moving_model->road_sensor_  = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GRAY), true, false, 0.35, 2.5);
-    moving_model->route_sensor_ = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::BLUE), true, false, 0.30, 2.5);
-    moving_model->lane_sensor_  = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GRAY), true, true, 0.25, 2.5);
+    moving_model->road_sensor_  = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GRAY), {0.0, 0.0, 0.0}, true, false, 0.35, 2.5);
+    moving_model->route_sensor_ = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::BLUE), {0.0, 0.0, 0.0}, true, false, 0.30, 2.5);
+    moving_model->lane_sensor_  = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GRAY), {0.0, 0.0, 0.0}, true, true, 0.25, 2.5);
 
     return true;
 }
 
-PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, bool create_line, double ball_radius, double line_width)
+PointSensor* Viewer::CreateSensor(const float (&color)[3],
+                                  const double (&pos)[3],
+                                  bool   create_ball,
+                                  bool   create_line,
+                                  double ball_radius,
+                                  double line_width)
 {
     PointSensor* sensor = new PointSensor();
     sensor->group_      = new osg::Group();
@@ -3830,8 +3839,7 @@ PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, boo
     // Point
     if (create_ball)
     {
-        osg::ref_ptr<osg::ShapeDrawable> shape =
-            new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0f, 0.0f, 0.0f), static_cast<float>(ball_radius)));
+        osg::ref_ptr<osg::ShapeDrawable> shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0, 0.0, 0.0), static_cast<float>(ball_radius)));
         shape->setColor(osg::Vec4(color[0], color[1], color[2], 1.0));
 
         osg::ref_ptr<osg::Geode> geode = new osg::Geode;
@@ -3839,6 +3847,7 @@ PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, boo
 
         sensor->ball_ = new osg::PositionAttitudeTransform;
         sensor->ball_->addChild(geode);
+        sensor->ball_->setPosition(osg::Vec3(pos[0], pos[1], pos[2]));
 
         sensor->ball_radius_ = ball_radius;
         sensor->group_->addChild(sensor->ball_);
@@ -3848,8 +3857,8 @@ PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, boo
     if (create_line)
     {
         sensor->line_vertex_data_ = new osg::Vec3Array;
-        sensor->line_vertex_data_->push_back(osg::Vec3d(0, 0, 0));
-        sensor->line_vertex_data_->push_back(osg::Vec3d(0, 0, 0));
+        sensor->line_vertex_data_->push_back(osg::Vec3d(pos[0], pos[1], pos[2]));
+        sensor->line_vertex_data_->push_back(osg::Vec3d(pos[0], pos[1], pos[2]));
 
         osg::ref_ptr<osg::Group> group = new osg::Group;
         sensor->line_                  = new osg::Geometry();
@@ -3870,6 +3879,9 @@ PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, boo
         // sensor->line_->setDataVariance(osg::Object::DYNAMIC);
         sensor->group_->addChild(group);
     }
+
+    SensorSetPivotPos(sensor, pos[0], pos[1], pos[2]);
+    SensorSetTargetPos(sensor, pos[0], pos[1], pos[2]);
 
     // Make sensor visible as default
     roadSensors_->addChild(sensor->group_);

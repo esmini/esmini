@@ -14,10 +14,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "osi_common.pb.h"
-#include "osi_object.pb.h"
-#include "osi_sensorview.pb.h"
-#include "osi_version.pb.h"
+#include <osi_common.pb.h>
+#include <osi_object.pb.h>
+#include <osi_sensorview.pb.h>
+#include <osi_version.pb.h>
 #include <signal.h>
 
 #ifndef _WINDOWS

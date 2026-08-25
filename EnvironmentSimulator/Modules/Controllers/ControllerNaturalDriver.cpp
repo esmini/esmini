@@ -397,7 +397,7 @@ int ControllerNaturalDriver::Activate(const ControlActivationMode (&mode)[static
 
     if (player_)
     {
-        player_->SteeringSensorSetVisible(object_->GetId(), true);
+        player_->LookaheadSensorSetVisible(object_->GetId(), true);
     }
 
     return 0;

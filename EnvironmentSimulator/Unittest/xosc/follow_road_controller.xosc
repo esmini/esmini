@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="Test follow road controller" author="esmini team" revMajor="1" revMinor="3" date="2026-07-08T15:00:00" />
+   <ParameterDeclarations />
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles" />
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers" />
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/multi_intersections.xodr" />
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="followRoad">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="Mode" value="override" />
+                  <ParameterAssignment parameterRef="LookaheadSteerDistFactor" value="1.0" />
+                  <ParameterAssignment parameterRef="SteerFactor" value="1.5" />
+                  <ParameterAssignment parameterRef="LookaheadSpeedDistFactor" value="1.0" />
+                  <ParameterAssignment parameterRef="SpeedChangeFactor" value="2.0" />  <!-- set 0.0 to disable speed ctrl -->
+                  <ParameterAssignment parameterRef="Acceleration" value="2" />
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="280" laneId="-1" s="100" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${70/3.6}" />
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+               <PrivateAction>
+                  <RoutingAction>
+                     <AssignRouteAction>
+                        <Route name="EgoRoute" closed="true">
+                           <Waypoint routeStrategy="shortest">
+                              <Position>
+                                 <LanePosition roadId="280" laneId="-1" s="90" />
+                              </Position>
+                           </Waypoint>
+                           <Waypoint routeStrategy="shortest">
+                              <Position>
+                                 <LanePosition roadId="270" laneId="-1" offset="0" s="50" />
+                              </Position>
+                           </Waypoint>
+                           <Waypoint routeStrategy="shortest">
+                              <Position>
+                                 <LanePosition roadId="197" laneId="-1" offset="0" s="25" />
+                              </Position>
+                           </Waypoint>
+                        </Route>
+                     </AssignRouteAction>
+                  </RoutingAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="Quit" delay="0.0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="80.0" rule="greaterOrEqual" />
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

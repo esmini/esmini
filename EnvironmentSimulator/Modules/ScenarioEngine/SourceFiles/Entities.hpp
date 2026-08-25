@@ -283,7 +283,19 @@ namespace scenarioengine
         // Ghost following stuff
         roadmanager::TrajVertex trail_closest_pos_;
 
-        double sensor_pos_[3];
+        double lookahead_sensor_pos_[3];
+
+        struct CustomSensor
+        {
+            float  r;       // Red color component
+            float  g;       // Green color component
+            float  b;       // Blue color component
+            double x;       // X position
+            double y;       // Y position
+            double z;       // Z position
+            double radius;  // Radius of the sensor ball
+        };
+        std::vector<CustomSensor> custom_sensor_;
 
         roadmanager::Position     pos_;
         int                       model_id_ = -1;
@@ -559,12 +571,18 @@ namespace scenarioengine
         void SetAngularVel(double h_vel, double p_vel, double r_vel);
         void SetAngularAcc(double h_acc, double p_acc, double r_acc);
 
-        void SetSensorPosition(double x, double y, double z)
+        void SetLookaheadSensorPosition(double x, double y, double z)
         {
-            sensor_pos_[0] = x;
-            sensor_pos_[1] = y;
-            sensor_pos_[2] = z;
+            lookahead_sensor_pos_[0] = x;
+            lookahead_sensor_pos_[1] = y;
+            lookahead_sensor_pos_[2] = z;
         }
+
+        // Add lookahead sensor, return its index
+        idx_t AddCustomSensor(const float (&color)[3], const double (&pos)[3], double radius);
+
+        // Set position of lookahead sensor, return 0 if index is valid, else -1
+        int SetCustomSensorPosition(idx_t index, double x, double y, double z);
 
         void SetMaxAcceleration(double maxAcceleration)
         {

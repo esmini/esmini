@@ -118,6 +118,31 @@
                 <Property name="steeringSpeedInertia"  value="$SteeringSpeedInertia" />
             </Properties>
         </Controller>
+        <Controller name="followRoad">
+            <ParameterDeclarations>
+                <!-- Mode: additive for mixing with default controller, override to disable default controller -->
+                <ParameterDeclaration name="Mode" parameterType="string" value="override" />
+                <!-- scale lookahead distance for speed control -->
+                <ParameterDeclaration name="LookaheadSpeedDistFactor" parameterType="double" value="1.0" />
+                <!-- scale speed change, set to 0 to disable speed control altogether -->
+                <ParameterDeclaration name="SpeedChangeFactor" parameterType="double" value="1.0" />
+                <!-- scale lookahead distance for steering control -->
+                <ParameterDeclaration name="LookaheadSteerDistFactor" parameterType="double" value="1.0" />
+                <!-- scale steering -->
+                <ParameterDeclaration name="SteerFactor" parameterType="double" value="1.0" />
+                <!-- acceleration applied for increasing or decreasing speed, 1.5 m/s^2 for comfort level -->
+                <ParameterDeclaration name="Acceleration" parameterType="double" value="1.5" />
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="esminiController" value="FollowRoadController" />
+                <Property name="mode" value="$Mode" />
+                <Property name="lookaheadSpeedDistFactor"  value="$LookaheadSpeedDistFactor" />
+                <Property name="speedChangeFactor"  value="$SpeedChangeFactor" />
+                <Property name="lookaheadSteerDistFactor"  value="$LookaheadSteerDistFactor" />
+                <Property name="steerFactor"  value="$SteerFactor" />
+                <Property name="acceleration"  value="$Acceleration" />
+            </Properties>
+        </Controller>
         <Controller name="followRoute">
             <ParameterDeclarations>
                 <ParameterDeclaration name="MinDistForCollision" parameterType="double" value="10" />

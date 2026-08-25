@@ -4831,7 +4831,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     type         = signal.attribute("type").value();
                     subtype      = signal.attribute("subtype").value();
                     value        = signal.attribute("value").value();
-                    int osi_type = static_cast<int>(Signal::OSIType::TrafficSign_MainSign_Classification_Type_INT_MAX_SENTINEL_DO_NOT_USE_);
+                    int osi_type = static_cast<int>(Signal::OSIType::TYPE_UNKNOWN);
 
                     if (!type.empty() && type != "-1" && type != "none")
                     {
@@ -4856,6 +4856,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                 LOG_INFO("Signal Type {} doesn't exists for country {}", type_to_find, country);
                             }
                         }
+
                         if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
                         {
                             LOG_INFO("Signal Type {} exists for country {} - but no OSI type defined", type_to_find, country);
@@ -4863,7 +4864,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     }
                     else
                     {
-                        osi_type = static_cast<int>(Signal::OSIType::TYPE_UNKNOWN);
+                        LOG_INFO("No signal type defined in signal with id {} - setting OSI type TYPE_UNKNOWN", ids);
                     }
 
                     std::string unit     = signal.attribute("unit").value();
@@ -8251,7 +8252,21 @@ void OpenDrive::SetRoadMarkOSIPoints()
                         }
                         else
                         {
+                            // apply this roadmark definition until next roadmark segment
                             s_end_roadmark = MAX(0, lsec->GetS() + lane->GetLaneRoadMarkByIdx(m + 1)->GetSOffset() - SMALL_NUMBER);
+
+                            // but not beyond end of lane section
+                            if (s_end_roadmark > lsec_end + SMALL_NUMBER)
+                            {
+                                LOG_WARN("Roadmark (road {} lsec {} lane {} marking {}) passed ({}) end of lane section ({}), truncating",
+                                         road->GetId(),
+                                         k,
+                                         lane->GetId(),
+                                         m + 1,
+                                         s_end_roadmark,
+                                         lsec_end);
+                                s_end_roadmark = lsec_end;
+                            }
                         }
 
                         // create point and lines for the road marks
@@ -9327,7 +9342,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
 
         unsigned int jFirst, jSecond, kFirst, kSecond;
 
-        if (crossP < 0)
+        if (crossP < SMALL_NUMBER)
         {
             // Positive dot product means closest OSI point is behind
             osip_first = osip_closest;
@@ -12123,16 +12138,14 @@ Position::ReturnCode Position::CalcProbeInfo(Position* target, RoadProbeInfo* da
 		data->global_pos[2] = GetZ() + data->local_pos[2];
 #endif
 
-        // Calculate angle - by dot product
+        // Calculate local angle to target in vehicle coordinates.
         if (fabs(data->relative_pos[0]) < SMALL_NUMBER && fabs(data->relative_pos[1]) < SMALL_NUMBER && fabs(data->relative_pos[2]) < SMALL_NUMBER)
         {
-            data->relative_h = GetH();
+            data->relative_h = 0.0;
         }
         else
         {
-            double dot_prod = (data->relative_pos[0] * 1.0 + data->relative_pos[1] * 0.0) /
-                              sqrt(data->relative_pos[0] * data->relative_pos[0] + data->relative_pos[1] * data->relative_pos[1]);
-            data->relative_h = SIGN(data->relative_pos[1]) * acos(dot_prod);
+            data->relative_h = atan2(data->relative_pos[1], data->relative_pos[0]);
         }
     }
 
@@ -12178,12 +12191,7 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 
     if (fabs(lookahead_distance) > SMALL_NUMBER)
     {
-        retval = target.MoveAlongS(lookahead_distance,
-                                   0.0,
-                                   0.0,
-                                   lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER,
-                                   Position::MoveDirectionMode::HEADING_DIRECTION,
-                                   true);
+        retval = target.MoveAlongS(lookahead_distance, 0.0, 0.0, true, Position::MoveDirectionMode::HEADING_DIRECTION, true);
     }
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER)

@@ -675,6 +675,30 @@ namespace esmini
         return copy_state_from_object(object, scenario_engine_->getSimulationTime());
     }
 
+    double OpenScenario::time_to_collision(int object_a_id, int object_b_id, bool free_space, int cs, int dist_type) const
+    {
+        if (scenario_engine_ == nullptr)
+        {
+            return -1.0;
+        }
+
+        scenarioengine::Object* obj_a = scenario_engine_->entities_.GetObjectById(object_a_id);
+        if (obj_a == nullptr)
+        {
+            return -1.0;
+        }
+
+        scenarioengine::Object* obj_b = scenario_engine_->entities_.GetObjectById(object_b_id);
+
+        double ttc = -1.0;
+        obj_a->TimeToCollision(obj_b,
+                               static_cast<roadmanager::CoordinateSystem>(cs),
+                               static_cast<roadmanager::RelativeDistanceType>(dist_type),
+                               free_space,
+                               ttc);
+        return ttc;
+    }
+
     ScenarioRoadGeometry OpenScenario::collect_road_geometry() const
     {
         ScenarioRoadGeometry geometry;

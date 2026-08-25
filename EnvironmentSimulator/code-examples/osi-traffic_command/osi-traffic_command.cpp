@@ -1,10 +1,10 @@
 #include "esminiLib.hpp"
 
-#include "osi_common.pb.h"
-#include "osi_object.pb.h"
-#include "osi_groundtruth.pb.h"
-#include "osi_trafficcommand.pb.h"
-#include "osi_version.pb.h"
+#include <osi_common.pb.h>
+#include <osi_object.pb.h>
+#include <osi_groundtruth.pb.h>
+#include <osi_trafficcommand.pb.h>
+#include <osi_version.pb.h>
 
 int main(int argc, char* argv[])
 {

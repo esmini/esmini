@@ -32,6 +32,7 @@
 #include "ControllerOffroadFollower.hpp"
 #include "ControllerHID.hpp"
 #include "ControllerFollowReference.hpp"
+#include "ControllerFollowRoad.hpp"
 
 #include <cstdlib>
 
@@ -112,6 +113,7 @@ void ScenarioReader::LoadControllers()
     RegisterController(CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME, InstantiateControllerOffroadFollower);
     RegisterController(CONTROLLER_HID_TYPE_NAME, InstantiateControllerHID);
     RegisterController(CONTROLLER_FOLLOW_REFERENCE_TYPE_NAME, InstantiateControllerFollowReference);
+    RegisterController(CONTROLLER_FOLLOW_ROAD_TYPE_NAME, InstantiateControllerFollowRoad);
 }
 
 void ScenarioReader::UnloadControllers()
