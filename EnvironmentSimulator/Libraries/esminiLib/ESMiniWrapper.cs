@@ -755,9 +755,9 @@ namespace ESMini
         /// set parameter values for initial entity states, e.g. s value in lane position. So this callback will happen just
         /// after parameters has been parsed, but before they are applied, providing an opportunity to control the initial
         /// states via API.
-        /// Registered init callbacks are be cleared between SE_Init calls, i.e. needs to be registered
+        /// Registered init callbacks are not automatically cleared between SE_Init calls.
         /// </summary>
-        /// <param name="fnPtr">A pointer to the function to be invoked</param>
+        /// <param name="fnPtr">A pointer to the function to be invoked. Set 0/NULL to clear any registered callback.</param>
         /// <param name="user_data">Optional pointer to a local data object that will be passed as argument in the callback. Set 0/NULL if not needed.</param>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern void SE_RegisterParameterDeclarationCallback(ParameterDeclarationCallback fnPtr, IntPtr user_data);

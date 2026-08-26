@@ -537,8 +537,8 @@ extern "C"
             set parameter values for initial entity states, e.g. s value in lane position. So this callback will happen just
             after parameters has been parsed, but before they are applied, providing an opportunity to control the initial
             states via API.
-            Registered init callbacks are be cleared between SE_Init calls, i.e. needs to be registered
-            @param fnPtr A pointer to the function to be invoked
+            Registered init callbacks are not automatically cleared between SE_Init calls.
+            @param fnPtr A pointer to the function to be invoked. Set 0/NULL to clear any registered callback.
             @param user_data Optional pointer to a local data object that will be passed as argument in the callback. Set 0/NULL if not needed.
     */
     SE_DLL_API void SE_RegisterParameterDeclarationCallback(void (*fnPtr)(void *), void *user_data);
