@@ -61,11 +61,12 @@ namespace scenarioengine
         double           set_speed_                   = 0.0;
         double           current_speed_               = 0.0;
         double           speed_change_factor_         = 1.0;
-        double           steer_factor_                = 1.0;
+        double           steer_filter_                = 0.0;  // [0,1]
         double           lookahead_speed_dist_factor_ = 1.0;
         double           lookahead_steer_dist_factor_ = 1.0;
-        idx_t            sensor_idx_                  = IDX_UNDEFINED;
+        idx_t            speed_sensor_idx_            = IDX_UNDEFINED;
         double           acc_                         = 2.0;  // acceleration/deceleration for speed control
+        DampedSpring     steering_filter_;
     };
 
     Controller* InstantiateControllerFollowRoad(void* args);

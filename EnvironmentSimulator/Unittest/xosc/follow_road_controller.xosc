@@ -20,8 +20,8 @@
             <CatalogReference catalogName="ControllerCatalog" entryName="followRoad">
                <ParameterAssignments>
                   <ParameterAssignment parameterRef="Mode" value="override" />
-                  <ParameterAssignment parameterRef="LookaheadSteerDistFactor" value="1.0" />
-                  <ParameterAssignment parameterRef="SteerFactor" value="1.5" />
+                  <ParameterAssignment parameterRef="LookaheadSteerDistFactor" value="1.5" />
+                  <ParameterAssignment parameterRef="SteerFilter" value="0.2" />
                   <ParameterAssignment parameterRef="LookaheadSpeedDistFactor" value="1.0" />
                   <ParameterAssignment parameterRef="SpeedChangeFactor" value="2.0" />  <!-- set 0.0 to disable speed ctrl -->
                   <ParameterAssignment parameterRef="Acceleration" value="2" />

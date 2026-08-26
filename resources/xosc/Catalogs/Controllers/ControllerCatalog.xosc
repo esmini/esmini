@@ -128,8 +128,8 @@
                 <ParameterDeclaration name="SpeedChangeFactor" parameterType="double" value="1.0" />
                 <!-- scale lookahead distance for steering control -->
                 <ParameterDeclaration name="LookaheadSteerDistFactor" parameterType="double" value="1.0" />
-                <!-- scale steering -->
-                <ParameterDeclaration name="SteerFactor" parameterType="double" value="1.0" />
+                <!-- filter steering [0,1] (0: no filtering, direct steering towards target, 1: full filtering, slow steering) -->
+                <ParameterDeclaration name="SteerFilter" parameterType="double" value="0.2" />
                 <!-- acceleration applied for increasing or decreasing speed, 1.5 m/s^2 for comfort level -->
                 <ParameterDeclaration name="Acceleration" parameterType="double" value="1.5" />
             </ParameterDeclarations>
@@ -139,7 +139,7 @@
                 <Property name="lookaheadSpeedDistFactor"  value="$LookaheadSpeedDistFactor" />
                 <Property name="speedChangeFactor"  value="$SpeedChangeFactor" />
                 <Property name="lookaheadSteerDistFactor"  value="$LookaheadSteerDistFactor" />
-                <Property name="steerFactor"  value="$SteerFactor" />
+                <Property name="steerFilter"  value="$SteerFilter" />
                 <Property name="acceleration"  value="$Acceleration" />
             </Properties>
         </Controller>

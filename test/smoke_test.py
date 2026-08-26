@@ -2702,16 +2702,16 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('^0.000, 0, Ego, 401.000, -241.875, 0.000, 6.283, 0.000, 0.000, 19.444, -0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.000, 0, Ego, 473.105, -241.701, 0.000, 0.057, 0.000, 0.000, 16.459, 0.038, 1.030', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.000, 0, Ego, 504.010, -231.518, 0.000, 0.578, 0.000, 0.000, 16.459, 0.048, 0.835', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 0, Ego, 528.428, -2.527, 0.000, 2.268, 0.000, 0.000, 13.144, 0.246, 5.269', csv, re.MULTILINE))
-        self.assertTrue(re.search('^32.600, 0, Ego, 302.086, 1.837, 0.000, 3.175, 0.000, 0.000, 14.544, 0.081, 1.938', csv, re.MULTILINE))
-        self.assertTrue(re.search('^34.400, 0, Ego, 288.291, -13.083, 0.000, 4.660, 0.000, 0.000, 11.944, 0.051, 4.449', csv, re.MULTILINE))
-        self.assertTrue(re.search('^36.000, 0, Ego, 288.126, -34.833, 0.000, 4.712, 0.000, 0.000, 15.144, 0.000, 4.220', csv, re.MULTILINE))
-        self.assertTrue(re.search('^46.600, 0, Ego, 287.946, -229.792, 0.000, 4.606, 0.000, 0.000, 14.344, -0.151, 1.949', csv, re.MULTILINE))
-        self.assertTrue(re.search('^47.700, 0, Ego, 277.343, -237.751, 0.000, 3.251, 0.000, 0.000, 12.744, -0.081, 5.661', csv, re.MULTILINE))
-        self.assertTrue(re.search('^80.000, 0, Ego, 188.457, -1.875, 0.000, 6.283, 0.000, 0.000, 19.444, -0.000, 3.864', csv, re.MULTILINE))
+        self.assertTrue(re.search('^0.000, 0, Ego, 401.000, -241.875, 0.000, 6.283, 0.000, 0.000, 19.444, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.000, 0, Ego, 473.106, -241.723, 0.000, 0.051, 0.000, 0.000, 16.459, 0.062, 4.961', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.000, 0, Ego, 504.012, -231.556, 0.000, 0.578, 0.000, 0.000, 16.459, 0.081, 4.767', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 0, Ego, 528.681, -2.630, 0.000, 2.239, 0.000, 0.000, 13.144, 0.420, 2.965', csv, re.MULTILINE))
+        self.assertTrue(re.search('^32.600, 0, Ego, 302.161, 1.826, 0.000, 3.174, 0.000, 0.000, 14.644, 0.096, 0.134', csv, re.MULTILINE))
+        self.assertTrue(re.search('^34.400, 0, Ego, 288.292, -13.072, 0.000, 4.672, 0.000, 0.000, 12.044, 0.090, 3.531', csv, re.MULTILINE))
+        self.assertTrue(re.search('^36.000, 0, Ego, 288.127, -34.982, 0.000, 4.713, 0.000, 0.000, 15.244, 0.000, 3.302', csv, re.MULTILINE))
+        self.assertTrue(re.search('^46.600, 0, Ego, 287.889, -230.148, 0.000, 4.593, 0.000, 0.000, 14.344, -0.251, 1.744', csv, re.MULTILINE))
+        self.assertTrue(re.search('^47.700, 0, Ego, 277.187, -237.830, 0.000, 3.203, 0.000, 0.000, 12.944, -0.125, 5.799', csv, re.MULTILINE))
+        self.assertTrue(re.search('^80.000, 0, Ego, 188.436, -1.875, 0.000, 0.000, 0.000, 0.000, 19.444, -0.000, 3.357', csv, re.MULTILINE))
 
 
 if __name__ == "__main__":

@@ -25,6 +25,16 @@
 
 using namespace scenarioengine;
 
+// minimum distance from front axle to the steering lookahead point
+static const double LOOKAHEAD_STEER_FRONT_AXLE_MARGIN = 1.0;
+
+// limit for the angle towards the lookahead point, as seen from front axle
+static const double LOOKAHEAD_STEER_MAX_ANGLE = M_PI_4;
+
+// settings for steering filter, modeled as a damped spring
+static const double MIN_STEERING_TENSION = 10.0;
+static const double MAX_STEERING_TENSION = 200.0;
+
 Controller* scenarioengine::InstantiateControllerFollowRoad(void* args)
 {
     Controller::InitArgs* initArgs = static_cast<Controller::InitArgs*>(args);
@@ -32,7 +42,7 @@ Controller* scenarioengine::InstantiateControllerFollowRoad(void* args)
     return new ControllerFollowRoad(initArgs);
 }
 
-ControllerFollowRoad::ControllerFollowRoad(InitArgs* args) : Controller(args)
+ControllerFollowRoad::ControllerFollowRoad(InitArgs* args) : Controller(args), steering_filter_(0.0, 0.0, 100 * (1 - steer_filter_))
 {
     if (args->properties->ValueExists("lookaheadSpeedDistFactor"))
     {
@@ -49,9 +59,19 @@ ControllerFollowRoad::ControllerFollowRoad(InitArgs* args) : Controller(args)
         lookahead_steer_dist_factor_ = strtod(args->properties->GetValueStr("lookaheadSteerDistFactor"));
     }
 
-    if (args->properties->ValueExists("steerFactor"))
+    if (args->properties->ValueExists("steerFilter"))
     {
-        steer_factor_ = strtod(args->properties->GetValueStr("steerFactor"));
+        steer_filter_ = strtod(args->properties->GetValueStr("steerFilter"));
+        if (steer_filter_ < 0.0 || steer_filter_ > 1.0)
+        {
+            LOG_WARN("ControllerFollowRoad: steerFilter must be in [0,1], got {:.2f}, clamping to {:.2f}",
+                     steer_filter_,
+                     CLAMP(steer_filter_, 0.0, 1.0));
+            steer_filter_ = CLAMP(steer_filter_, 0.0, 1.0);
+        }
+        double tension = MIN_STEERING_TENSION + (MAX_STEERING_TENSION - MIN_STEERING_TENSION) * (1 - steer_filter_);
+        LOG_INFO("ControllerFollowRoad: steerFilter: {:.2f} -> steering tension: {:.2f}", steer_filter_, tension);
+        steering_filter_.SetTension(tension);
     }
 
     if (args->properties->ValueExists("acceleration"))
@@ -59,10 +79,12 @@ ControllerFollowRoad::ControllerFollowRoad(InitArgs* args) : Controller(args)
         acc_ = strtod(args->properties->GetValueStr("acceleration"));
     }
 
-    LOG_INFO("ControllerFollowRoad: lookaheadSpeedDistFactor: {:.2f}, lookaheadSteerDistFactor: {:.2f}, speed_change_factor: {:.2f}",
-             lookahead_speed_dist_factor_,
-             lookahead_steer_dist_factor_,
-             speed_change_factor_);
+    LOG_INFO(
+        "ControllerFollowRoad: lookaheadSpeedDistFactor: {:.2f}, lookaheadSteerDistFactor: {:.2f}, speed_change_factor: {:.2f}, steer_filter: {:.2f}",
+        lookahead_speed_dist_factor_,
+        lookahead_steer_dist_factor_,
+        speed_change_factor_,
+        steer_filter_);
 }
 
 void ControllerFollowRoad::Init()
@@ -75,9 +97,9 @@ void ControllerFollowRoad::Init()
 
     if (!NEAR_ZERO(speed_change_factor_))
     {
-        sensor_idx_ = object_->AddCustomSensor(SE_Color::Color2RBG(SE_Color::Color::RED),
-                                               {object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ()},
-                                               0.5);
+        speed_sensor_idx_ = object_->AddCustomSensor(SE_Color::Color2RBG(SE_Color::Color::RED),
+                                                     {object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ()},
+                                                     0.5);
     }
 
     Controller::Init();
@@ -118,7 +140,7 @@ void ControllerFollowRoad::Step(double timeStep)
         else
         {
             // visualize lookahead speed sensor point
-            object_->SetCustomSensorPosition(sensor_idx_,
+            object_->SetCustomSensorPosition(speed_sensor_idx_,
                                              lookahead_info.road_lane_info.pos[0],
                                              lookahead_info.road_lane_info.pos[1],
                                              lookahead_info.road_lane_info.pos[2]);
@@ -171,8 +193,10 @@ void ControllerFollowRoad::Step(double timeStep)
         vehicle_.SetSpeed(target_speed);
     }
 
-    // steering angle based on relative heading to lookahead point
-    lookahead_steer_dist = 1 + lookahead_steer_dist_factor_ * sqrt(object_->GetSpeed());
+    // steering angle based on angle to lookahead point, as seen from mid front axle
+    double wheelbase              = object_->front_axle_.positionX;
+    double min_lookahead_distance = wheelbase + LOOKAHEAD_STEER_FRONT_AXLE_MARGIN;
+    lookahead_steer_dist          = MAX(1 + lookahead_steer_dist_factor_ * sqrt(object_->GetSpeed()), min_lookahead_distance);
     if (object_->pos_.GetProbeInfo(lookahead_steer_dist, &lookahead_info, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER, true) <
         roadmanager::Position::ReturnCode::OK)
     {
@@ -185,21 +209,54 @@ void ControllerFollowRoad::Step(double timeStep)
                                             lookahead_info.road_lane_info.pos[1],
                                             lookahead_info.road_lane_info.pos[2]);
     }
-    double tuning_scale_factor = 3.0;
-    vehicle_.SetWheelAngle(tuning_scale_factor * steer_factor_ * lookahead_info.relative_h);
+
+    // lookahead point in vehicle coordinate system, origin at mid rear axle
+    double target_x = lookahead_info.relative_pos[0];
+    double target_y = lookahead_info.relative_pos[1];
+
+    if (target_x < min_lookahead_distance)
+    {
+        // move the point along the line from reference point, until it ends up ahead of the front axle
+        if (target_x < SMALL_NUMBER)
+        {
+            // point is not ahead at all, no line to move along, so aim aside
+            target_x = min_lookahead_distance;
+        }
+        else
+        {
+            double scale_factor = min_lookahead_distance / target_x;
+            target_x *= scale_factor;
+            target_y *= scale_factor;
+        }
+    }
+
+    double aim_angle          = atan2(target_y, target_x - wheelbase);  // from front axle to target point
+    double steer_target_angle = CLAMP(aim_angle, -LOOKAHEAD_STEER_MAX_ANGLE, LOOKAHEAD_STEER_MAX_ANGLE);
+
+    if (steer_filter_ > SMALL_NUMBER)
+    {
+        steering_filter_.SetTargetValue(steer_target_angle);
+        steering_filter_.Update(timeStep);
+        vehicle_.SetWheelAngle(steering_filter_.GetValue());
+    }
+    else
+    {
+        vehicle_.SetWheelAngle(steer_target_angle);
+    }
 
     vehicle_.Update(timeStep);
 
     LOG_DEBUG(
-        "road follow ctrl: set_speed: {:.2f} speed_lookahead_dist {:.2f} slowdown factor {:.2f} target speed {:.2f} acc {:.2f} speed {:.2f} steer_lookahead_dist {:.2f} steer_angle {:.2f}",
+        "road follow ctrl: set_speed: {:.2f} speed_lookahead_dist {:.2f} slowdown factor {:.2f} target speed {:.2f} acc {:.2f} speed {:.2f} steer filter: {} steer_lookahead_dist {:.2f} steer_angle {:.2f}",
         set_speed_,
         lookahead_speed_dist,
         slowdown_factor,
         target_speed,
         acc,
         vehicle_.speed_,
+        steer_filter_ > SMALL_NUMBER ? "On" : "Off",
         lookahead_steer_dist,
-        lookahead_info.relative_h);
+        steer_target_angle);
 
     // Register updated vehicle position
     object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
@@ -213,11 +270,13 @@ void ControllerFollowRoad::Step(double timeStep)
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
         object_->wheel_rot_ = vehicle_.wheelRotation_;
+        object_->dirty_.SetBits(Object::DirtyBit::WHEEL_ROTATION);
     }
 
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
         object_->wheel_angle_ = vehicle_.wheelAngle_;
+        object_->dirty_.SetBits(Object::DirtyBit::WHEEL_ANGLE);
     }
 
     Controller::Step(timeStep);
@@ -225,9 +284,10 @@ void ControllerFollowRoad::Step(double timeStep)
 
 int ControllerFollowRoad::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
-    if (mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)] != mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)])
+    if (mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)] == ControlActivationMode::ON &&
+        mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)] == ControlActivationMode::OFF)
     {
-        LOG_ERROR("{} activation mode: lat {} long {}, but is only valid on both domains in combination. Expect strange result.",
+        LOG_ERROR("{} activation mode: lat {} long {}, controller not designed for only longitudinal control. Expect strange result.",
                   GetName(),
                   mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)] == ControlActivationMode::ON ? "On" : "Off",
                   mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)] == ControlActivationMode::ON ? "On" : "Off");
