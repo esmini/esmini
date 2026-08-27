@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2026-08-27 Version 3.7.2
+
+Improvements and fixes:
+- Generate version info for the standalone esminiJS build ([PR #825](https://github.com/esmini/esmini/issues/825))
+- Ignore invalid road-marks beyond s range, preventing crash
+- Clarify parameter callback reset handling ([see esminiLib.hpp](https://github.com/esmini/esmini/blob/739fbb8da2a7eee1c0fb8e4331564e29b4649b19/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L534-L544))
+- Add steering filter to follow road controller
+- Add a few example and utility scripts
+
 ### 2026-08-20 Version 3.7.1
 
 New features:
