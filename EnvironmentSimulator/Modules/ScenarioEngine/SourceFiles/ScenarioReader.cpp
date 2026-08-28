@@ -5564,6 +5564,29 @@ static void SelectCloudState(scenarioengine::CloudState &state, const std::strin
     }
 }
 
+static bool SelectWetness(scenarioengine::WetnessType &wetness, const std::string &wetnessStr)
+{
+    // Helper function for parseOSCEnvironment
+    using scenarioengine::WetnessType;
+    std::map<std::string, WetnessType> wetnessMap{
+        {"dry", WetnessType::DRY},
+        {"moist", WetnessType::MOIST},
+        {"wetWithPuddles", WetnessType::WETWITHPUDDLES},
+        {"lowFlooded", WetnessType::LOWFLOODED},
+        {"highFlooded", WetnessType::HIGHFLOODED},
+    };
+
+    auto it = wetnessMap.find(wetnessStr);
+    if (it == wetnessMap.end())
+    {
+        LOG_WARN("Not valid wetness name:{}, ignoring it", wetnessStr);
+        return false;
+    }
+
+    wetness = it->second;
+    return true;
+}
+
 void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvironment &env)
 {
     for (pugi::xml_node envChild : xml_node.children())
@@ -5756,7 +5779,18 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                 LOG_WARN("Ignorning {} in Envirnoment, mandatory attribute frictionScaleFactor missing", envChildName);
                 continue;
             }
-            env.SetRoadCondition(std::stod(friction));
+
+            std::optional<scenarioengine::WetnessType> wetness;
+            if (const auto &val = parameters.ReadAttribute(envChild, "wetness"); !val.empty())
+            {
+                scenarioengine::WetnessType wetnessType;
+                if (SelectWetness(wetnessType, val))
+                {
+                    wetness = wetnessType;
+                }
+            }
+
+            env.SetRoadCondition(RoadCondition{std::stod(friction), wetness, std::nullopt});
         }
         else
         {

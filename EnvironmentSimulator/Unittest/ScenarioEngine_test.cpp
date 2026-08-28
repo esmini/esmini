@@ -5920,6 +5920,7 @@ TEST(EnvironmentTest, Parsing)
     // Road condition
     pugi::xml_node roadCondNode = envNode.append_child("RoadCondition");
     roadCondNode.append_attribute("frictionScaleFactor").set_value(0.5);
+    roadCondNode.append_attribute("wetness").set_value("wetWithPuddles");
 
     // Test using ScenarioReader
     Entities       entities;
@@ -5969,6 +5970,71 @@ TEST(EnvironmentTest, Parsing)
 
     EXPECT_NEAR(oscEnv.GetRoadCondition().friction_scale_factor, roadCondNode.attribute("frictionScaleFactor").as_double(), 1e-5);
 
+    EXPECT_TRUE(oscEnv.IsWetnessSet());
+    EXPECT_EQ(oscEnv.GetWetness(), scenarioengine::WetnessType::WETWITHPUDDLES);
+    EXPECT_NEAR(oscEnv.GetWaterFilmHeight(), scenarioengine::OSCWetnessWetWithPuddlesWaterFilm, 1e-5);
+
+    delete globalAct;
+}
+
+TEST(EnvironmentTest, Wetness)
+{
+    // Set up mock xml_node
+    pugi::xml_document doc;
+    pugi::xml_node     actionNode    = doc.append_child("Action");
+    pugi::xml_node     envActionNode = actionNode.append_child("EnvironmentAction");
+    pugi::xml_node     envNode       = envActionNode.append_child("Environment");
+    pugi::xml_node     roadCondNode  = envNode.append_child("RoadCondition");
+    roadCondNode.append_attribute("frictionScaleFactor").set_value(1.0);
+    pugi::xml_attribute wetnessAttr = roadCondNode.append_attribute("wetness");
+
+    Entities       entities;
+    Catalogs       catalogs;
+    OSCEnvironment environment;
+    ScenarioReader reader(&entities, &catalogs, &environment);
+
+    // wetness level of OpenSCENARIO mapped to water film height in mm, as reported in OSI lane road condition
+    const std::vector<std::tuple<std::string, scenarioengine::WetnessType, double>> wetness_levels = {
+        {"dry", scenarioengine::WetnessType::DRY, scenarioengine::OSCWetnessDryWaterFilm},
+        {"moist", scenarioengine::WetnessType::MOIST, scenarioengine::OSCWetnessMoistWaterFilm},
+        {"wetWithPuddles", scenarioengine::WetnessType::WETWITHPUDDLES, scenarioengine::OSCWetnessWetWithPuddlesWaterFilm},
+        {"lowFlooded", scenarioengine::WetnessType::LOWFLOODED, scenarioengine::OSCWetnessLowFloodedWaterFilm},
+        {"highFlooded", scenarioengine::WetnessType::HIGHFLOODED, scenarioengine::OSCWetnessHighFloodedWaterFilm}};
+
+    for (const auto& [wetness_str, wetness_type, water_film] : wetness_levels)
+    {
+        wetnessAttr.set_value(wetness_str.c_str());
+
+        OSCGlobalAction*   globalAct = reader.parseOSCGlobalAction(actionNode, nullptr);
+        EnvironmentAction* envAct    = static_cast<EnvironmentAction*>(globalAct);
+        OSCEnvironment     oscEnv    = envAct->new_environment_;
+
+        EXPECT_TRUE(oscEnv.IsWetnessSet());
+        EXPECT_EQ(oscEnv.GetWetness(), wetness_type);
+        EXPECT_NEAR(oscEnv.GetWaterFilmHeight(), water_film, 1e-5);
+
+        delete globalAct;
+    }
+
+    // no wetness given, expect dry road
+    roadCondNode.remove_attribute(wetnessAttr);
+    OSCGlobalAction*   globalAct = reader.parseOSCGlobalAction(actionNode, nullptr);
+    EnvironmentAction* envAct    = static_cast<EnvironmentAction*>(globalAct);
+    OSCEnvironment     oscEnv    = envAct->new_environment_;
+
+    EXPECT_TRUE(oscEnv.IsRoadConditionSet());
+    EXPECT_FALSE(oscEnv.IsWetnessSet());
+    EXPECT_NEAR(oscEnv.GetWaterFilmHeight(), scenarioengine::OSCWetnessDryWaterFilm, 1e-5);
+    delete globalAct;
+
+    // invalid wetness, expect it to be ignored
+    roadCondNode.append_attribute("wetness").set_value("verySoaked");
+    globalAct = reader.parseOSCGlobalAction(actionNode, nullptr);
+    envAct    = static_cast<EnvironmentAction*>(globalAct);
+    oscEnv    = envAct->new_environment_;
+
+    EXPECT_TRUE(oscEnv.IsRoadConditionSet());
+    EXPECT_FALSE(oscEnv.IsWetnessSet());
     delete globalAct;
 }
 

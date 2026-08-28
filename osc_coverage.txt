@@ -59,7 +59,7 @@ OpenSCENARIO
                                         Environment                            Yes
                                             DomeImage (1.2)                    No
                                             Weather                            Yes (with limited visualization)
-                                            RoadCondition                      Yes (frictionScaleFactor only)
+                                            RoadCondition                      Yes (frictionScaleFactor and wetness)
                                         Entity                                 Yes
                                             AddEntityAction                    Yes
                                             DeleteEntityAction                 Yes
@@ -353,7 +353,7 @@ Enumerations
     VehicleCategory                            Yes
     VehicleComponentType (1.2)                 No
     VehicleLightType (1.2)                     No
-    Wetness (1.2)                              No
+    Wetness (1.2)                              Yes (reported as OSI lane surface_water_film)
 
 Extensions:
 

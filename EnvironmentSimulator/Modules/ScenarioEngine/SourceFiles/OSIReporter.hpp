@@ -183,6 +183,11 @@ public:
     */
     void UpdateEnvironmentPrecipitation(const double precipitation_intensity);
 
+    /**
+    Fills the road condition of the lanes
+    */
+    void UpdateEnvironmentRoadCondition(const OSCEnvironment& environment);
+
     std::vector<TrafficCommandStateChange> traffic_command_state_changes_;
 
     void RegisterTrafficCommandStateChange(OSCPrivateAction* action, StoryBoardElement::State state, StoryBoardElement::Transition transition)
@@ -298,6 +303,7 @@ private:
     OSIStaticReportMode                             static_update_mode_ = OSIStaticReportMode::DEFAULT;
     std::vector<std::pair<int, double>>             osi_crop_           = {};       // id, radius
     std::optional<int64_t>                          environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
+    std::optional<double>                           surface_water_film_;            // water film height currently applied to the OSI lanes, in mm
     std::vector<uint8_t>                            has_lightstate_action_ = {};
     google::protobuf::io::GzipOutputStream::Options options_;
     struct

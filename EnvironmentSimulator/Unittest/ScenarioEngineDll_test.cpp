@@ -3959,6 +3959,45 @@ TEST(EnvironmentTest, OSIFrictionScaleFactor)
     SE_Close();
 }
 
+// Check that the OpenSCENARIO RoadCondition wetness is reported as water film height of all OSI lanes
+TEST(EnvironmentTest, OSISurfaceWaterFilm)
+{
+    std::string              scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/environment_test.xosc";
+    const osi3::GroundTruth* osi_gt;
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+    // report the static ground truth, including the lanes, at every frame
+    SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::API);
+
+    osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    auto expect_water_film_of_all_lanes = [&](double water_film)
+    {
+        ASSERT_GT(osi_gt->lane_size(), 0);
+        for (const auto& lane : osi_gt->lane())
+        {
+            EXPECT_TRUE(lane.classification().has_road_condition());
+            EXPECT_NEAR(lane.classification().road_condition().surface_water_film(), water_film, 1E-3);
+        }
+    };
+
+    // no wetness set yet, dry road
+    expect_water_film_of_all_lanes(0.0);
+
+    // the environment actions are reported in the OSI data one frame after being triggered
+    SE_StepDT(1.0);  // environment action with wetness "wetWithPuddles" triggered
+    SE_StepDT(1.0);  // environment action with wetness "highFlooded" triggered
+
+    expect_water_film_of_all_lanes(1.0);
+
+    SE_StepDT(0.1);
+
+    expect_water_film_of_all_lanes(50.0);
+
+    SE_Close();
+}
+
 #else
 TEST(OSI, Tests)
 {

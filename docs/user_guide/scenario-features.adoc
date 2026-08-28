@@ -1025,7 +1025,7 @@ You can define the `EnvironmentAction`, which is a `GlobalAction` directly withi
                 <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
                 <Wind direction="3.1415" speed="10"/>
             </Weather>
-            <RoadCondition frictionScaleFactor="0.9"/>
+            <RoadCondition frictionScaleFactor="0.9" wetness="wetWithPuddles"/>
         </Environment>
     </EnvironmentAction>
 </GlobalAction>
@@ -1049,6 +1049,28 @@ Example scenario using both methods: https://github.com/esmini/esmini/blob/dev/r
 video::-mQUJU1rR2M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 Note that vehicle headlights are currently not considered in the viewer.
+
+==== Road condition
+
+The `RoadCondition` element's `frictionScaleFactor` scales the friction of the https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/11_lanes/11_07_lane_properties.html#sec-8345bf25-d584-4a5b-8fa7-e15c920ab219[OpenDRIVE lane material], see link:scenario-features.html#_friction[Friction].
+
+The optional https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/Wetness.html[`wetness`] attribute is reported as water film height in the https://opensimulationinterface.github.io/osi-antora-generator/asamosi/latest/gen/structosi3_1_1Lane_1_1Classification_1_1RoadCondition.html[OSI lane road condition] (`surface_water_film`), useful e.g. for road spray simulation in sensor models. While the OpenSCENARIO wetness is global, the OSI road condition is defined per lane. Hence the same value is applied to all lanes.
+
+The wetness levels are mapped to the following water film heights:
+
+[cols="1,1", stripes=even]
+|===
+|OpenSCENARIO `wetness`|OSI `surface_water_film` [mm]
+|`dry`|0.0
+|`moist`|0.1
+|`wetWithPuddles`|1.0
+|`lowFlooded`|10.0
+|`highFlooded`|50.0
+|===
+
+If no `wetness` is given, the water film height of all lanes is reported as `0.0` mm, i.e. dry road.
+
+Since the lanes are part of the static OSI ground truth, which by default is reported only in the first frame, a wetness change during the scenario is reflected in the OSI data only when the static ground truth is reported continuously. See option `osi_static_reporting` in link:command-reference.html#_esmini[esmini command reference] or the esminiLib function `SE_SetOSIStaticReportMode()`.
 
 ==== Visual elements affecting the viewer
 
