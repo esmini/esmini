@@ -1,6 +1,7 @@
 macro(set_default_dependency_libs_versions)
     set(DEFAULT_OSI_VERSION "3.5.0")
     set(DEFAULT_IMPLOT_VERSION "0.16")
+    set(DEFAULT_PROJ_VERSION "9.8.1")
 
     set(OSI_VERSION
         "${DEFAULT_OSI_VERSION}"
@@ -11,6 +12,11 @@ macro(set_default_dependency_libs_versions)
         "${DEFAULT_IMPLOT_VERSION}"
         CACHE STRING
             "implot version")
+
+    set(PROJ_VERSION
+        "${DEFAULT_PROJ_VERSION}"
+        CACHE STRING
+            "proj version")
 endmacro()
 
 function(set_tags_from_version)
@@ -32,11 +38,20 @@ function(set_tags_from_version)
         "${DEFAULT_IMPLOT_VERSION}"
         "v0.16_1")
 
+    _map_version_to_release_tag(
+        "proj"
+        "${PROJ_VERSION}"
+        PROJ_RELEASE_TAG
+        PROJ_TAG_URL
+        "${DEFAULT_PROJ_VERSION}"
+        "v9.8.1_1")
+
     # Propigate normal variables up to the parent scope
     set(OSI_RELEASE_TAG "${OSI_RELEASE_TAG}" PARENT_SCOPE)
     set(OSI_TAG_URL "${OSI_TAG_URL}" PARENT_SCOPE)
     set(IMPLOT_RELEASE_TAG "${IMPLOT_RELEASE_TAG}" PARENT_SCOPE)
     set(IMPLOT_TAG_URL "${IMPLOT_TAG_URL}" PARENT_SCOPE)
+    set(PROJ_TAG_URL "${PROJ_TAG_URL}" PARENT_SCOPE)
 
     # Set if tests should run or not based on version and external lib usage flags
     _calculate_test_flag_default(_run_osi_tests USE_OSI "${DEFAULT_OSI_VERSION}" "${OSI_VERSION}")

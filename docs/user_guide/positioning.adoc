@@ -488,3 +488,26 @@ Settings for `m1_audi_q7_2015` (in openx_assets_3d.catalog.xosc):
 * `model_x_offset`: Align the 3D model to the OpenSCENARIO reference point (it's at center in this model)
 * `refpoint_x_offset`: Move the reference point along the vehicle x-axis
 
+=== Geo positioning
+
+From v3.8.0 esmini supports geo positioning, i.e. conversion of any position type to and from geodetic coordinates (latitude, longitude). This is done by utilizing the https://github.com/OSGeo/PROJ[PROJ library]. Geo positioning requires esmini to be built with the CMake option `USE_PROJ` enabled (the default).
+
+We see two main use cases for this feature:
+
+1. Support scenario files involving geo positions, e.g. trajectory points defined in terms of https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/GeoPosition.html[GeoPosition] (latitude,  longitude).
+2. Support object position output in terms of latitude and longitude, e.g. for integration with GPS based navigation systems.
+
+The OpenDRIVE `geoReference` attribute in the OpenDRIVE file specifies the geodetic reference system used for the road network. Based on this reference any x, y position, and hence implicitly any road and lane position, can be converted to latitude and longitude. Conversely, any GeoPosition is automatically converted to world and road coordinates.
+
+A simple example is found in the test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/geo_position_test.xosc[geo_position_test.xosc] / https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xodr/geo_position_test.xodr[geo_position_test.xodr].
+
+Geo position output is provided two ways:
+
+. Automatically coded in OSI moving_object https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1MovingObject.html#a28102f7b1679219e151881c74c716073[source_reference] when the OpenDRIVE file provides a valid `geoReference`, as a string encoding the key,value pair: `geo_pos:<latitude,longitude>` +
++
+example: `"geo_pos:50.111349,8.682214"`
+
+. Function in esminiLib: +
+``int SE_GetGeoPos(int object_id, double *lat, double *lon);`` +
+This function returns `-1` if the object does not exist or the loaded OpenDRIVE file has no usable `geoReference`.
+

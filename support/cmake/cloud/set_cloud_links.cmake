@@ -20,6 +20,8 @@ macro(set_cloud_links)
             https://www.dropbox.com/s/0x8kwztk7nmacs1/sumo_mac.7z?dl=1)
         set(IMPLOT_PACKAGE_URL
             https://github.com/esmini/esmini-dependencies/releases/download/${IMPLOT_TAG_URL}/implot-macos.tar.xz)
+        set(PROJ_PACKAGE_URL
+            https://github.com/esmini/esmini-dependencies/releases/download/${PROJ_TAG_URL}/proj-macos.tar.xz)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1NQlZBTFBWHpu-ImEjJN6CIxvwuinelzL&export=download&authuser=0&confirm=t;
@@ -37,6 +39,8 @@ macro(set_cloud_links)
             https://dl.dropboxusercontent.com/s/si7jsjjsy5bpoym/googletest_linux.7z?dl=1)
         set(IMPLOT_PACKAGE_URL
             https://github.com/esmini/esmini-dependencies/releases/download/${IMPLOT_TAG_URL}/implot-linux.tar.xz)
+        set(PROJ_PACKAGE_URL
+            https://github.com/esmini/esmini-dependencies/releases/download/${PROJ_TAG_URL}/proj-linux.tar.xz)
     elseif(MSVC)
         set(OSG_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=11QIsQkYbY0I8_YsivPH9r7_qqWBqbsfH&export=download&authuser=0&confirm=t;
@@ -54,6 +58,8 @@ macro(set_cloud_links)
             https://dl.dropboxusercontent.com/s/aaiehwzc6woqbc6/googletest_v10.7z?dl=1)
         set(IMPLOT_PACKAGE_URL
             https://github.com/esmini/esmini-dependencies/releases/download/${IMPLOT_TAG_URL}/implot-windows.tar.xz)
+        set(PROJ_PACKAGE_URL
+            https://github.com/esmini/esmini-dependencies/releases/download/${PROJ_TAG_URL}/proj-windows.tar.xz)
     elseif(MINGW)
         message("MinGW, enforcing slimmed esmini")
     else()

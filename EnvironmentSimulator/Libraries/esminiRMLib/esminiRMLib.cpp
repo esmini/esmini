@@ -1053,7 +1053,6 @@ extern "C"
                 rmGeoReference->b_                   = (geoReference->b_);
                 rmGeoReference->ellps_               = geoReference->ellps_.c_str();
                 rmGeoReference->k_                   = (geoReference->k_);
-                rmGeoReference->k_0_                 = (geoReference->k_0_);
                 rmGeoReference->lat_0_               = (geoReference->lat_0_);
                 rmGeoReference->lon_0_               = (geoReference->lon_0_);
                 rmGeoReference->lon_wrap_            = (geoReference->lon_wrap_);

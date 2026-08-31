@@ -1943,7 +1943,7 @@ TEST(GeoReferenceTest, TestNoGeoReferenceSimpleRoad)
     EXPECT_EQ(std::isnan(geo_ref->lat_0_), true);
     EXPECT_EQ(std::isnan(geo_ref->lon_0_), true);
     EXPECT_EQ(geo_ref->proj_, "");
-    EXPECT_EQ(std::isnan(geo_ref->k_0_), true);
+    EXPECT_EQ(std::isnan(geo_ref->k_), true);
     EXPECT_EQ(std::isnan(geo_ref->x_0_), true);
     EXPECT_EQ(std::isnan(geo_ref->y_0_), true);
     EXPECT_EQ(geo_ref->datum_, "");
@@ -1965,10 +1965,10 @@ TEST(GeoReferenceTest, TestGeoReferenceSimpleRoad)
     EXPECT_EQ(odr->GetNumOfRoads(), 1);
 
     GeoReference *geo_ref = odr->GetGeoReference();
-    EXPECT_EQ(geo_ref->lat_0_, 37.35429341239328);
-    EXPECT_EQ(geo_ref->lon_0_, -122.0859797650754);
-    EXPECT_EQ(geo_ref->proj_, "utm");
-    EXPECT_EQ(geo_ref->k_0_, 1);
+    EXPECT_EQ(geo_ref->lat_0_, 50.1109);
+    EXPECT_EQ(geo_ref->lon_0_, 8.6821);
+    EXPECT_EQ(geo_ref->proj_, "tmerc");
+    EXPECT_EQ(geo_ref->k_, 1);
     EXPECT_EQ(geo_ref->x_0_, 0);
     EXPECT_EQ(geo_ref->y_0_, 0);
     EXPECT_EQ(geo_ref->datum_, "WGS84");
@@ -1979,7 +1979,7 @@ TEST(GeoReferenceTest, TestGeoReferenceSimpleRoad)
     EXPECT_EQ(geo_ref->zone_, 32);
 
     std::string geo_ref_str = odr->GetGeoReferenceAsString();
-    EXPECT_EQ(geo_ref_str, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754");
+    EXPECT_EQ(geo_ref_str, "+proj=tmerc +lat_0=50.1109000000000 +lon_0=8.6821000000000");
 }
 
 TEST(ProbeTest, TestProbeSimpleRoad)

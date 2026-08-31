@@ -23,6 +23,7 @@ externals/osi
 externals/sumo
 externals/googletest
 externals/implot
+externals/proj
 resources/models
 Hello-World_coding-example/build
 test/CSharpWrappers/build

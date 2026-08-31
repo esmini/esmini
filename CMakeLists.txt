@@ -80,6 +80,11 @@ set(USE_IMPLOT
     CACHE BOOL
           "If implot for replayer gui or esmini real-time plotting should be compiled.")
 
+set(USE_PROJ
+    ON
+    CACHE BOOL
+          "If PROJ support for geodetic coordinate transformations should be compiled.")
+
 set(BUILD_ODRPLOT
     ON
     CACHE BOOL
@@ -201,6 +206,15 @@ if(DOWNLOAD_EXTERNALS)
         "*"
         "${IMPLOT_PACKAGE_URL}")
 
+    if(USE_PROJ)
+        download(
+            proj
+            ${EXTERNALS_PROJ_PATH}
+            ${EXTERNALS_PROJ_OS_SPECIFIC_PATH}
+            "*"
+            "${PROJ_PACKAGE_URL}")
+    endif()
+
     download(
         models
         ${RESOURCES_PATH}
@@ -244,6 +258,11 @@ endif()
 if(USE_IMPLOT)
     include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/implot.cmake)
     set_implot_libs()
+endif()
+
+if(USE_PROJ)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/external/proj.cmake)
+    set_proj_libs()
 endif()
 
 # ############################### Resolve submodules #################################################################

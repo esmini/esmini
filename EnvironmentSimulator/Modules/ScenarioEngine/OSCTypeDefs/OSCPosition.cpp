@@ -84,6 +84,81 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
     position_.SetInertiaPosMode(x, y, z, h, p, r, None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
 }
 
+OSCPositionGeo::OSCPositionGeo(double         latitude,
+                               double         longitude,
+                               double         altitude,
+                               OSCOrientation orientation,
+                               OSCPosition   *base_on_pos,
+                               bool           apply_odr_offset)
+    : OSCPosition(PositionType::WORLD)
+{
+    roadmanager::OpenDrive *odr = roadmanager::Position::GetOpenDrive();
+    double                  x   = std::nan("");
+    double                  y   = std::nan("");
+
+    if (odr == nullptr || !odr->GeoPositionToCartesian(latitude, longitude, x, y))
+    {
+        LOG_ERROR_AND_QUIT("Failed to transform GeoPosition using OpenDRIVE georeference!\n");
+    }
+
+    if (apply_odr_offset)
+    {
+        const roadmanager::GeoOffset &geo_offset = odr->GetGeoOffset();
+        double                        x1         = x + geo_offset.x_;
+        double                        y1         = y + geo_offset.y_;
+
+        RotateVec2D(x1, y1, geo_offset.hdg_, x, y);
+        if (!std::isnan(altitude))
+        {
+            altitude += geo_offset.z_;
+        }
+        if (!std::isnan(orientation.h_))
+        {
+            orientation.h_ = GetAngleInInterval2PI(orientation.h_ + geo_offset.hdg_);
+        }
+    }
+
+    if (std::isnan(orientation.h_))
+    {
+        roadmanager::Position road_position;
+        if (road_position.XYZ2TrackPos(x, y, std::isnan(altitude) ? 0.0 : altitude) == roadmanager::Position::ReturnCode::OK)
+        {
+            roadmanager::Road *road = odr->GetRoadById(road_position.GetTrackId());
+            if (road != nullptr)
+            {
+                roadmanager::LaneSection *lane_section = road->GetLaneSectionByS(road_position.GetS());
+                if (lane_section != nullptr)
+                {
+                    double      lane_offset = 0.0;
+                    const idx_t lane_index  = lane_section->GetClosestLaneIdx(road_position.GetS(),
+                                                                             road_position.GetT(),
+                                                                             road->GetLaneOffset(road_position.GetS()),
+                                                                             0,
+                                                                             lane_offset,
+                                                                             true);
+                    road_position.SetLanePos(road_position.GetTrackId(), lane_section->GetLaneIdByIdx(lane_index), road_position.GetS(), lane_offset);
+                    orientation.h_    = road_position.GetHRoadInDrivingDirection();
+                    orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
+                }
+            }
+        }
+    }
+
+    if (base_on_pos != nullptr && base_on_pos->type_ == PositionType::WORLD)
+    {
+        position_ = *base_on_pos->GetRMPos();
+    }
+
+    SetPositionModesGeneric(position_, &altitude, nullptr, &orientation);
+    position_.SetInertiaPosMode(x,
+                                y,
+                                altitude,
+                                orientation.h_,
+                                orientation.p_,
+                                orientation.r_,
+                                None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
+}
+
 OSCPositionLane::OSCPositionLane(id_t roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
 {
     SetPositionModesGeneric(position_, nullptr, nullptr, &orientation);

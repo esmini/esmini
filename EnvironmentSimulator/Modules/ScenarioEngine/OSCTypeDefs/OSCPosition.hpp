@@ -116,6 +116,22 @@ namespace scenarioengine
         }
     };
 
+    class OSCPositionGeo : public OSCPosition
+    {
+    public:
+        OSCPositionGeo(double         latitude,
+                       double         longitude,
+                       double         altitude,
+                       OSCOrientation orientation,
+                       OSCPosition   *base_on_pos,
+                       bool           apply_odr_offset);
+
+        void Print()
+        {
+            position_.Print();
+        }
+    };
+
     class OSCPositionLane : public OSCPosition
     {
     public:

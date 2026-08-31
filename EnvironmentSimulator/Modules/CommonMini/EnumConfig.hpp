@@ -100,9 +100,10 @@ namespace esmini_options
         TIME_SCALE,                      // 89
         VIEW_MODE,                       // 90
         HIDE_GHOST,                      // 91
-        GHOST_TRAIL_DT,                  // 92
-        VEHICLE_DYNAMICS,                // 93
-        WIREFRAME,                       // 94
+        RESERVED_92,                     // 92
+        GHOST_TRAIL_DT,                  // 93
+        VEHICLE_DYNAMICS,                // 94
+        WIREFRAME,                       // 95
         VIEW_GHOST_RESTART,              // 95
         EXTENDED,                        // 96
         FILE_REFS,                       // 97

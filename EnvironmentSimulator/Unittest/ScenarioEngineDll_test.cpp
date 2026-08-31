@@ -971,12 +971,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 185928);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 185939);  // initial OSI size, including static content
 
     SE_StepDT(0.001);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 187165);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 187233);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -988,12 +988,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 188565);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 188690);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 189966);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 190148);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1475,17 +1475,17 @@ INSTANTIATE_TEST_SUITE_P(EsminiAPITests,
                                                            14,
                                                            2,
                                                            bounding_box{5.04, 2.0, 1.5, -1.4, 0.0, -0.35},
-                                                           "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"),
+                                                           "+proj=tmerc +lat_0=50.1109000000000 +lon_0=8.6821000000000"),
                                            std::make_tuple("../../../resources/xosc/straight_500m.xosc",
                                                            6,
                                                            2,
                                                            bounding_box{5.0, 2.0, 1.8, -1.4, 0.0, -0.5},
-                                                           "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"),
+                                                           "+proj=tmerc +lat_0=50.1109000000000 +lon_0=8.6821000000000"),
                                            std::make_tuple("../../../resources/xosc/highway_merge.xosc",
                                                            33,
                                                            6,
                                                            bounding_box{5.04, 2.0, 1.5, -1.4, 0.0, -0.35},
-                                                           "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
+                                                           "+proj=tmerc +lat_0=50.1109000000000 +lon_0=8.6821000000000")));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 TEST(GetGroundTruthTests, receive_GroundTruth_no_init)
@@ -1525,7 +1525,12 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     ASSERT_EQ(osi_gt_ptr->moving_object(1).source_reference_size(), 1);
     ASSERT_NE(osi_gt_ptr->moving_object(1).source_reference(0).type().size(), 0);
     EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).type(), "net.asam.openscenario");
+#ifdef _USE_PROJ
+    ASSERT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier_size(), 6);
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(5), "geo_pos:50.110914,8.682519");
+#else
     ASSERT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier_size(), 5);
+#endif  //  _USE_PROJ
     EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(0), "entity_id:1");
     EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(1), "entity_type:Vehicle");
     EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(2), "entity_name:OverTaker");
@@ -1568,7 +1573,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10076);
+    EXPECT_EQ(fileStatus.st_size, 10201);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
@@ -1646,7 +1651,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10067);
+    EXPECT_EQ(fileStatus.st_size, 10192);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
@@ -1716,7 +1721,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10067);
+    EXPECT_EQ(fileStatus.st_size, 10192);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
@@ -1856,7 +1861,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 11277);
+    EXPECT_EQ(fileStatus.st_size, 11459);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
@@ -1891,7 +1896,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 17818);
+    EXPECT_EQ(fileStatus.st_size, 17954);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1909,7 +1914,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7665);
+    EXPECT_EQ(fileStatus.st_size, 7676);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
@@ -6639,6 +6644,52 @@ TEST(APITest, TestGetTimeToCollision)
 
     SE_Close();
 }
+
+#ifdef _USE_PROJ
+TEST(APITest, TestGetGeoPos)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/geo_position_test.xosc";
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    ASSERT_EQ(SE_GetNumberOfObjects(), 1);
+
+    int ego_id = SE_GetId(0);
+
+    SE_ScenarioObjectState state;
+    ASSERT_EQ(SE_GetObjectState(ego_id, &state), 0);
+    EXPECT_NEAR(state.x, 1.004651, 1e-3);
+    EXPECT_NEAR(state.y, -3.750383, 1e-3);
+    EXPECT_NEAR(state.h, 1.404990, 1e-3);
+
+    double lat = 0.0;
+    double lon = 0.0;
+    ASSERT_EQ(SE_GetGeoPos(ego_id, &lat, &lon), 0);
+    EXPECT_NEAR(lat, 57.5653023250059, 1e-6);
+    EXPECT_NEAR(lon, 11.964246786779992, 1e-6);
+
+    // Invalid object id -> error
+    EXPECT_EQ(SE_GetGeoPos(999, &lat, &lon), -1);
+
+    // Null pointer -> error
+    EXPECT_EQ(SE_GetGeoPos(ego_id, nullptr, &lon), -1);
+
+    while (SE_GetSimulationTime() < 3.0 - SMALL_NUMBER)
+    {
+        SE_StepDT(0.1);
+    }
+
+    ASSERT_EQ(SE_GetObjectState(ego_id, &state), 0);
+    EXPECT_NEAR(state.x, 5.956167, 1e-3);
+    EXPECT_NEAR(state.y, 25.838704, 1e-3);
+    EXPECT_NEAR(state.h, 1.404990, 1e-3);
+
+    ASSERT_EQ(SE_GetGeoPos(ego_id, &lat, &lon), 0);
+    EXPECT_NEAR(lat, 57.565568, 1e-4);
+    EXPECT_NEAR(lon, 11.964330, 1e-4);
+
+    SE_Close();
+}
+#endif
 
 INSTANTIATE_TEST_SUITE_P(
     TrailTestPositionModePosition,

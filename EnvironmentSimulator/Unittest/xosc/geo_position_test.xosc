@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="4" date="2026-09-02T10:00:00" description="Test GeoPosition parsing" author="esmini team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/geo_position_test.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="geo_ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="geo_ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <GeoPosition latitudeDeg="57.5653023250059" longitudeDeg="11.964246786779992"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="10"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="end" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="3" rule="greaterOrEqual"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

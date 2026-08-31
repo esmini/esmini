@@ -1387,6 +1387,16 @@ namespace ESMini
         public static extern int SE_GetObjectState(int object_id, out SE_ScenarioObjectState state);
 
         /// <summary>
+        /// Get the geodetic position of a scenario object in latitude/longitude degrees.
+        /// </summary>
+        /// <param name="object_id">Id of the object</param>
+        /// <param name="lat">Pointer to the latitude value to be filled in</param>
+        /// <param name="lon">Pointer to the longitude value to be filled in</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_GetGeoPos(int object_id, out double lat, out double lon);
+
+        /// <summary>
         /// Get the light state of specified object
         /// </summary>
         /// <param name="object_id">Id of the object</param>

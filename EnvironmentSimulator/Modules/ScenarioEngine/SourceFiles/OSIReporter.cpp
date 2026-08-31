@@ -1475,6 +1475,25 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
         }
     }
 
+    auto *odr = roadmanager::Position::GetOpenDrive();
+    if (odr != nullptr)
+    {
+        double lat = 0.0;
+        double lon = 0.0;
+        double x   = obj.pos_.GetX();
+        double y   = obj.pos_.GetY();
+
+        const auto &geo_offset = odr->GetGeoOffset();
+        RotateVec2D(x, y, -geo_offset.hdg_, x, y);
+        x -= geo_offset.x_;
+        y -= geo_offset.y_;
+
+        if (odr->CartesianToGeoPosition(x, y, lat, lon))
+        {
+            source_reference->add_identifier(fmt::format("geo_pos:{:.6f},{:.6f}", lat, lon));
+        }
+    }
+
     // Set outline if available
     for (const auto &p : obj.outline_2d_)
     {

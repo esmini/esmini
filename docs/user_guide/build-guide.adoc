@@ -219,19 +219,20 @@ In above example, `v3.5.0_2` reflects a tag that might change, use the one avail
 
 === Slim esmini - customize configration
 
-The external dependencies OSG, OSI, SUMO and implot are optional. Also the unit test suite is optional, in effect making the dependecy to googletest framework optional as well. All these options are simply controlled by the following cmake options:
+The external dependencies OSG, OSI, SUMO, implot and PROJ are optional. Also the unit test suite is optional, in effect making the dependecy to googletest framework optional as well. All these options are simply controlled by the following cmake options:
 
 - USE_OSG
 - USE_OSI
 - USE_SUMO
 - USE_GTEST
 - USE_IMPLOT
+- USE_PROJ
 
 So, for example, to cut dependency to OSG and SUMO, run:  +
 ``cmake .. -D USE_OSG=False -D USE_SUMO=False``
 
-To disable OSG, SUMO, OSI and googletest, run:  +
-``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False -D USE_IMPLOT=False``
+To disable all run:  +
+``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False -D USE_IMPLOT=False -D USE_PROJ=False``
 
 All options are enabled/True as default.
 

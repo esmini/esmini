@@ -67,3 +67,10 @@ Wheel texture
 https://www.svgrepo.com/svg/321987/car-wheel
 LICENSE: CC Attribution License
 AUTHOR: game-icons.net
+
+PROJ
+https://github.com/OSGeo/PROJ
+
+sqlite
+https://www.sqlite.org/index.html
+LICENSE: Public Domain (see https://www.sqlite.org/copyright.html)

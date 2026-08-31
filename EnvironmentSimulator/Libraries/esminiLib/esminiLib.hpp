@@ -1126,6 +1126,15 @@ extern "C"
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state);
 
     /**
+            Get the geodetic position of a scenario object in latitude/longitude degrees.
+            @param object_id Id of the object
+            @param lat Pointer to the latitude value to be filled in
+            @param lon Pointer to the longitude value to be filled in
+            @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetGeoPos(int object_id, double *lat, double *lon);
+
+    /**
             Get the light state of specified object
             @param object_id Id of the object
             @param light_type Enum specifying the type of light to get the state of

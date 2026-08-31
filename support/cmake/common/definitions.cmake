@@ -30,4 +30,8 @@ macro(set_definitions)
         add_definitions(-D_USE_IMPLOT)
     endif(USE_IMPLOT)
 
+    if(USE_PROJ)
+        add_definitions(-D_USE_PROJ)
+    endif(USE_PROJ)
+
 endmacro()

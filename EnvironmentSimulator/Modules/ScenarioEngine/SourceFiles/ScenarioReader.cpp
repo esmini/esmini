@@ -1923,6 +1923,68 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
 
         pos_return = new OSCPositionWorld(x, y, z, h, p, r, base_on_pos);
     }
+    else if (positionChildName == "GeoPosition")
+    {
+#ifndef _USE_PROJ
+        LOG_ERROR_AND_QUIT("GeoPosition is not supported because PROJ library missing. Please enable USE_PROJ in the build.");
+#endif  // _USE_PROJ
+
+        double         latitude  = std::nan("");
+        double         longitude = std::nan("");
+        double         altitude  = std::nan("");
+        OSCOrientation orientation;
+
+        if (positionChild.attribute("latitudeDeg"))
+        {
+            latitude = strtod(parameters.ReadAttribute(positionChild, "latitudeDeg", true));
+        }
+        else if (positionChild.attribute("latitude"))
+        {
+            latitude = strtod(parameters.ReadAttribute(positionChild, "latitude", true));
+        }
+        if (positionChild.attribute("longitudeDeg"))
+        {
+            longitude = strtod(parameters.ReadAttribute(positionChild, "longitudeDeg", true));
+        }
+        else if (positionChild.attribute("longitude"))
+        {
+            longitude = strtod(parameters.ReadAttribute(positionChild, "longitude", true));
+        }
+        if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_z") && positionChild.attribute("altitude"))
+        {
+            altitude = strtod(parameters.ReadAttribute(positionChild, "altitude", true));
+        }
+        else if (!SE_Env::Inst().GetOptions().GetOptionSet("ignore_z") && positionChild.attribute("height"))
+        {
+            altitude = strtod(parameters.ReadAttribute(positionChild, "height", true));
+        }
+
+        pugi::xml_node orientation_node = positionChild.child("Orientation");
+        if (orientation_node)
+        {
+            parseOSCOrientation(orientation, orientation_node);
+        }
+        if (SE_Env::Inst().GetOptions().GetOptionSet("ignore_p"))
+        {
+            orientation.p_ = std::nan("");
+        }
+        if (SE_Env::Inst().GetOptions().GetOptionSet("ignore_r"))
+        {
+            orientation.r_ = std::nan("");
+        }
+
+        if (std::isnan(latitude) || std::isnan(longitude))
+        {
+            LOG_ERROR_AND_QUIT("Missing latitude or longitude attributes!\n");
+        }
+
+        pos_return = new OSCPositionGeo(latitude,
+                                        longitude,
+                                        altitude,
+                                        orientation,
+                                        base_on_pos,
+                                        !SE_Env::Inst().GetOptions().GetOptionSet("ignore_odr_offset"));
+    }
     else if (positionChildName == "RelativeWorldPosition")
     {
         double dx, dy;

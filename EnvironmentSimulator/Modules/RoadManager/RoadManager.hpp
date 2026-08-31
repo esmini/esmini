@@ -3442,8 +3442,7 @@ namespace roadmanager
         std::string axis_;
         double      b_;
         std::string ellps_;
-        double      k_;
-        double      k_0_;
+        double      k_;  // scale factor, from either +k or +k_0 (aliases in PROJ)
         double      lat_0_;
         double      lon_0_;
         double      lon_wrap_;
@@ -3651,6 +3650,9 @@ namespace roadmanager
         std::string   GetGeoReferenceAsString() const;
         void          ParseGeoLocalization(const std::string &geoLocalization);
 
+        bool GeoPositionToCartesian(double latitude, double longitude, double &x, double &y) const;
+        bool CartesianToGeoPosition(double x, double y, double &latitude, double &longitude) const;
+
         void ParseGeoOffset(const std::string &geo_offset);
 
         bool LoadSignalsByCountry(const std::string &country);
@@ -3739,6 +3741,9 @@ namespace roadmanager
         std::vector<Controller>                   controller_;
         GeoReference                              geo_ref_;
         GeoOffset                                 geo_offset_;
+        void                                     *proj_context_     = nullptr;
+        void                                     *geo_to_cartesian_ = nullptr;
+        void                                     *cartesian_to_geo_ = nullptr;
         std::string                               odr_filename_;
         std::map<std::string, std::string>        signals_types_;
         SpeedUnit                                 speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.

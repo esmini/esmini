@@ -1462,6 +1462,36 @@ extern "C"
         return -1;
     }
 
+    SE_DLL_API int SE_GetGeoPos(int object_id, double *lat, double *lon)
+    {
+        if (player == nullptr || lat == nullptr || lon == nullptr)
+        {
+            return -1;
+        }
+
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+        if (obj == nullptr)
+        {
+            return -1;
+        }
+
+        auto *odr = roadmanager::Position::GetOpenDrive();
+        if (odr == nullptr)
+        {
+            return -1;
+        }
+
+        double x = obj->pos_.GetX();
+        double y = obj->pos_.GetY();
+
+        const auto &geo_offset = odr->GetGeoOffset();
+        RotateVec2D(x, y, -geo_offset.hdg_, x, y);
+        x -= geo_offset.x_;
+        y -= geo_offset.y_;
+
+        return odr->CartesianToGeoPosition(x, y, *lat, *lon) ? 0 : -1;
+    }
+
     SE_DLL_API int SE_GetObjectLightState(int object_id, SE_VehicleLightType light_type, SE_LightState *light_state)
     {
         if (player == nullptr)

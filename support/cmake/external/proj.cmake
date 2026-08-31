@@ -1,0 +1,30 @@
+include_guard()
+
+macro(set_proj_libs)
+    if(APPLE)
+        set(PROJ_LIBRARIES
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/libproj.a
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/libsqlite3.a)
+    elseif(LINUX)
+        set(PROJ_LIBRARIES
+            optimized
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/libproj.a
+            optimized
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/libsqlite3.a
+            debug
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/libprojd.a
+            debug
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/libsqlite3d.a
+            dl)
+    elseif(MSVC)
+        set(PROJ_LIBRARIES
+            optimized
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/proj.lib
+            optimized
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/sqlite3.lib
+            debug
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/projd.lib
+            debug
+            ${EXTERNALS_PROJ_LIBRARY_PATH}/sqlite3d.lib)
+    endif()
+endmacro()

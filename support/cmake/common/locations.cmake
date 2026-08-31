@@ -65,6 +65,8 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/osg)
     set(EXTERNALS_OSI_PATH
         ${EXTERNALS_PATH}/osi/${OSI_RELEASE_TAG})
+    set(EXTERNALS_PROJ_PATH
+        ${EXTERNALS_PATH}/proj)
     set(EXTERNALS_PUGIXML_PATH
         ${EXTERNALS_PATH}/pugixml)
     set(EXTERNALS_SUMO_PATH
@@ -89,6 +91,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_OSG_PATH}/mac)
         set(EXTERNALS_OSI_OS_SPECIFIC_PATH
             ${EXTERNALS_OSI_PATH}/mac)
+        set(EXTERNALS_PROJ_OS_SPECIFIC_PATH
+            ${EXTERNALS_PROJ_PATH}/mac)
         set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
             ${EXTERNALS_SUMO_PATH}/mac)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
@@ -102,6 +106,8 @@ macro(set_project_os_specific_paths)
             ${EXTERNALS_OSG_PATH}/linux)
         set(EXTERNALS_OSI_OS_SPECIFIC_PATH
             ${EXTERNALS_OSI_PATH}/linux)
+        set(EXTERNALS_PROJ_OS_SPECIFIC_PATH
+            ${EXTERNALS_PROJ_PATH}/linux)
         set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
             ${EXTERNALS_SUMO_PATH}/linux)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
@@ -125,6 +131,8 @@ macro(set_project_os_specific_paths)
                 ${EXTERNALS_OSG_PATH}/v10)
             set(EXTERNALS_OSI_OS_SPECIFIC_PATH
                 ${EXTERNALS_OSI_PATH}/v10)
+            set(EXTERNALS_PROJ_OS_SPECIFIC_PATH
+                ${EXTERNALS_PROJ_PATH}/v10)
             set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
                 ${EXTERNALS_SUMO_PATH}/v10)
             set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
@@ -158,6 +166,9 @@ macro(set_project_includes)
     # Split CI output layout for OSI 3.8 artifacts.
     set(EXTERNALS_OSI_INCLUDES
         ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/include)
+
+    set(EXTERNALS_PROJ_INCLUDES
+        ${EXTERNALS_PROJ_OS_SPECIFIC_PATH}/include)
 
     set(EXTERNALS_SUMO_INCLUDES
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
@@ -193,6 +204,9 @@ macro(set_project_library_paths)
         set(EXTERNALS_OSI_LIBRARY_PATH
             ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib)
     endif(DYN_PROTOBUF)
+
+    set(EXTERNALS_PROJ_LIBRARY_PATH
+        ${EXTERNALS_PROJ_OS_SPECIFIC_PATH}/lib)
 
     set(EXTERNALS_SUMO_LIBRARY_PATH
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/lib)

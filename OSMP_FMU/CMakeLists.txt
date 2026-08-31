@@ -73,6 +73,9 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(USE_PROJ
+    ON
+    CACHE BOOL "Link FMU with PROJ support for geodetic coordinate transformations")
 set(LINK_WITH_SHARED_OSI
     OFF
     CACHE BOOL "Link FMU with shared OSI library instead of statically linking")
@@ -139,6 +142,11 @@ if(STATIC_LINKING)
     set(EXTERNALS_SUMO_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib)
     set(EXTERNALS_IMPLOT_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${IMPLOT_RELEASE_TAG}/${EXT_INCL_DIR}/lib)
     set(EXTERNALS_OSI_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${OSI_RELEASE_TAG}/${EXT_INCL_DIR}/lib)
+    if(USE_PROJ)
+        set(EXTERNALS_PROJ_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/proj/${EXT_INCL_DIR}/lib)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/proj.cmake)
+        set_proj_libs()
+    endif()
 
     include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/osi.cmake)
     set_osi_libs()
@@ -173,6 +181,7 @@ if(STATIC_LINKING)
                 ViewerBase${LIB_POSTFIX}
                 RoadGeom${LIB_POSTFIX}
                 RoadManager${LIB_POSTFIX}
+                ${PROJ_LIBRARIES}
                 CommonMini${LIB_POSTFIX}
                 ${OSI_LIBRARIES}
                 ${SUMO_LIBRARIES}

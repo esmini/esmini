@@ -58,6 +58,9 @@
 #include "odrSpiral.h"
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
+#ifdef _USE_PROJ
+#include "proj.h"
+#endif
 
 using namespace std;
 using namespace roadmanager;
@@ -68,12 +71,38 @@ using namespace roadmanager;
 #define OSI_TANGENT_LINE_TOLERANCE 0.01  // [m]
 #define OSI_POINT_DIST_SCALE       1.0
 #define ROADMARK_WIDTH_STANDARD    0.15
-#define ROADMARK_WIDTH_BOLD        0.20
-#define NURBS_STEPLENGTH           1.0
-#define TUNNEL_WALL_THICKNESS      2.0
-#define TUNNEL_ROOF_THICKNESS      2.0
-#define TUNNEL_HEIGHT              4.5
-#define MAX_ROAD_LEN_ERROR         0.1
+
+#ifdef _USE_PROJ
+static std::string GeoReference2D(const std::string& geo_reference)
+{
+    std::stringstream input(geo_reference);
+    std::string       token;
+    std::string       result;
+
+    while (input >> token)
+    {
+        if (token.rfind("+geoidgrids=", 0) == 0 || token.rfind("+vunits=", 0) == 0)
+        {
+            continue;
+        }
+
+        if (!result.empty())
+        {
+            result += " ";
+        }
+        result += token;
+    }
+
+    return result;
+}
+#endif
+
+#define ROADMARK_WIDTH_BOLD   0.20
+#define NURBS_STEPLENGTH      1.0
+#define TUNNEL_WALL_THICKNESS 2.0
+#define TUNNEL_ROOF_THICKNESS 2.0
+#define TUNNEL_HEIGHT         4.5
+#define MAX_ROAD_LEN_ERROR    0.1
 
 const char* object_type_str[] = {"barrier",   "bike",     "building",     "bus",          "car",           "crosswalk",  "gantry",
                                  "motorbike", "none",     "obstacle",     "parkingSpace", "patch",         "pedestrian", "pole",
@@ -3659,6 +3688,15 @@ std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool 
 
 void OpenDrive::Clear()
 {
+#ifdef _USE_PROJ
+    proj_destroy(static_cast<PJ*>(geo_to_cartesian_));
+    proj_destroy(static_cast<PJ*>(cartesian_to_geo_));
+    proj_context_destroy(static_cast<PJ_CONTEXT*>(proj_context_));
+#endif
+    geo_to_cartesian_ = nullptr;
+    cartesian_to_geo_ = nullptr;
+    proj_context_     = nullptr;
+
     ResetGlobalIdCounter();
 
     road_ids_.clear();
@@ -3702,7 +3740,6 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                 "",
                 std::numeric_limits<double>::quiet_NaN(),
                 "",
-                std::numeric_limits<double>::quiet_NaN(),
                 std::numeric_limits<double>::quiet_NaN(),
                 std::numeric_limits<double>::quiet_NaN(),
                 std::numeric_limits<double>::quiet_NaN(),
@@ -7192,13 +7229,10 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
         {
             geo_ref_.ellps_ = attr.second;
         }
-        else if (attr.first == "+k")
+        else if (attr.first == "+k" || attr.first == "+k_0")
         {
+            // +k and +k_0 are aliases for the same scale factor parameter in PROJ
             geo_ref_.k_ = std::stod(attr.second);
-        }
-        else if (attr.first == "+k_0")
-        {
-            geo_ref_.k_0_ = std::stod(attr.second);
         }
         else if (attr.first == "+lat_0")
         {
@@ -7256,9 +7290,8 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
         {
             geo_ref_.towgs84_ = std::stoi(attr.second);
         }
-        else
+        else if (attr.first == "+no_defs")
         {
-            LOG_ERROR("Unsupported geo reference attr: {}", attr.first);
         }
     }
 
@@ -7268,6 +7301,101 @@ void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
         geo_ref_.lat_0_ = 0.0;
         geo_ref_.lon_0_ = 0.0;
     }
+
+#ifdef _USE_PROJ
+    proj_context_ = proj_context_create();
+    if (proj_context_ == nullptr)
+    {
+        LOG_ERROR("Failed to create PROJ context for georeference: '{}'", geoLocalization);
+        return;
+    }
+
+    const std::string geo_reference_2d = GeoReference2D(geoLocalization);
+    PJ* geo_to_cartesian = proj_create_crs_to_crs(static_cast<PJ_CONTEXT*>(proj_context_), "EPSG:4326", geo_reference_2d.c_str(), nullptr);
+    if (geo_to_cartesian == nullptr)
+    {
+        LOG_ERROR("Failed to create PROJ transformation from WGS84 to georeference: '{}'", geoLocalization);
+        return;
+    }
+
+    geo_to_cartesian_ = proj_normalize_for_visualization(static_cast<PJ_CONTEXT*>(proj_context_), geo_to_cartesian);
+    proj_destroy(geo_to_cartesian);
+    if (geo_to_cartesian_ == nullptr)
+    {
+        LOG_ERROR("Failed to normalize PROJ transformation from WGS84 to georeference: '{}'", geoLocalization);
+        return;
+    }
+
+    PJ* cartesian_to_geo = proj_create_crs_to_crs(static_cast<PJ_CONTEXT*>(proj_context_), geo_reference_2d.c_str(), "EPSG:4326", nullptr);
+    if (cartesian_to_geo == nullptr)
+    {
+        LOG_ERROR("Failed to create PROJ transformation from georeference to WGS84: '{}'", geoLocalization);
+        return;
+    }
+
+    cartesian_to_geo_ = proj_normalize_for_visualization(static_cast<PJ_CONTEXT*>(proj_context_), cartesian_to_geo);
+    proj_destroy(cartesian_to_geo);
+    if (cartesian_to_geo_ == nullptr)
+    {
+        LOG_ERROR("Failed to normalize PROJ transformation from georeference to WGS84: '{}'", geoLocalization);
+    }
+#endif
+}
+
+bool OpenDrive::GeoPositionToCartesian(double latitude, double longitude, double& x, double& y) const
+{
+#ifdef _USE_PROJ
+    PJ* transform = static_cast<PJ*>(geo_to_cartesian_);
+    if (transform == nullptr)
+    {
+        return false;
+    }
+
+    PJ_COORD result = proj_trans(transform, PJ_FWD, proj_coord(longitude, latitude, 0.0, 0.0));
+    if (proj_errno(transform) != 0 || !std::isfinite(result.xy.x) || !std::isfinite(result.xy.y))
+    {
+        return false;
+    }
+
+    x = result.xy.x;
+    y = result.xy.y;
+    return true;
+#else
+    LOG_WARN_ONCE("GeoPositionToCartesian is unavailable because esmini was built without USE_PROJ");
+    static_cast<void>(latitude);
+    static_cast<void>(longitude);
+    static_cast<void>(x);
+    static_cast<void>(y);
+    return false;
+#endif
+}
+
+bool OpenDrive::CartesianToGeoPosition(double x, double y, double& latitude, double& longitude) const
+{
+#ifdef _USE_PROJ
+    PJ* transform = static_cast<PJ*>(cartesian_to_geo_);
+    if (transform == nullptr)
+    {
+        return false;
+    }
+
+    PJ_COORD result = proj_trans(transform, PJ_FWD, proj_coord(x, y, 0.0, 0.0));
+    if (proj_errno(transform) != 0 || !std::isfinite(result.lp.lam) || !std::isfinite(result.lp.phi))
+    {
+        return false;
+    }
+
+    longitude = result.lp.lam;
+    latitude  = result.lp.phi;
+    return true;
+#else
+    LOG_WARN_ONCE("CartesianToGeoPosition is unavailable because esmini was built without USE_PROJ");
+    static_cast<void>(x);
+    static_cast<void>(y);
+    static_cast<void>(latitude);
+    static_cast<void>(longitude);
+    return false;
+#endif
 }
 
 std::string OpenDrive::GetGeoOffsetOriginalString() const

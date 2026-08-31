@@ -44,6 +44,12 @@ target_link_libraries(
             project_options
             fmt)
 
+if(USE_PROJ)
+    target_link_libraries(
+        ${TARGET}
+        PUBLIC ${PROJ_LIBRARIES})
+endif()
+
 target_include_directories(
     ${TARGET}
     PRIVATE ${COMMON_MINI_PATH})
@@ -54,6 +60,20 @@ target_include_directories(
     PUBLIC ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_FMT_INCLUDES}
            ${ROAD_MANAGER_PATH})
+
+if(USE_PROJ)
+    target_include_directories(
+        ${TARGET}
+        SYSTEM
+        PUBLIC ${EXTERNALS_PROJ_INCLUDES})
+endif()
+
+if(MSVC
+   AND USE_PROJ)
+    target_compile_definitions(
+        ${TARGET}
+        PRIVATE PROJ_DLL=)
+endif()
 
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})

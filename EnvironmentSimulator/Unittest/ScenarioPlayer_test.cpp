@@ -1392,6 +1392,55 @@ TEST(OSI, TestLanePairingJunctionUnorderedRoads)
     delete player;
 }
 
+#ifdef _USE_PROJ
+TEST(OSI, TestGeoPositionSourceReference)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/geo_position_test.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    Object* geo_ego = player->scenarioEngine->entities_.object_[0];
+    ASSERT_NE(geo_ego, nullptr);
+    EXPECT_NEAR(geo_ego->pos_.GetX(), 1.004651, 1E-3);
+    EXPECT_NEAR(geo_ego->pos_.GetY(), -3.750383, 1E-3);
+    EXPECT_NEAR(geo_ego->pos_.GetH(), 1.404990, 1E-3);
+
+    while (player->scenarioEngine->getSimulationTime() < 3.0 - SMALL_NUMBER)
+    {
+        player->Frame(0.1);
+    }
+
+    EXPECT_NEAR(geo_ego->pos_.GetX(), 5.956167, 1E-3);
+    EXPECT_NEAR(geo_ego->pos_.GetY(), 25.838704, 1E-3);
+    EXPECT_NEAR(geo_ego->pos_.GetH(), 1.404990, 1E-3);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+    ASSERT_EQ(osi_gt_ptr->moving_object_size(), 1);
+
+    bool found_geo_pos = false;
+    for (int i = 0; i < osi_gt_ptr->moving_object(0).source_reference_size(); ++i)
+    {
+        for (int j = 0; j < osi_gt_ptr->moving_object(0).source_reference(i).identifier_size(); ++j)
+        {
+            if (osi_gt_ptr->moving_object(0).source_reference(i).identifier(j).find("geo_pos:") == 0)
+            {
+                found_geo_pos = true;
+                break;
+            }
+        }
+    }
+    EXPECT_TRUE(found_geo_pos);
+
+    delete player;
+}
+#endif
+
 TEST(OSI, TestGeoOffset)
 {
     const char* args[] =
