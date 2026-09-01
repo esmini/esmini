@@ -22,6 +22,7 @@ SCHEMA_MAPPINGS = {
         "1": "OpenSCENARIOv1.1.1.xsd",
         "2": "OpenSCENARIOv1.2.xsd",
         "3": "OpenSCENARIOv1.3.xsd",
+        "4": "OpenSCENARIOv1.4.xsd",
     },
     "xodr": {
         "4": "OpenDRIVE_1.4H.xsd",
