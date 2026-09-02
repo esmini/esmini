@@ -1899,19 +1899,19 @@ int OSIReporter::UpdateOSIIntersection()
                                                 ->GetLaneRoadMarkTypeByIdx(0)
                                                 ->GetLaneRoadMarkTypeLineByIdx(0)
                                                 ->GetOSIPoints();
-                                length    = connecting_road->GetLaneSectionByS(0, 0)
-                                                ->GetLaneById(-l_id)
-                                                ->GetLaneRoadMarkByIdx(0)
-                                                ->GetLaneRoadMarkTypeByIdx(0)
-                                                ->GetLaneRoadMarkTypeLineByIdx(0)
-                                                ->GetOSIPoints()
-                                                ->GetLength();
-                                g_id      = connecting_road->GetLaneSectionByS(0, 0)
-                                                ->GetLaneById(-l_id)
-                                                ->GetLaneRoadMarkByIdx(0)
-                                                ->GetLaneRoadMarkTypeByIdx(0)
-                                                ->GetLaneRoadMarkTypeLineByIdx(0)
-                                                ->GetGlobalId();
+                                length = connecting_road->GetLaneSectionByS(0, 0)
+                                             ->GetLaneById(-l_id)
+                                             ->GetLaneRoadMarkByIdx(0)
+                                             ->GetLaneRoadMarkTypeByIdx(0)
+                                             ->GetLaneRoadMarkTypeLineByIdx(0)
+                                             ->GetOSIPoints()
+                                             ->GetLength();
+                                g_id = connecting_road->GetLaneSectionByS(0, 0)
+                                           ->GetLaneById(-l_id)
+                                           ->GetLaneRoadMarkByIdx(0)
+                                           ->GetLaneRoadMarkTypeByIdx(0)
+                                           ->GetLaneRoadMarkTypeLineByIdx(0)
+                                           ->GetGlobalId();
                             }
                             if ((right_lane_struct.length > length) || (fabs(right_lane_struct.length - length) < tolerance))
                             {
@@ -1939,19 +1939,19 @@ int OSIReporter::UpdateOSIIntersection()
                                                 ->GetLaneRoadMarkTypeByIdx(0)
                                                 ->GetLaneRoadMarkTypeLineByIdx(0)
                                                 ->GetOSIPoints();
-                                length    = connecting_road->GetLaneSectionByS(0, 0)
-                                                ->GetLaneById(l_id)
-                                                ->GetLaneRoadMarkByIdx(0)
-                                                ->GetLaneRoadMarkTypeByIdx(0)
-                                                ->GetLaneRoadMarkTypeLineByIdx(0)
-                                                ->GetOSIPoints()
-                                                ->GetLength();
-                                g_id      = connecting_road->GetLaneSectionByS(0, 0)
-                                                ->GetLaneById(l_id)
-                                                ->GetLaneRoadMarkByIdx(0)
-                                                ->GetLaneRoadMarkTypeByIdx(0)
-                                                ->GetLaneRoadMarkTypeLineByIdx(0)
-                                                ->GetGlobalId();
+                                length = connecting_road->GetLaneSectionByS(0, 0)
+                                             ->GetLaneById(l_id)
+                                             ->GetLaneRoadMarkByIdx(0)
+                                             ->GetLaneRoadMarkTypeByIdx(0)
+                                             ->GetLaneRoadMarkTypeLineByIdx(0)
+                                             ->GetOSIPoints()
+                                             ->GetLength();
+                                g_id = connecting_road->GetLaneSectionByS(0, 0)
+                                           ->GetLaneById(l_id)
+                                           ->GetLaneRoadMarkByIdx(0)
+                                           ->GetLaneRoadMarkTypeByIdx(0)
+                                           ->GetLaneRoadMarkTypeLineByIdx(0)
+                                           ->GetGlobalId();
                             }
                             if ((left_lane_struct.length > length) || (fabs(right_lane_struct.length - length) < tolerance))
                             {

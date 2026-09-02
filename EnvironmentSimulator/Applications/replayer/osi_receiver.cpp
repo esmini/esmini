@@ -22,7 +22,7 @@
 
 #ifndef _WINDOWS
 #include <unistd.h>
-#define Sleep(x) usleep((x) * 1000)
+#define Sleep(x) usleep((x)*1000)
 #endif
 
 static bool quit;
