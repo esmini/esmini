@@ -33,7 +33,18 @@
 #include <map>
 #include <math.h>
 
-#define DEFAULT_OSI_TRACE_FILENAME "ground_truth.osi"
+#define DEFAULT_OSI_TRACE_FILENAME  "ground_truth.osi"
+
+#define DEFAULT_OSI_OUT_PORT 48198
+#define MINIMUM_OSI_OUT_PORT 1024
+#define MAXIMUM_OSI_OUT_PORT 65536
+
+#define DEFAULT_OSI_UDP_DATA_SIZE 8192
+// Note: maximum size is datagram payload size (65507) minus 4 bytes for counter and 4 bytes for datasize
+//       If UDP packet schema changes, this value must be updated accordingly.
+#define MAXIMUM_OSI_UDP_DATA_SIZE (65507 - sizeof(int) - sizeof(unsigned int))
+// Note: minimum size is less than common MTU (1500). It makes no sense to set it lower.
+#define MINIMUM_OSI_UDP_DATA_SIZE (1472 - sizeof(int) - sizeof(unsigned int))
 
 using namespace scenarioengine;
 
@@ -217,6 +228,7 @@ public:
     idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
     osi3::Lane*       GetOSILaneFromGlobalId(id_t g_id);
     SE_SOCKET         OpenSocket(std::string ipaddr);
+    SE_SOCKET         OpenSocket(std::string ipaddr, unsigned int port, unsigned int max_data_size);
     void              SerializeDynamicData();
     void              SerializeDynamicAndStaticData();
     void              AddTrafficLightToGt(osi3::GroundTruth* gt, roadmanager::Signal* signal);
@@ -284,6 +296,7 @@ public:
 
 private:
     UDPClient*                                      udp_client_;
+    unsigned int                                    udp_data_size_ = DEFAULT_OSI_UDP_DATA_SIZE;
     ScenarioEngine*                                 scenario_engine_;
     std::ofstream                                   osi_file;
     int*                                            osi_update_counter_ = nullptr;
