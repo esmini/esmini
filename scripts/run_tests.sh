@@ -155,6 +155,10 @@ if [[ "$skip_smoke_test" == false ]]; then
         if ! ${PYTHON} asam_osc_examples_suite.py -t $timeout; then
             exit_with_msg "asam_osc_examples_suite test failed"
         fi
+    echo $'\n'Run OSI UDP test suite:
+
+    if ! ${PYTHON} osi_udp_test.py -t $timeout; then
+        exit_with_msg "osi_udp_test failed"
     fi
 fi
 
