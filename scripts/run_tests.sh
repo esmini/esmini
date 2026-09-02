@@ -148,6 +148,12 @@ if [[ "$skip_smoke_test" == false ]]; then
     if ! ${PYTHON} ncap_suite.py -t $timeout; then
         exit_with_msg "ncap_suite test failed"
     fi
+
+    echo $'\n'Run OSI UDP test suite:
+
+    if ! ${PYTHON} osi_udp_test.py -t $timeout; then
+        exit_with_msg "osi_udp_test failed"
+    fi
 fi
 
 if  [[ "$add_performance_test" == true ]] && [[ "$build_type" == "Release" ]]; then
