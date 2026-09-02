@@ -186,9 +186,9 @@ OSIReporter::~OSIReporter()
 
 SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr)
 {
-    udp_client_ = new UDPClient(DEFAULT_OSI_OUT_PORT, ipaddr);
+    udp_client_    = new UDPClient(DEFAULT_OSI_OUT_PORT, ipaddr);
     udp_data_size_ = DEFAULT_OSI_UDP_DATA_SIZE;
-    
+
     return udp_client_->GetStatus();
 }
 
@@ -206,10 +206,14 @@ SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr, unsigned int port, unsigne
     }
     if (port < MINIMUM_OSI_OUT_PORT || port > MAXIMUM_OSI_OUT_PORT)
     {
-        LOG_WARN("Requested OSI UDP port {} is outside allowed range [{}, {}], using default port {}", port, MINIMUM_OSI_OUT_PORT, MAXIMUM_OSI_OUT_PORT, DEFAULT_OSI_OUT_PORT);
+        LOG_WARN("Requested OSI UDP port {} is outside allowed range [{}, {}], using default port {}",
+                 port,
+                 MINIMUM_OSI_OUT_PORT,
+                 MAXIMUM_OSI_OUT_PORT,
+                 DEFAULT_OSI_OUT_PORT);
         port = DEFAULT_OSI_OUT_PORT;
     }
-    udp_client_ = new UDPClient(port, ipaddr);
+    udp_client_    = new UDPClient(port, ipaddr);
     udp_data_size_ = max_data_size;
 
     return udp_client_->GetStatus();
@@ -1895,19 +1899,19 @@ int OSIReporter::UpdateOSIIntersection()
                                                 ->GetLaneRoadMarkTypeByIdx(0)
                                                 ->GetLaneRoadMarkTypeLineByIdx(0)
                                                 ->GetOSIPoints();
-                                length = connecting_road->GetLaneSectionByS(0, 0)
-                                             ->GetLaneById(-l_id)
-                                             ->GetLaneRoadMarkByIdx(0)
-                                             ->GetLaneRoadMarkTypeByIdx(0)
-                                             ->GetLaneRoadMarkTypeLineByIdx(0)
-                                             ->GetOSIPoints()
-                                             ->GetLength();
-                                g_id = connecting_road->GetLaneSectionByS(0, 0)
-                                           ->GetLaneById(-l_id)
-                                           ->GetLaneRoadMarkByIdx(0)
-                                           ->GetLaneRoadMarkTypeByIdx(0)
-                                           ->GetLaneRoadMarkTypeLineByIdx(0)
-                                           ->GetGlobalId();
+                                length    = connecting_road->GetLaneSectionByS(0, 0)
+                                                ->GetLaneById(-l_id)
+                                                ->GetLaneRoadMarkByIdx(0)
+                                                ->GetLaneRoadMarkTypeByIdx(0)
+                                                ->GetLaneRoadMarkTypeLineByIdx(0)
+                                                ->GetOSIPoints()
+                                                ->GetLength();
+                                g_id      = connecting_road->GetLaneSectionByS(0, 0)
+                                                ->GetLaneById(-l_id)
+                                                ->GetLaneRoadMarkByIdx(0)
+                                                ->GetLaneRoadMarkTypeByIdx(0)
+                                                ->GetLaneRoadMarkTypeLineByIdx(0)
+                                                ->GetGlobalId();
                             }
                             if ((right_lane_struct.length > length) || (fabs(right_lane_struct.length - length) < tolerance))
                             {
@@ -1935,19 +1939,19 @@ int OSIReporter::UpdateOSIIntersection()
                                                 ->GetLaneRoadMarkTypeByIdx(0)
                                                 ->GetLaneRoadMarkTypeLineByIdx(0)
                                                 ->GetOSIPoints();
-                                length = connecting_road->GetLaneSectionByS(0, 0)
-                                             ->GetLaneById(l_id)
-                                             ->GetLaneRoadMarkByIdx(0)
-                                             ->GetLaneRoadMarkTypeByIdx(0)
-                                             ->GetLaneRoadMarkTypeLineByIdx(0)
-                                             ->GetOSIPoints()
-                                             ->GetLength();
-                                g_id = connecting_road->GetLaneSectionByS(0, 0)
-                                           ->GetLaneById(l_id)
-                                           ->GetLaneRoadMarkByIdx(0)
-                                           ->GetLaneRoadMarkTypeByIdx(0)
-                                           ->GetLaneRoadMarkTypeLineByIdx(0)
-                                           ->GetGlobalId();
+                                length    = connecting_road->GetLaneSectionByS(0, 0)
+                                                ->GetLaneById(l_id)
+                                                ->GetLaneRoadMarkByIdx(0)
+                                                ->GetLaneRoadMarkTypeByIdx(0)
+                                                ->GetLaneRoadMarkTypeLineByIdx(0)
+                                                ->GetOSIPoints()
+                                                ->GetLength();
+                                g_id      = connecting_road->GetLaneSectionByS(0, 0)
+                                                ->GetLaneById(l_id)
+                                                ->GetLaneRoadMarkByIdx(0)
+                                                ->GetLaneRoadMarkTypeByIdx(0)
+                                                ->GetLaneRoadMarkTypeLineByIdx(0)
+                                                ->GetGlobalId();
                             }
                             if ((left_lane_struct.length > length) || (fabs(right_lane_struct.length - length) < tolerance))
                             {

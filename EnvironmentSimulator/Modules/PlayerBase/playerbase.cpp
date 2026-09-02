@@ -1578,9 +1578,9 @@ int ScenarioPlayer::Init()
                   "0");
     opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
     opt.AddOption("osi_receiver_port", "Port where to send OSI UDP packages (1025 .. 65535)", "port", std::to_string(DEFAULT_OSI_OUT_PORT));
-    opt.AddOption("osi_receiver_udp_data_size", 
-                  "Maximum bytes for OSI data to send as UDP packets, before fragmentation (1024 .. 65499)", 
-                  "size", 
+    opt.AddOption("osi_receiver_udp_data_size",
+                  "Maximum bytes for OSI data to send as UDP packets, before fragmentation (1024 .. 65499)",
+                  "size",
                   std::to_string(DEFAULT_OSI_UDP_DATA_SIZE));
 #endif
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
@@ -1953,9 +1953,9 @@ int ScenarioPlayer::Init()
     odr_manager = scenarioEngine->getRoadManager();
 
 #ifdef _USE_OSI
-    unsigned int osi_port = DEFAULT_OSI_OUT_PORT;
+    unsigned int osi_port            = DEFAULT_OSI_OUT_PORT;
     unsigned int osi_udp_packet_size = DEFAULT_OSI_UDP_DATA_SIZE;
-    
+
     osiReporter = new OSIReporter(scenarioEngine);
     osiReporter->SetCounterPtr(&frame_counter_);
     osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());

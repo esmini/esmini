@@ -33,7 +33,7 @@
 #include <map>
 #include <math.h>
 
-#define DEFAULT_OSI_TRACE_FILENAME  "ground_truth.osi"
+#define DEFAULT_OSI_TRACE_FILENAME "ground_truth.osi"
 
 #define DEFAULT_OSI_OUT_PORT 48198
 #define MINIMUM_OSI_OUT_PORT 1024
