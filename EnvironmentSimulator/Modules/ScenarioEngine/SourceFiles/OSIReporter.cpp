@@ -186,7 +186,7 @@ OSIReporter::~OSIReporter()
 
 SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr)
 {
-    udp_client_    = new UDPClient(DEFAULT_OSI_OUT_PORT, ipaddr);
+    udp_client_    = new UDPClient((unsigned short)(DEFAULT_OSI_OUT_PORT), ipaddr);
     udp_data_size_ = DEFAULT_OSI_UDP_DATA_SIZE;
 
     return udp_client_->GetStatus();
@@ -213,7 +213,7 @@ SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr, unsigned int port, unsigne
                  DEFAULT_OSI_OUT_PORT);
         port = DEFAULT_OSI_OUT_PORT;
     }
-    udp_client_    = new UDPClient(port, ipaddr);
+    udp_client_    = new UDPClient((unsigned short)port, ipaddr);
     udp_data_size_ = max_data_size;
 
     return udp_client_->GetStatus();
