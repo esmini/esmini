@@ -3023,6 +3023,35 @@ RMObject::ObjectType RMObject::Str2Type(std::string type)
     return RMObject::ObjectType::NONE;
 }
 
+void RMObject::SetColorFromHexString(std::string color)
+{
+    if (color.length() == 7 && color[0] == '#')
+    {
+        // Convert hex string to RGBA values
+        unsigned int      r, g, b;
+        std::stringstream ss;
+        ss << std::hex << color.substr(1, 2);
+        ss >> r;
+        ss.clear();
+        ss.str("");
+        ss << std::hex << color.substr(3, 2);
+        ss >> g;
+        ss.clear();
+        ss.str("");
+        ss << std::hex << color.substr(5, 2);
+        ss >> b;
+        // Normalize to [0, 1] range
+        color_[0] = static_cast<double>(r) / 255.0;
+        color_[1] = static_cast<double>(g) / 255.0;
+        color_[2] = static_cast<double>(b) / 255.0;
+        color_[3] = 1.0;  // Set alpha to fully opaque
+    }
+    else
+    {
+        LOG_ERROR("Invalid hex color string: {}", color);
+    }
+}
+
 double Road::GetLaneOffset(double s) const
 {
     unsigned int i = 0;
@@ -5371,6 +5400,21 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     else if (key == "textureScale")
                     {
                         obj->SetTextureScale(AVOID_ZERO(userDataNode.attribute("value").as_double()));
+                    }
+                    else if (key == "color")
+                    {
+                        std::string color = userDataNode.attribute("value").as_string();
+                        if (!color.empty())
+                        {
+                            if (color[0] != '#' || color.size() != 7)
+                            {
+                                LOG_ERROR("Property: color format invalid, shall be #RRGGBB, skipping");
+                            }
+                            else
+                            {
+                                obj->SetColorFromRGB(HexToDouble(color));
+                            }
+                        }
                     }
                     else
                     {

@@ -1,6 +1,8 @@
 
 #include <gtest/gtest.h>
 
+#include <tuple>
+
 #include "CommonMini.hpp"
 #include "logger.hpp"
 #include "esminiLib.hpp"
@@ -487,6 +489,26 @@ TEST(FilenameOperations, TestNormalizePath)
     EXPECT_EQ(LexicallyNormalizePath("..//file.txt"), "../file.txt");
     EXPECT_EQ(LexicallyNormalizePath("/../a"), "/a");
     EXPECT_EQ(LexicallyNormalizePath("/a/b/c/../../.."), "/");
+}
+
+TEST(ColorFunctions, TestConvertFromHexToDouble)
+{
+    Rgb rgb;
+
+    rgb = HexToDouble("#000000");
+    EXPECT_EQ(std::make_tuple(rgb.r, rgb.g, rgb.b), std::make_tuple(0.0, 0.0, 0.0));
+
+    rgb = HexToDouble("#FFFFFF");
+    EXPECT_EQ(std::make_tuple(rgb.r, rgb.g, rgb.b), std::make_tuple(1.0, 1.0, 1.0));
+
+    rgb = HexToDouble("#01070E");
+    EXPECT_EQ(std::make_tuple(rgb.r, rgb.g, rgb.b), std::make_tuple(1.0 / 255.0, 7.0 / 255.0, 14.0 / 255.0));
+
+    rgb = HexToDouble("01070E");  // Too few characters, should return white
+    EXPECT_EQ(std::make_tuple(rgb.r, rgb.g, rgb.b), std::make_tuple(1.0, 1.0, 1.0));
+
+    rgb = HexToDouble("01070EAA");  // too many characters, should return white
+    EXPECT_EQ(std::make_tuple(rgb.r, rgb.g, rgb.b), std::make_tuple(1.0, 1.0, 1.0));
 }
 
 int main(int argc, char** argv)

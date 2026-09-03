@@ -400,9 +400,9 @@ int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt);
 const char* esmini_git_rev(void);
 
 /**
-    Convert hex to rgb color. If normalize is true returns each channel in [0, 1], otherwise in [0, 255].
+    Convert hex (#RRGGBB) to rgb color ([0.0,1.0], [0.0,1.0], [0.0,1.0]).
  */
-Rgb HexToDouble(const std::string& hex, bool normalize);
+Rgb HexToDouble(const std::string& hex);
 
 /**
     Increments a counter to keep ID's unique and global.

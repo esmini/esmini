@@ -2850,6 +2850,14 @@ namespace roadmanager
         {
             texture_scale_ = scale;
         }
+        void SetColorFromHexString(std::string color);
+        void SetColorFromRGB(const Rgb &rgb)
+        {
+            color_[0] = rgb.r;
+            color_[1] = rgb.g;
+            color_[2] = rgb.b;
+            color_[3] = 1.0;
+        }
 
     private:
         std::string                name_;

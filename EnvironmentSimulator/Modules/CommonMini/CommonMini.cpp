@@ -98,38 +98,35 @@ const char* esmini_build_version(void)
     return ESMINI_BUILD_VERSION;
 }
 
-Rgb HexToDouble(const std::string& hex, bool normalize)
+Rgb HexToDouble(const std::string& color)
 {
     Rgb rgb = {1.0, 1.0, 1.0};
-    if (hex.size() != 6)
+
+    if (color.length() == 7 && color[0] == '#')
     {
-        return rgb;
+        // Convert hex string to RGBA values
+        unsigned int      r, g, b;
+        std::stringstream ss;
+        ss << std::hex << color.substr(1, 2);
+        ss >> r;
+        ss.clear();
+        ss.str("");
+        ss << std::hex << color.substr(3, 2);
+        ss >> g;
+        ss.clear();
+        ss.str("");
+        ss << std::hex << color.substr(5, 2);
+        ss >> b;
+
+        // Scale to [0, 1] range
+        rgb.r = CLAMP(static_cast<double>(r) / 255.0, 0.0, 1.0);
+        rgb.g = CLAMP(static_cast<double>(g) / 255.0, 0.0, 1.0);
+        rgb.b = CLAMP(static_cast<double>(b) / 255.0, 0.0, 1.0);
     }
-
-    size_t        parsed_chars = 0;
-    unsigned long parsed_value = 0;
-
-    try
+    else
     {
-        parsed_value = std::stoul(hex, &parsed_chars, 16);
+        LOG_ERROR("Invalid hex color string: {}, expecting #RRGGBB", color);
     }
-    catch (...)
-    {
-        return rgb;
-    }
-
-    if (parsed_chars != hex.size())
-    {
-        return rgb;
-    }
-
-    unsigned int hex_val = static_cast<unsigned int>(std::min(parsed_value, 0xFFFFFFul));
-    double       scale   = normalize ? (1.0 / 255.0) : 1.0;
-    double       max_val = normalize ? 1.0 : 255.0;
-
-    rgb = {std::clamp(static_cast<double>((hex_val >> 16) & 0xFF) * scale, 0.0, max_val),
-           std::clamp(static_cast<double>((hex_val >> 8) & 0xFF) * scale, 0.0, max_val),
-           std::clamp(static_cast<double>(hex_val & 0xFF) * scale, 0.0, max_val)};
 
     return rgb;
 }

@@ -1236,7 +1236,5 @@ int main(int argc, char** argv)
         }
     }
 
-    // testing::GTEST_FLAG(filter) = "*check_GroundTruth_including_init_state*";
-
     return RUN_ALL_TESTS();
 }

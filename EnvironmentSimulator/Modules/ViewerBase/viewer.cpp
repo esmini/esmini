@@ -2717,7 +2717,7 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     }
     else
     {
-        auto rgb        = HexToDouble(bb_color, true);
+        auto rgb        = HexToDouble(bb_color);
         custom_color[0] = static_cast<float>(rgb.r);
         custom_color[1] = static_cast<float>(rgb.g);
         custom_color[2] = static_cast<float>(rgb.b);

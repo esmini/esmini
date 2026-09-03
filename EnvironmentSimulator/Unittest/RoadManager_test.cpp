@@ -4721,6 +4721,33 @@ TEST(RoadObjectRepeatTest, RepeatParametersParkingDemo)
     odr->Clear();
 }
 
+TEST(UserDataTest, CheckSomeUserDataEntries)
+{
+    ASSERT_EQ(Position::LoadOpenDrive("../../../resources/xodr/crest-curve.xodr"), true);
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    Road *road = odr->GetRoadById(0);
+    ASSERT_NE(road, nullptr);
+
+    EXPECT_EQ(road->GetNumberOfObjects(), 9);
+
+    RMObject *rmobj = road->GetRoadObject(1);
+    EXPECT_EQ(rmobj->GetId(), 1);
+    EXPECT_EQ(rmobj->GetTextureFilename(), "checkers.png");
+    EXPECT_EQ(rmobj->GetTextureScale(), 0.5);
+
+    rmobj = road->GetRoadObject(2);
+    EXPECT_EQ(rmobj->GetId(), 2);
+    double *color = rmobj->GetColor();
+    EXPECT_EQ(color[0], 0x30 / 255.0);
+    EXPECT_EQ(color[1], 0x90 / 255.0);
+    EXPECT_EQ(color[2], 0xB0 / 255.0);
+    EXPECT_EQ(color[3], 1.0);
+
+    odr->Clear();
+}
+
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*RoadWidthAllLanes*";

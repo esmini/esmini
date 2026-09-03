@@ -79,6 +79,7 @@
                   <cornerLocal u="25.0" v="0.0" z="-0.5" height="10.0"/>
                </outline>
             </outlines>
+            <userData code="color" value="#3090B0"/>  <!-- custom color -->
          </object>
          <object type="none" name="Building2" id="3" s="220" t="15" zOffset="0.00" orientation="none" length="30.0" width="10.0" height="8.0" hdg="-0.15" pitch="0.0" roll="0.00">
             <outlines>

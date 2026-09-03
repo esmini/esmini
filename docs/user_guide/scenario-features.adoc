@@ -602,6 +602,19 @@ The value is a signed distance in metres, applied perpendicular to the edge dire
 
 Markings are kept at the object's floor level (they are not raised with the object height) and, for repeated/scaled objects, follow the possibly-scaled outline edge laterally while preserving their authored line width.
 
+==== Custom color (esmini extension)
+
+The default color of a https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/v1.9.0/specification/13_objects/13_01_introduction.html[road object] is determined by the https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/v1.9.0/specification/16_annexes/enumerations/map_uml_enumerations.html#top-EAID_C47587D0_7173_42df_8BB7_36B2C598D95F[objectType]. To override this, use the `color` `userData` attribute on the `<object>` element. The value should be a hex RGB color code (e.g., `#FF0000` for red).
+
+Example:
+
+[source,xml]
+----
+<object id="1" s="20" t="5" zOffset="0.0" length="5" width="1" height="1">
+   <userData code="color" value="#3090B0"/>  <!-- custom blueish color -->
+</object>
+----
+
 ==== Texture mapping (esmini extension)
 
 While esmini automatically generates default texture mapping coordinates, making it easy to process and use the generated 3D geometry downstream, it does not apply textures to road objects by default.
@@ -617,6 +630,8 @@ Example:
    <userData code="textureScale" value="0.5"/>
 </object>
 ----
+
+*Note*: A texture overrides any color, even when specified in `userData`.
 
 ==== Other attributes
 

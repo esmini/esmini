@@ -775,7 +775,7 @@ namespace scenarioengine
         void SetColor(std::string color)
         {
             color_     = color;
-            color_rgb_ = HexToDouble(color, true);
+            color_rgb_ = HexToDouble(color);
         }
 
         std::string GetColorStr() const
