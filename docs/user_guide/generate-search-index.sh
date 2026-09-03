@@ -70,21 +70,32 @@ extract_title() {
 
 sanitize_text() {
   perl -0777 -pe '
-    s/^include::.*$/ /mg;
-    s/^:.*$/ /mg;
-    s/^ifn?def::.*$/ /mg;
-    s/^endif::.*$/ /mg;
-    s/^toc::\[\].*$/ /mg;
-    s/^=+\s+//mg;
-    s/link:[^\[]+\[([^\]]+)\]/$1/g;
-    s/xref:[^\[]+\[([^\]]+)\]/$1/g;
-    s{https?://\S+}{ }g;
-    s/`{1,2}([^`]+)`{1,2}/$1/g;
-    s/\[[^\]]*\]/ /g;
-    s/[*_+#]/ /g;
+    s/<script\b[^>]*>.*?<\/script>//gsi;
+    s/<style\b[^>]*>.*?<\/style>//gsi;
+    s/<[^>]+>/ /g;
+    s/&(?:nbsp|#160);/ /g;
+    s/&amp;/\&/g;
+    s/&lt;/</g;
+    s/&gt;/>/g;
+    s/&quot;/"/g;
+    s/&#39;/'\''/g;
     s/\s+/ /g;
     s/^\s+|\s+$//g;
   '
+}
+
+render_text() {
+  local file_path="$1"
+  local file_dir
+  local file_name
+  file_dir="$(dirname "$file_path")"
+  file_name="$(basename "$file_path")"
+
+  (
+    cd "$file_dir"
+    sed '/^include::nav\.adoc_\[\]$/d' "$file_name" |
+      asciidoctor --embedded --attribute toc! --out-file - -
+  )
 }
 
 shopt -s nullglob
@@ -110,7 +121,7 @@ IFS=$'\n' read -r -d '' -a files < <(printf '%s\n' "${files[@]}" | sort -u && pr
     file_name="$(basename "$file_path")"
     raw="$(cat "$file_path")"
     title="$(extract_title "$file_name" "$raw")"
-    text="$(printf '%s' "$raw" | sanitize_text)"
+    text="$(render_text "$file_path" | sanitize_text)"
     href="${file_name%.adoc}.html"
 
     escaped_title="$(json_escape "$title")"
