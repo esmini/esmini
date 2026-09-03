@@ -5588,15 +5588,15 @@ TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
     {
         scenario_step(se, dt);
     }
-    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.49, 1E-2);
-    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -3.49, 1E-2);
-    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.03, 1E-2);
-    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 72.0 / 3.6, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.808, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -3.669, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.026, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 20.000, 1E-2);
 
-    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 657.60, 1E-2);
-    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -1.76, 1E-2);
-    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.04, 1E-3);
-    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 72.0 / 3.6, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 660.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -1.926, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.040, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 20.000, 1E-3);
 
     delete se;
 }

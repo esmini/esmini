@@ -865,6 +865,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
                 TrigByEntity* trig = static_cast<TrigByEntity*>(cond);
 
                 if (trig->type_ == TrigByEntity::EntityConditionType::COLLISION || trig->type_ == TrigByEntity::EntityConditionType::REACH_POSITION ||
+                    trig->type_ == TrigByEntity::EntityConditionType::DISTANCE ||
                     trig->type_ == TrigByEntity::EntityConditionType::TRAVELED_DISTANCE || trig->type_ == TrigByEntity::EntityConditionType::SPEED ||
                     trig->type_ == TrigByEntity::EntityConditionType::ACCELERATION || trig->type_ == TrigByEntity::EntityConditionType::END_OF_ROAD ||
                     trig->type_ == TrigByEntity::EntityConditionType::OFF_ROAD || trig->type_ == TrigByEntity::EntityConditionType::STAND_STILL)
