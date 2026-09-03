@@ -9180,7 +9180,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
 
                 if (osi_point_idx_ < search_win / 2)
                 {
-                    if (startLaneSecIdx > 0)
+                    if (startLaneSecIdx > 0 && road->GetId() == track_idx_)
                     {
                         unsigned int n_points = search_win / 2 - osi_point_idx_;  // consider remaining points in previous lane sections
                         // look in previous lane sections
