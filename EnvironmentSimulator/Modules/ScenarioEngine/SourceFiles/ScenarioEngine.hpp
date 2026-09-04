@@ -64,6 +64,12 @@ namespace scenarioengine
             injected_actions_ = injected_actions;
         }
 
+        // Inject a runtime action into the scenario, taking ownership if no external
+        // injected-actions list (e.g. PlayerServer's) has been registered via
+        // SetInjectedActionsPtr (headless library mode). The engine is agnostic to the
+        // action type; callers build the action themselves.
+        int AddInjectedAction(OSCAction *action);
+
         /**
         Step scenario, i.e. evaluate conditions and step actions
         @param deltaSimTime timestep
@@ -187,6 +193,11 @@ namespace scenarioengine
         Vehicle sumotemplate;
         Object *ghost_;
         double  ghost_trail_dt_;
+
+        // Engine-owned injected actions, used only when no external list (e.g. PlayerServer's)
+        // has been registered via SetInjectedActionsPtr. Kept separate so the ScenarioPlayer
+        // path is completely unaffected.
+        std::vector<OSCAction *> owned_injected_actions_;
 
         // Distance map
         struct DistanceMeasurement
