@@ -98,6 +98,13 @@ public:
         return ipAddress_;
     }
 
+    /**
+     * @brief Get the Max UDP Datagram Size for platform
+     *
+     * @return unsigned int maximum size of the datagram
+     */
+    static unsigned int GetMaxUDPDatagramSize();
+
 private:
     std::string ipAddress_;
 };

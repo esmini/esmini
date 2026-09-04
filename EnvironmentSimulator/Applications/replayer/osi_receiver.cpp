@@ -45,7 +45,7 @@ typedef int SE_SOCKET;
 #define OSI_OUT_PORT          48198
 #define ES_SERV_TIMEOUT       500
 #define MAX_MSG_SIZE          1024000
-#define OSI_MAX_UDP_DATA_SIZE 8200
+#define OSI_MAX_UDP_DATA_SIZE 65536
 
 void CloseGracefully(SE_SOCKET socket)
 {

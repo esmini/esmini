@@ -118,6 +118,8 @@ namespace esmini_options
         SAVE_GENERATED_MODEL_VISIBLE,    // 106
         OPTIMIZE_3D_MODEL,               // 107
         DISABLE_SHADOWS,                 // 108
+        OSI_RECEIVER_PORT,               // 109
+        OSI_RECEIVER_UDP_DATA_SIZE,      // 110
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -231,6 +233,8 @@ namespace esmini_options
         {"gui", GUI},
         {"optimize_3d_model", OPTIMIZE_3D_MODEL},
         {"disable_shadows", DISABLE_SHADOWS},
+        {"osi_receiver_port", OSI_RECEIVER_PORT},
+        {"osi_receiver_udp_data_size", OSI_RECEIVER_UDP_DATA_SIZE},
     };
 
     CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key);
