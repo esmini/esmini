@@ -455,7 +455,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
             if (sendResult != packSize)
             {
                 LOG_ERROR("Failed send osi package over UDP");
-                sentDataBytes = osiGroundTruth.size; // Giving up on sending the rest of the data
+                sentDataBytes = osiGroundTruth.size;  // Giving up on sending the rest of the data
             }
             else
             {
