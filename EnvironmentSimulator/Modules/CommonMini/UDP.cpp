@@ -11,6 +11,8 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
+#include <limits.h>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -19,6 +21,14 @@
 #include "UDP.hpp"
 #include "CommonMini.hpp"
 #include "logger.hpp"
+
+#if defined(__APPLE__)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <netinet/in.h>
+#include <netinet/udp.h>
+#include <netinet/udp_var.h>
+#endif
 
 UDPBase::UDPBase(unsigned short int port) : port_(port), sock_(SE_INVALID_SOCKET)
 {
@@ -134,8 +144,44 @@ UDPClient::UDPClient(unsigned short int port, std::string ipAddress) : UDPBase(p
 
 int UDPClient::Send(char* buf, unsigned int size)
 {
-    // TODO:
-    // Casting to int can cause overflow in this situation. Not a good idea.
-    // Let's fix it in a way that we actually return size_t and design the flow like that
-    return static_cast<int>(sendto(sock_, buf, size, 0, reinterpret_cast<struct sockaddr*>(&server_addr_), sizeof(server_addr_)));
+    if (size > GetMaxUDPDatagramSize())
+    {
+        LOG_ERROR("Attempting to send UDP datagram of size {} which exceeds system maximum datagram size {}", size, GetMaxUDPDatagramSize());
+        return -1;
+    }
+    // Here, auto handles different signatures of sendto
+    const auto sent_bytes = sendto(sock_, buf, size, 0, reinterpret_cast<struct sockaddr*>(&server_addr_), sizeof(server_addr_));
+    if (sent_bytes < 0)
+    {
+#ifdef _WIN32
+        LOG_ERROR("sendto failed with WinSOCK error number: {}", WSAGetLastError());
+#else
+        LOG_ERROR("sendto failed with error: {}", strerror(errno));
+#endif
+        return -1;
+    }
+    return static_cast<int>(sent_bytes);
+}
+
+unsigned int UDPClient::GetMaxUDPDatagramSize()
+{
+#if defined(__APPLE__)
+    // NOTE:
+    // C++17 Trick (available for Mac Builds), lambda directly called on static to avoid 
+    // recalling sysctlbyname every time we need to send something over UDP. 
+    // We are caching it the return value in a static, initialized once per C++17 standard.
+    static const unsigned int max_dgram = []
+    {
+        size_t len = sizeof(int);
+        int    max_dgram_;
+        if (sysctlbyname("net.inet.udp.maxdgram", &max_dgram_, &len, nullptr, 0) == 0)
+        {
+            return static_cast<unsigned int>(max_dgram_);
+        }
+        return 9216;  // Default value fallback
+    }();
+    return max_dgram;
+#else
+    return 65507;  // Default value for Windows and Linux
+#endif
 }

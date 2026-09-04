@@ -40,11 +40,10 @@
 #define MAXIMUM_OSI_OUT_PORT 65536
 
 #define DEFAULT_OSI_UDP_DATA_SIZE 8192
-// Note: maximum size is datagram payload size (65507) minus 4 bytes for counter and 4 bytes for datasize
-//       If UDP packet schema changes, this value must be updated accordingly.
-#define MAXIMUM_OSI_UDP_DATA_SIZE (65507 - sizeof(int) - sizeof(unsigned int))
+// Note: maximum size is datagram payload size (65507)
+#define MAXIMUM_OSI_UDP_DATA_SIZE 65507
 // Note: minimum size is less than common MTU (1500). It makes no sense to set it lower.
-#define MINIMUM_OSI_UDP_DATA_SIZE (1472 - sizeof(int) - sizeof(unsigned int))
+#define MINIMUM_OSI_UDP_DATA_SIZE 1400
 
 using namespace scenarioengine;
 

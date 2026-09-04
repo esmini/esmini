@@ -44,6 +44,8 @@ static struct
     char         data[MAXIMUM_OSI_UDP_DATA_SIZE];
 } osi_udp_buf;
 
+constexpr unsigned int osi_udp_buf_header_size = static_cast<unsigned int>(sizeof(osi_udp_buf.counter) + sizeof(osi_udp_buf.datasize));
+
 typedef struct
 {
     std::string  ground_truth;
@@ -194,10 +196,12 @@ SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr)
 
 SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr, unsigned int port, unsigned int max_data_size)
 {
-    if (max_data_size > MAXIMUM_OSI_UDP_DATA_SIZE)
+    // Checks maximum datagram lenght, according to platform (i.e., commonly 65507, normally 9216 for Darwin)
+    const unsigned int platform_max_udp_data_size = UDPClient::GetMaxUDPDatagramSize() - osi_udp_buf_header_size;
+    if (max_data_size > platform_max_udp_data_size)
     {
-        LOG_WARN("Requested OSI UDP data size {} exceeds maximum allowed size {}, using maximum instead", max_data_size, MAXIMUM_OSI_UDP_DATA_SIZE);
-        max_data_size = MAXIMUM_OSI_UDP_DATA_SIZE;
+        LOG_WARN("Requested OSI UDP data size {} exceeds maximum allowed size {}, using maximum instead", max_data_size, platform_max_udp_data_size);
+        max_data_size = platform_max_udp_data_size;
     }
     if (max_data_size < MINIMUM_OSI_UDP_DATA_SIZE)
     {
@@ -438,7 +442,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
         {
             osi_udp_buf.datasize = MIN(osiGroundTruth.size - sentDataBytes, udp_data_size_);
             memcpy(osi_udp_buf.data, &osiGroundTruth.ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
-            int packSize = static_cast<int>(sizeof(osi_udp_buf)) - static_cast<int>((udp_data_size_ - osi_udp_buf.datasize));
+            const int packSize = static_cast<int>(osi_udp_buf_header_size + osi_udp_buf.datasize);
 
             if (sentDataBytes + osi_udp_buf.datasize >= osiGroundTruth.size)
             {
@@ -446,16 +450,12 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
                 osi_udp_buf.counter = -osi_udp_buf.counter;
             }
 
-            int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<unsigned int>(packSize));  // TODO: @Emil
+            int sendResult = udp_client_->Send(reinterpret_cast<char *>(&osi_udp_buf), static_cast<unsigned int>(packSize));
 
             if (sendResult != packSize)
             {
                 LOG_ERROR("Failed send osi package over UDP");
-#ifdef _WIN32
-                wprintf(L"send failed with error: %d\n", WSAGetLastError());
-#endif
-                // Give up
-                sentDataBytes = osiGroundTruth.size;
+                sentDataBytes = osiGroundTruth.size; // Giving up on sending the rest of the data
             }
             else
             {
