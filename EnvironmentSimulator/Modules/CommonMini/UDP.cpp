@@ -170,7 +170,7 @@ unsigned int UDPClient::GetMaxUDPDatagramSize()
     // C++17 Trick (available for Mac Builds), lambda directly called on static to avoid
     // recalling sysctlbyname every time we need to send something over UDP.
     // We are caching it the return value in a static, initialized once per C++17 standard.
-    static const unsigned int max_dgram = []
+    static const unsigned int max_dgram = []() -> unsigned int
     {
         size_t len = sizeof(int);
         int    max_dgram_;
