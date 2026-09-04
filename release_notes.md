@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2026-09-04 Version 3.8.0
+
+New features:
+
+- Add support for GeoPosition
+  - utilizing [proj](https://github.com/OSGeo/PROJ) lib for transformations to/from lat, long
+  - report on OSI per moving_object
+  - brief info in [User guide - Geo positioning](https://esmini.github.io/positioning.html#_geo_positioning)
+- Support custom road object color via userData
+  - brief info in [User guide - Custom color](https://esmini.github.io/scenario-features.html#_custom_color_esmini_extension)
+
+Improvements and fixes:
+- Add osc 1.4 validation support
+- Skip ghost restart on DistanceCondition trigger
+  - handle like the deprecated ReachPositionCondition
+- Fix a nullptr crash in XYZ2TrackPos()
+
 ### 2026-08-27 Version 3.7.2
 
 Improvements and fixes:
