@@ -1384,47 +1384,40 @@ int Object::TimeToCollision(Object*                           target,
         return -1;
     }
 
-    double rel_dist  = LARGE_NUMBER;
-    double rel_speed = 0.0;
+    double rel_dist = LARGE_NUMBER;
 
     if (this->Distance(target, cs, relDistType, freeSpace, rel_dist, maxDist) != 0)
     {
         rel_dist = LARGE_NUMBER;
     }
 
-    if (fabs(target->pos_.GetVelX()) < SMALL_NUMBER && fabs(target->pos_.GetVelY()) < SMALL_NUMBER)
-    {
-        // target standing still, consider only speed of triggering entity
-        rel_speed = this->GetSpeed();
-    }
-    else
-    {
-        double rel_vel[2] = {0.0, 0.0};
-        // Calculate relative speed along target's velocity direction
-        double proj_speed = ProjectPointOnVector2DSignedLength(this->pos_.GetVelX(),
-                                                               this->pos_.GetVelY(),
-                                                               target->pos_.GetVelX(),
-                                                               target->pos_.GetVelY(),
-                                                               rel_vel[0],
-                                                               rel_vel[1]);
+    // Closing speed is the relative velocity projected on the line of sight towards
+    // the target, positive when the gap is shrinking
+    double los_x      = target->pos_.GetX() - this->pos_.GetX();
+    double los_y      = target->pos_.GetY() - this->pos_.GetY();
+    double los_length = sqrt(los_x * los_x + los_y * los_y);
 
-        rel_speed = SIGN(this->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(target->GetSpeed()));
+    double closing_speed = 0.0;
+    if (los_length > SMALL_NUMBER)
+    {
+        double rel_vel_x = this->pos_.GetVelX() - target->pos_.GetVelX();
+        double rel_vel_y = this->pos_.GetVelY() - target->pos_.GetVelY();
+
+        closing_speed = (rel_vel_x * los_x + rel_vel_y * los_y) / los_length;
     }
 
     // TTC not defined for cases:
     //  - no distance between entities
-    //  - moving away from each other
-    if (fabs(rel_dist) < SMALL_NUMBER || fabs(rel_speed) < SMALL_NUMBER)
+    //  - entities not approaching each other
+    if (fabs(rel_dist) < SMALL_NUMBER || closing_speed < SMALL_NUMBER)
     {
         ttc = -1;
     }
     else
     {
-        ttc = rel_dist / rel_speed;
-        if (ttc < 0.0)
-        {
-            ttc = -1.0;
-        }
+        // Distance() is signed by the direction to the target, e.g. negative when behind.
+        // The direction is already covered by the closing speed, use the gap size only
+        ttc = fabs(rel_dist) / closing_speed;
     }
 
     return 0;

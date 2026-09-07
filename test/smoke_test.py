@@ -1777,7 +1777,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('.0.600.* ped_walk_event: true, delay: 0.00, traveled_dist: 6.00 >= 5.00, edge: rising', log)  is not None)
-        self.assertTrue(re.search('.3.800.* brake_Condition: true, delay: 0.00, TTC: 1.20 < 1.20, edge rising', log)  is not None)
+        self.assertTrue(re.search('.3.900.* brake_Condition: true, delay: 0.00, TTC: 1.14 < 1.20, edge rising', log)  is not None)
         self.assertTrue(re.search('.14.400.* QuitCondition: true, delay: 0.00, distance 4.87 < tolerance \\(5.00\\), edge: rising', log)  is not None)
 
         # Check vehicle key positions
@@ -1785,7 +1785,7 @@ class TestSuite(unittest.TestCase):
 
         self.assertTrue(re.search('^0.000, 0, Ego, 42.984, -71.249, 0.000, 1.776, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^0.000, 1, pedestrian_adult, 35.692, -23.629, 0.120, 1.798, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.900, 0, Ego, 34.307, -33.282, 0.000, 1.803, 0.000, 0.000, 9.490, -0.001, 4.469', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.900, 0, Ego, 34.295, -33.232, 0.000, 1.803, 0.000, 0.000, 10.000, -0.001, 4.614', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.900, 1, pedestrian_adult, 34.693, -19.282, 0.120, 1.795, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.100, 1, pedestrian_adult, 34.452, -19.114, 0.120, 2.415, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.200, 1, pedestrian_adult, 34.325, -19.034, 0.120, 2.749, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
@@ -1794,8 +1794,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.500, 1, pedestrian_adult, 33.921, -18.926, 0.120, 3.364, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.200, 1, pedestrian_adult, 32.897, -19.159, 0.120, 3.364, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.300, 1, pedestrian_adult, 32.751, -19.192, 0.000, 3.364, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.600, 0, Ego, 32.406, -25.172, 0.000, 1.799, 0.000, 0.000, 0.820, -0.002, 3.136', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.700, 0, Ego, 32.399, -25.142, 0.000, 1.799, 0.000, 0.000, 0.310, -0.002, 3.225', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.600, 0, Ego, 32.198, -24.278, 0.000, 1.798, 0.000, 0.000, 1.330, -0.002, 5.759', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.700, 0, Ego, 32.180, -24.198, 0.000, 1.798, 0.000, 0.000, 0.820, -0.002, 5.993', csv, re.MULTILINE))
         self.assertTrue(re.search('^9.900, 1, pedestrian_adult, 26.023, -20.722, 0.000, 3.363, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^10.000, 1, pedestrian_adult, 25.876, -20.755, 0.120, 3.363, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^11.000, 1, pedestrian_adult, 24.456, -20.843, 0.120, 2.646, 0.000, 0.000, 1.500, 0.000, 0.000', csv, re.MULTILINE))
