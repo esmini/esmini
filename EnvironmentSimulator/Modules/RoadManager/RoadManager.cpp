@@ -4534,11 +4534,14 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                 continue;
                             }
 
+                            int lane_id = atoi(lane_node->attribute("id").value());
+
                             Lane::LaneType lane_type = Lane::LANE_TYPE_NONE;
-                            if (lane_node->attribute("type") == 0 || !strcmp(lane_node->attribute("type").value(), ""))
+                            if (lane_id != 0 && lane_node->attribute("type") == 0)
                             {
                                 LOG_ERROR("Lane type error");
                             }
+
                             std::string lane_type_str = lane_node->attribute("type").value();
                             if (lane_type_str == "none")
                             {
@@ -4632,12 +4635,10 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                             {
                                 lane_type = Lane::LANE_TYPE_CONNECTING_RAMP;
                             }
-                            else
+                            else if (lane_id != 0)
                             {
                                 LOG_ERROR("unknown lane type: {} (road id={})", lane_type_str, r->GetId());
                             }
-
-                            int lane_id = atoi(lane_node->attribute("id").value());
 
                             // If lane ID == 0, make sure it's not a driving lane
                             if (lane_id == 0 && lane_type == Lane::LANE_TYPE_DRIVING)
