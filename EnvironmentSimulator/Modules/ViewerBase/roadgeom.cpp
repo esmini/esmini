@@ -466,41 +466,25 @@ namespace roadgeom
                                 double       v[3] = {};
 
                                 // right starting point
-                                RotateVec3d(osi_points[q].h, osi_points[q].p, osi_points[q].r, 0.0, w, ROADMARK_Z_OFFSET, v[0], v[1], v[2]);
+                                RotateVec3d(osi_points[q].h, osi_points[q].p, osi_points[q].r, 0.0, w, z_offset, v[0], v[1], v[2]);
                                 l1p0l[0] = osi_points[q].x + v[0] - origin[0];
                                 l1p0l[1] = osi_points[q].y + v[1] - origin[1];
                                 l1p0l[2] = osi_points[q].z + v[2];
 
                                 // left end point
-                                RotateVec3d(osi_points[q + 1].h,
-                                            osi_points[q + 1].p,
-                                            osi_points[q + 1].r,
-                                            0.0,
-                                            w,
-                                            ROADMARK_Z_OFFSET,
-                                            v[0],
-                                            v[1],
-                                            v[2]);
+                                RotateVec3d(osi_points[q + 1].h, osi_points[q + 1].p, osi_points[q + 1].r, 0.0, w, z_offset, v[0], v[1], v[2]);
                                 l1p1l[0] = osi_points[q + 1].x + v[0] - origin[0];
                                 l1p1l[1] = osi_points[q + 1].y + v[1] - origin[1];
                                 l1p1l[2] = osi_points[q + 1].z + v[2];
 
                                 // left starting point
-                                RotateVec3d(osi_points[q].h, osi_points[q].p, osi_points[q].r, 0.0, -w, ROADMARK_Z_OFFSET, v[0], v[1], v[2]);
+                                RotateVec3d(osi_points[q].h, osi_points[q].p, osi_points[q].r, 0.0, -w, z_offset, v[0], v[1], v[2]);
                                 l1p0r[0] = osi_points[q].x + v[0] - origin[0];
                                 l1p0r[1] = osi_points[q].y + v[1] - origin[1];
                                 l1p0r[2] = osi_points[q].z + v[2];
 
                                 // right end point
-                                RotateVec3d(osi_points[q + 1].h,
-                                            osi_points[q + 1].p,
-                                            osi_points[q + 1].r,
-                                            0.0,
-                                            -w,
-                                            ROADMARK_Z_OFFSET,
-                                            v[0],
-                                            v[1],
-                                            v[2]);
+                                RotateVec3d(osi_points[q + 1].h, osi_points[q + 1].p, osi_points[q + 1].r, 0.0, -w, z_offset, v[0], v[1], v[2]);
                                 l1p1r[0] = osi_points[q + 1].x + v[0] - origin[0];
                                 l1p1r[1] = osi_points[q + 1].y + v[1] - origin[1];
                                 l1p1r[2] = osi_points[q + 1].z + v[2];
@@ -513,24 +497,20 @@ namespace roadgeom
                             if (q == startpoint)
                             {
                                 // First point in a line sequence, no adjustment needed
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
-                                                                static_cast<float>(l1p0l[1]),
-                                                                static_cast<float>(osi_points[q].z + z_offset)));
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
-                                                                static_cast<float>(l1p0r[1]),
-                                                                static_cast<float>(osi_points[q].z + z_offset)));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(l1p0l[2])));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(l1p0r[2])));
                             }
                             else if (osi_points[q].endpoint)
                             {
                                 // Last point of a line sequence, no adjustment needed
                                 double* left  = (q < osi_points.size() - 1) ? l1p0l : l1p1l;
                                 double* right = (q < osi_points.size() - 1) ? l1p0r : l1p1r;
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(left[0]),
-                                                                static_cast<float>(left[1]),
-                                                                static_cast<float>(osi_points[q].z + z_offset)));
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(right[0]),
-                                                                static_cast<float>(right[1]),
-                                                                static_cast<float>(osi_points[q].z + z_offset)));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(left[0]), static_cast<float>(left[1]), static_cast<float>(left[2])));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(right[0]), static_cast<float>(right[1]), static_cast<float>(right[2])));
                             }
                             else
                             {
@@ -549,16 +529,14 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
-                                                                    static_cast<float>(isect[1]),
-                                                                    static_cast<float>(osi_points[q].z + z_offset)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(l0p1l[2])));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
-                                                                    static_cast<float>(l1p0l[1]),
-                                                                    static_cast<float>(osi_points[q].z + z_offset)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(l1p0l[2])));
                                 }
 
                                 // right side
@@ -573,16 +551,14 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
-                                                                    static_cast<float>(isect[1]),
-                                                                    static_cast<float>(osi_points[q].z + z_offset)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(l0p1r[2])));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
-                                                                    static_cast<float>(l1p0r[1]),
-                                                                    static_cast<float>(osi_points[q].z + z_offset)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(l1p0r[2])));
                                 }
                             }
 
@@ -996,42 +972,42 @@ namespace roadgeom
                                         break;
                                     }
 
-                                // we have s-value of a OSI point, check if there is a new friction value before that
-                                // also check for maximum length
-                                double s_next_friction     = (friction_s_list_index > -1 && friction_s_list_index < friction_s_list.size())
-                                                                 ? friction_s_list[friction_s_list_index]
-                                                                 : lsec->GetS() + lsec->GetLength();
-                                double s_next_geom_max_len = pivot_s + MAX_GEOM_LENGTH;
+                                    // we have s-value of a OSI point, check if there is a new friction value before that
+                                    // also check for maximum length
+                                    double s_next_friction     = (friction_s_list_index > -1 && friction_s_list_index < friction_s_list.size())
+                                                                     ? friction_s_list[friction_s_list_index]
+                                                                     : lsec->GetS() + lsec->GetLength();
+                                    double s_next_geom_max_len = pivot_s + MAX_GEOM_LENGTH;
 
-                                if (s_next_friction < section_current_s &&
-                                    s_next_friction < s_next_geom_max_len + MIN_GEOM_LENGTH)  // add min geom len to avoid mini patches
-                                {
-                                    section_current_s = s_next_friction;
-                                    friction_s_list_index++;
-                                    break;
-                                }
-                                else if (s_next_geom_max_len < section_current_s - SMALL_NUMBER &&
-                                         s_next_geom_max_len + MIN_GEOM_LENGTH < s_next_friction)
-                                {
-                                    // set next s-value preliminary to max length, but check if there is a OSI point before that
-                                    section_current_s = s_next_geom_max_len;
-
-                                    if (s_list_sorted.size() >= 2)
+                                    if (s_next_friction < section_current_s &&
+                                        s_next_friction < s_next_geom_max_len + MIN_GEOM_LENGTH)  // add min geom len to avoid mini patches
                                     {
-                                        // Find the first element that is strictly greater than the max length
-                                        auto it = std::upper_bound(s_list_sorted.begin() + 1, s_list_sorted.end(), s_next_geom_max_len);
-
-                                        // If we found such an s-value, the loop would have stopped right before it
-                                        if (it != s_list_sorted.end())
-                                        {
-                                            section_current_s = *(it - 1);
-                                        }
+                                        section_current_s = s_next_friction;
+                                        friction_s_list_index++;
+                                        break;
                                     }
-                                    break;
+                                    else if (s_next_geom_max_len < section_current_s - SMALL_NUMBER &&
+                                             s_next_geom_max_len + MIN_GEOM_LENGTH < s_next_friction)
+                                    {
+                                        // set next s-value preliminary to max length, but check if there is a OSI point before that
+                                        section_current_s = s_next_geom_max_len;
+
+                                        if (s_list_sorted.size() >= 2)
+                                        {
+                                            // Find the first element that is strictly greater than the max length
+                                            auto it = std::upper_bound(s_list_sorted.begin() + 1, s_list_sorted.end(), s_next_geom_max_len);
+
+                                            // If we found such an s-value, the loop would have stopped right before it
+                                            if (it != s_list_sorted.end())
+                                            {
+                                                section_current_s = *(it - 1);
+                                            }
+                                        }
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
 
                         if (section_current_s >= lsec->GetS() + effective_length - SMALL_NUMBER)
                         {
@@ -1334,8 +1310,8 @@ namespace roadgeom
             }
 
             // SECOND PASS: Generate lane markings with proper layer precedence
-            // First collect all lane sections by s-coordinate and layer
-            std::map<double, std::vector<roadmanager::LaneSection*>> sections_by_s;
+            // First collect all lane sections by road, s-coordinate, and layer.
+            std::map<std::pair<id_t, double>, std::vector<roadmanager::LaneSection*>> sections_by_road_and_s;
 
             for (size_t i = 0; i < static_cast<unsigned int>(odr->GetNumOfRoads()); i++)
             {
@@ -1343,13 +1319,15 @@ namespace roadgeom
                 for (size_t j = 0; j < static_cast<unsigned int>(road->GetNumberOfLaneSections()); j++)
                 {
                     roadmanager::LaneSection* lsec = road->GetLaneSectionByIdx(static_cast<int>(j));
-                    sections_by_s[lsec->GetS()].push_back(lsec);
+                    sections_by_road_and_s[{road->GetId(), lsec->GetS()}].push_back(lsec);
                 }
             }
 
             // Process lane sections - render both permanent AND temporary lane markings when both exist
-            for (auto& [s_coord, sections] : sections_by_s)
+            for (auto& [road_and_s, sections] : sections_by_road_and_s)
             {
+                const auto& [road_id, s_coord] = road_and_s;
+
                 // Find temporary and permanent sections at this s-coordinate
                 roadmanager::LaneSection* temp_section = nullptr;
                 roadmanager::LaneSection* perm_section = nullptr;
@@ -1370,7 +1348,7 @@ namespace roadgeom
                 // This ensures construction zones show both old (white) and new (yellow) markings
                 if (temp_section && temp_section->GetNumberOfLanes() >= 2)
                 {
-                    LOG_DEBUG("Adding TEMPORARY lane markings for LaneSection at s={:.2f}", s_coord);
+                    LOG_DEBUG("Adding TEMPORARY lane markings for road {} LaneSection at s={:.2f}", road_id, s_coord);
                     for (size_t k = 0; k < static_cast<unsigned int>(temp_section->GetNumberOfLanes()); k++)
                     {
                         roadmanager::Lane* lane = temp_section->GetLaneByIdx(static_cast<int>(k));
@@ -1380,7 +1358,7 @@ namespace roadgeom
 
                 if (perm_section && perm_section->GetNumberOfLanes() >= 2)
                 {
-                    LOG_DEBUG("Adding PERMANENT lane markings for LaneSection at s={:.2f}", s_coord);
+                    LOG_DEBUG("Adding PERMANENT lane markings for road {} LaneSection at s={:.2f}", road_id, s_coord);
                     for (size_t k = 0; k < static_cast<unsigned int>(perm_section->GetNumberOfLanes()); k++)
                     {
                         roadmanager::Lane* lane = perm_section->GetLaneByIdx(static_cast<int>(k));
