@@ -2734,6 +2734,49 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(lines[132] == '0.000000, 166, misc_obj166, 2, 0, 7.887475, 516.040382, -0.571041, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, -1.630025, 0.000201, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000')
             self.assertTrue(lines[938] == '7.000000, 37, obj37, 1, MEDIUM_CAR, 6.315084, 274.827883, 0.269692, 0.761141, 35.992651, -0.065520, 2.035548, -0.031802, -0.004935, 1.552224, 0.001827, -0.000010, -0.056813, 0.000000, 0.000000, -0.543809, 0.000000, 0.000000, 36.000698, -0.004703, 0.000000')
 
+    def test_lane_layer(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/roadworks_temporary_lane_layer.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*roadworks_temporary_lane_layer.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^.0.000.* Ego New position:\n\\[0.000\\].*Pos\\(-100.00, -4.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -3 s 0.00 offset 0.12 t -4.50', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.000.* Lead New position:\n\\[0.000\\].*Pos\\(-70.00, -4.62, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -3 s 30.00 offset 0.00 t -4.62', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.000.* temp_layer_vehicle New position:\n\\[0.000\\].*Pos\\(0.00, -6.10, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 100.00 offset 0.00 t -6.10', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.000.* permanent_layer_vehicle New position:\n\\[0.000\\].*Pos\\(0.00, -8.38, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 s 100.00 offset 0.00 t -8.38', log, re.MULTILINE))
+        self.assertTrue(re.search('^.2.000.* SetLanePosMode cross-layer link: road=1 s=40.00 lane=-3 permanent -> lane=-1 temporary', log, re.MULTILINE))
+        self.assertTrue(re.search('^.16.300.*SetLanePosMode cross-layer link: road=1 s=360.80 lane=-1 temporary -> lane=-3 permanent', log, re.MULTILINE))
+        self.assertTrue(re.search('^.18.100.*SetLanePosMode cross-layer link: road=1 s=361.84 lane=-2 temporary -> lane=-4 permanent', log, re.MULTILINE))
+        self.assertTrue(re.search('^.18.100.*SetLanePosMode cross-layer link: road=1 s=361.84 lane=-2 temporary -> lane=-4 permanent', log, re.MULTILINE))
+        self.assertTrue(re.search('^.19.100.*end_of_road: true, delay: 0.00, distance 8.16 < tolerance \\(10.00\\), edge: rising', log, re.MULTILINE))
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^0.000, 0, Ego, -100.000, -4.500, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^0.000, 1, Lead, -70.000, -4.625, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^0.000, 2, temp_layer_vehicle, 0.000, -6.100, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^0.000, 3, permanent_layer_vehicle, 0.000, -8.375, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, 0, Ego, -40.000, -5.975, 0.000, (0.000|6.283), 0.000, 0.000, 20.000, 0.054, 1.783', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, 1, Lead, -25.000, -4.625, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 2.908', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, 2, temp_layer_vehicle, 48.000, -6.100, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 5.196', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.000, 3, permanent_layer_vehicle, 48.000, -8.375, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 5.196', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.000, 0, Ego, 39.868, -9.600, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 4.159', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.000, 1, Lead, 34.990, -5.216, 0.000, 6.236, 0.000, 0.000, 15.000, -0.003, 4.690', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.000, 2, temp_layer_vehicle, 112.000, -6.100, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 5.841', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.000, 3, permanent_layer_vehicle, 112.000, -8.375, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 5.841', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.500, 0, Ego, 129.853, -8.375, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 3.692', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.500, 1, Lead, 102.471, -6.100, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 2.769', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.500, 2, temp_layer_vehicle, 184.000, -6.100, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 4.210', csv, re.MULTILINE))
+        self.assertTrue(re.search('^11.500, 3, permanent_layer_vehicle, 184.000, -8.375, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 4.210', csv, re.MULTILINE))
+        self.assertTrue(re.search('^16.500, 0, Ego, 229.838, -9.600, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 0.379', csv, re.MULTILINE))
+        self.assertTrue(re.search('^16.500, 1, Lead, 177.471, -6.100, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 3.426', csv, re.MULTILINE))
+        self.assertTrue(re.search('^16.500, 2, temp_layer_vehicle, 264.000, -4.625, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 0.303', csv, re.MULTILINE))
+        self.assertTrue(re.search('^16.500, 3, permanent_layer_vehicle, 264.000, -8.375, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 0.303', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.100, 0, Ego, 281.838, -8.375, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 4.438', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.100, 1, Lead, 216.471, -6.100, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 1.757', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.100, 2, temp_layer_vehicle, 300.000, -8.375, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 3.204', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.100, 3, permanent_layer_vehicle, 300.000, -8.375, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 3.204', csv, re.MULTILINE))
 
 if __name__ == "__main__":
     # execute only if run as a script

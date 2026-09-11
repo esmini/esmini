@@ -3,7 +3,7 @@
     <FileHeader revMajor="1" revMinor="4" date="2026-05-29T18:00:00" description="Construction site with temporary lane layers test scenario" author="johschmitz"/>
     <CatalogLocations/>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/roadworks_permanent_temporary_layers.xodr"/>
+        <LogicFile filepath="../../../resources/xodr/roadworks_permanent_temporary_layers.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">

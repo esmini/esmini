@@ -6509,6 +6509,102 @@ TEST(InitActions, TestInitActionsReorderingNoGhost)
     delete se;
 }
 
+TEST(LaneLayer, TestLaneTempLayerWithAction)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/roadworks_permanent_temporary_layers.xosc", true);
+    ASSERT_NE(se, nullptr);
+    const double dt = 0.1;
+    scenario_step(se, 0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 2);
+
+    roadmanager::Position& pos0 = entities->object_[0]->pos_;
+    roadmanager::Position& pos1 = entities->object_[1]->pos_;
+
+    EXPECT_NEAR(pos0.GetX(), -90.0, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), -8.375, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), -4);
+    EXPECT_EQ(pos0.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+    EXPECT_EQ(pos0.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    EXPECT_NEAR(pos1.GetX(), -75.0, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), -4.625, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), -3);
+    EXPECT_EQ(pos1.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+    EXPECT_EQ(pos1.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+    {
+        scenario_step(se, dt);
+    }
+
+    EXPECT_NEAR(pos0.GetX(), -62.2222, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), -8.375, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), -4);
+    EXPECT_EQ(pos0.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+    EXPECT_EQ(pos0.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    EXPECT_NEAR(pos1.GetX(), -47.2222, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), -4.625, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), -3);
+    EXPECT_EQ(pos1.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+    EXPECT_EQ(pos1.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)
+    {
+        scenario_step(se, dt);
+    }
+
+    EXPECT_NEAR(pos0.GetX(), -34.4444, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), -9.5999, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), -2);
+    EXPECT_EQ(pos0.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_TEMPORARY);
+    EXPECT_EQ(pos0.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    EXPECT_NEAR(pos1.GetX(), -19.4444, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), -4.625, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), -3);
+    EXPECT_EQ(pos1.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+    EXPECT_EQ(pos1.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    while (se->getSimulationTime() < 6.0 - SMALL_NUMBER)
+    {
+        scenario_step(se, dt);
+    }
+
+    EXPECT_NEAR(pos0.GetX(), -6.6666, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), -9.5999, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), -2);
+    EXPECT_EQ(pos0.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_TEMPORARY);
+    EXPECT_EQ(pos0.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    EXPECT_NEAR(pos1.GetX(), 8.2862, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), -6.0999, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), -1);
+    EXPECT_EQ(pos1.GetCurrentLaneLayer(), roadmanager::Layer::LAYER_TEMPORARY);
+    EXPECT_EQ(pos1.GetExplicitLaneLayer(), roadmanager::Layer::LAYER_PERMANENT);
+
+    delete se;
+}
+
 int main(int argc, char** argv)
 {
 #if 0  // set to 1 and modify filter to run one single test
