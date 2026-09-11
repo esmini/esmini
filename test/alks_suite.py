@@ -250,7 +250,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('10.00.* SwerveEventStart: true, delay: 0.00, 10.0000 >= 10.0000, edge: rising', log)  is not None)
         self.assertTrue(re.search('10.00.* SwerveEventStart: true\\n', log)  is not None)
         self.assertTrue(re.search('10.00.* SwerveAction initState -> startTransition -> runningState', log)  is not None)
-        self.assertTrue(re.search('26.10.* SwerveEvent runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('26.15.* SwerveEvent runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()

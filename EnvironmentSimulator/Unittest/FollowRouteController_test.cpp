@@ -51,6 +51,8 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
 
     double dt = 0.1;
 
+    scenario_step(se, 0.0);
+
     // Fast forward
     while (se->getSimulationTime() < (10.0 - SMALL_NUMBER))
     {
@@ -81,6 +83,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
 
     double dt = 0.1;
 
+    scenario_step(se, 0.0);
+
     // Fast forward
     while (se->getSimulationTime() < (15.0 - SMALL_NUMBER))
     {
@@ -108,6 +112,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
     Position target(5, -3, 20, 0);
 
     double dt = 0.1;
+
+    scenario_step(se, 0.0);
 
     // Fast forward
     while (se->getSimulationTime() < (15.0 - SMALL_NUMBER))
@@ -139,6 +145,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteBlockedByCollisionRisk)
 
     double dt = 0.1;
 
+    scenario_step(se, 0.0);
+
     // Fast forward
     while (se->getSimulationTime() < (15.0 - SMALL_NUMBER))
     {
@@ -165,6 +173,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteMedium)
     Position target(196, 1, 50, 0);
 
     double dt = 0.1;
+
+    scenario_step(se, 0.0);
 
     // Fast forward
     while (se->getSimulationTime() < (35 - SMALL_NUMBER))
@@ -193,7 +203,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
 
     double dt = 0.1;
     // Perform one step so that the object position is set
-    scenario_step(se, dt);
+    scenario_step(se, 0.0);
 
     Position start = se->entities_.object_[0]->pos_;
     Position target(5, 1, 30, 0);
@@ -228,6 +238,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
     std::vector<Position> passedPositions;
 
     double dt = 0.1;
+
+    scenario_step(se, 0.0);
 
     // Fast forward
     while (se->getSimulationTime() < (70 - SMALL_NUMBER))
@@ -294,6 +306,8 @@ TEST_F(FollowRouteControllerTest, FollowRouteGhostStartingOnRoute)
     std::vector<Position> passedPositions;
 
     double dt = 0.1;
+
+    scenario_step(se, 0.0);
 
     // Fast forward
     while (se->getSimulationTime() < (53 - SMALL_NUMBER))

@@ -47,20 +47,20 @@ class TestSuite(unittest.TestCase):
         # Check vehicle state
         csv = generate_csv()
         self.assertTrue(re.search('\n7.850, 0, Ego, 202.639, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 2.571', csv))
-        self.assertTrue(re.search('\n7.850, 1, GVT, 383.090, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.083', csv))
-        self.assertTrue(re.search('\n7.850, 2, SOV, 359.540, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 3.588', csv))
+        self.assertTrue(re.search('\n7.850, 1, GVT, 383.090, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.081', csv))
+        self.assertTrue(re.search('\n7.850, 2, SOV, 359.541, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.081', csv))
         self.assertTrue(re.search('\n7.900, 0, Ego, 203.611, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 5.349', csv))
-        self.assertTrue(re.search('\n7.900, 1, GVT, 382.118, 1.748, 0.000, 3.145, 0.000, 0.000, 19.444, 0.010, 2.860', csv))
-        self.assertTrue(re.search('\n7.900, 2, SOV, 358.568, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.083', csv))
+        self.assertTrue(re.search('\n7.900, 1, GVT, 382.118, 1.748, 0.000, 3.145, 0.000, 0.000, 19.444, 0.010, 2.859', csv))
+        self.assertTrue(re.search('\n7.900, 2, SOV, 358.569, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.859', csv))
         self.assertTrue(re.search('\n9.250, 0, Ego, 229.861, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 4.951', csv))
-        self.assertTrue(re.search('\n9.250, 1, GVT, 355.920, 0.287, 0.000, 3.239, 0.000, 0.000, 19.444, 0.000, 2.462', csv))
-        self.assertTrue(re.search('\n9.250, 2, SOV, 332.318, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.968', csv))
+        self.assertTrue(re.search('\n9.250, 1, GVT, 355.920, 0.287, 0.000, 3.239, 0.000, 0.000, 19.444, 0.000, 2.461', csv))
+        self.assertTrue(re.search('\n9.250, 2, SOV, 332.319, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.461', csv))
         self.assertTrue(re.search('\n12.250, 0, Ego, 288.194, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 1.972', csv))
-        self.assertTrue(re.search('\n12.250, 1, GVT, 297.664, -1.713, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.766', csv))
-        self.assertTrue(re.search('\n12.250, 2, SOV, 273.985, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.988', csv))
+        self.assertTrue(re.search('\n12.250, 1, GVT, 297.665, -1.713, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.765', csv))
+        self.assertTrue(re.search('\n12.250, 2, SOV, 273.985, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.765', csv))
         self.assertTrue(re.search('\n12.300, 0, Ego, 289.167, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 4.749', csv))
-        self.assertTrue(re.search('\n12.300, 1, GVT, 296.692, -1.713, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.261', csv))
-        self.assertTrue(re.search('\n12.300, 2, SOV, 273.013, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.766', csv))
+        self.assertTrue(re.search('\n12.300, 1, GVT, 296.693, -1.713, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.259', csv))
+        self.assertTrue(re.search('\n12.300, 2, SOV, 273.013, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.259', csv))
 
         self.assertTrue(re.search('\n', csv))
         self.assertTrue(re.search('\n', csv))
@@ -101,7 +101,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_C2C_CCFtap_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.24.150.* Synchronize masterTimeToDest \\(0.002\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n.24.200.* Synchronize masterTimeToDest \\(0.002\\) reached within this timestep \\(0.050\\)', log)  is not None)
         self.assertTrue(re.search('\n.24.300.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.27.350.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
@@ -170,7 +170,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('\n.0.000.* VRU_SynchronizeEvent standbyState -> startTransition -> runningState', log)  is not None)
-        self.assertTrue(re.search('\n.9.400.* Synchronize masterTimeToDest \\(0.010\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n.9.450.* Synchronize masterTimeToDest \\(0.010\\) reached within this timestep \\(0.050\\)', log)  is not None)
         self.assertTrue(re.search('\n.9.450.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.10.500.* StopAfterCollision: true\\n', log)  is not None)
 
@@ -193,7 +193,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBNA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.6.950.* Synchronize masterTimeToDest \\(0.026\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n.7.000.* Synchronize masterTimeToDest \\(0.026\\) reached within this timestep \\(0.050\\)', log)  is not None)
         self.assertTrue(re.search('\n.7.000.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.8.050.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
@@ -216,7 +216,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPNA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.5.500.* Synchronize masterTimeToDest \\(0.047\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n.5.550.* Synchronize masterTimeToDest \\(0.047\\) reached within this timestep \\(0.050\\)', log)  is not None)
         self.assertTrue(re.search('\n.5.550.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.5.600.* StopAfterCollision: true, delay: 1.00, variable collisionDetected true == true, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.6.600.* StopAfterCollision: true', log)  is not None)
@@ -236,7 +236,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPNCO_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.3.400.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
+        self.assertTrue(re.search('\n.3.450.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
         self.assertTrue(re.search('\n.5.600.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
 
         # Check vehicle state
@@ -258,7 +258,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPTA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.21.350.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
+        self.assertTrue(re.search('\n.21.400.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
         self.assertTrue(re.search('\n.27.500.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.27.500.* Synchronization_CollisionDetection runningState -> endTransition -> completeState', log)  is not None)
 
@@ -277,7 +277,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPRA_Cm_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.6.450.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
+        self.assertTrue(re.search('\n.6.500.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
         self.assertTrue(re.search('\n.8.300.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
         self.assertTrue(re.search('\n.8.350.* StopAfterCollision: true, delay: 1.00, variable collisionDetected true == true, edge: none', log)  is not None)
 
