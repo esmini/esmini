@@ -1895,6 +1895,9 @@ void Vehicle::AlignRearAxlePosition()
         rear_axle_pos_.Set(pos_.GetX(), pos_.GetY());
         rear_axle_vel_.Set(pos_.GetVelX(), pos_.GetVelY());
     }
+
+    // velocity is aligned with heading at this point, hence rear axle speed equals reference point speed
+    rear_axle_speed_ = GetSpeed();
 }
 
 std::string Vehicle::Category2String(int category)

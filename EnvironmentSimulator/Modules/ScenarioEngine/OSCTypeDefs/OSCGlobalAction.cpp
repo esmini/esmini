@@ -214,6 +214,12 @@ void AddEntityAction::Start(double simTime)
         (static_cast<Vehicle*>(entity_))->AlignTrailers();
     }
 
+    if (entity_->GetType() == Object::Type::VEHICLE)
+    {
+        // establish rear axle state, which otherwise would be outdated or undefined for a non active entity
+        static_cast<Vehicle*>(entity_)->AlignRearAxlePosition();
+    }
+
     LOG_INFO("Added entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
