@@ -236,18 +236,12 @@ jobs:
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'
 
-      - name: Setup MSYS2 and tmate
+      - name: Debugging with Upterm
         if: ${{ failure() && env.USE_TMATE == 'true' }}
-        uses: msys2/setup-msys2@v2
+        uses: owenthereal/action-upterm@v1
         with:
-          install: tmate
-
-      - name: Debugging with tmate
-        if: ${{ failure() && env.USE_TMATE == 'true' }}
-        uses: mxschmitt/action-tmate@v3
-        with:
-          install-dependencies: false
-        timeout-minutes: 15
+          limit-access-to-actor: true
+          wait-timeout-minutes: 15
 
   test-no-external-modules:
     needs: [lint]
