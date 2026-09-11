@@ -9166,19 +9166,6 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
             {
                 continue;  // Skip, already checked this one
             }
-            else
-            {
-                if (connectedOnly)
-                {
-                    // Check whether the road is reachble from current position
-                    Position     tmpPos(road->GetId(), 0.0, 0.0);
-                    PositionDiff posDiff;
-                    if (Delta(&tmpPos, posDiff) == false)
-                    {
-                        continue;  // skip unreachable road
-                    }
-                }
-            }
         }
 
         if (road->GetNumberOfGeometries() == 0)
@@ -9188,11 +9175,25 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         }
 
         // Check whether complete road is too far away - then skip to next
+        // NOTE: Do this cheap geometric check BEFORE the (potentially expensive, graph-search based)
+        // connectedOnly reachability check below, so roads that are obviously out of range never pay
+        // for a shortest-path search just to be discarded anyway.
         const double potentialWidthOfRoad = 25;
         if (PointDistance2D(x3, y3, road->GetGeometry(0)->GetX(), road->GetGeometry(0)->GetY()) - (road->GetLength() + potentialWidthOfRoad) >
             closestPointDist)  // add potential width of the road
         {
             continue;
+        }
+
+        if (i >= 0 && connectedOnly)
+        {
+            // Check whether the road is reachble from current position
+            Position     tmpPos(road->GetId(), 0.0, 0.0);
+            PositionDiff posDiff;
+            if (Delta(&tmpPos, posDiff) == false)
+            {
+                continue;  // skip unreachable road
+            }
         }
 
         weight    = 0;
