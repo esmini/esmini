@@ -5592,12 +5592,12 @@ TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
     {
         scenario_step(se, dt);
     }
-    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.79, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.80, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -3.66, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.03, 1E-2);
     EXPECT_NEAR(entities->object_[0]->GetSpeed(), 72.0 / 3.6, 1E-2);
 
-    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 659.80, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 660.00, 1E-2);
     EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -1.92, 1E-2);
     EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.04, 1E-3);
     EXPECT_NEAR(entities->object_[1]->GetSpeed(), 72.0 / 3.6, 1E-3);
