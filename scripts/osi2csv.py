@@ -92,10 +92,13 @@ class OSIFile():
                 )
 
             for o in self.osi_msg.stationary_object:
-                fcsv.write('{:.6f}, {}, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}\n'.format(
+                o_sid = next((int(s.split(':', 1)[1]) for s in o.source_reference[0].identifier
+                                if s.startswith('object_id:')), None)
+                fcsv.write('{:.6f}, {}, {}, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}\n'.format(
                     t,
                     o.id.value,
                     'misc_obj' + str(o.id.value),
+                    o_sid,
                     o.classification.type,
                     o.base.position.x,
                     o.base.position.y,

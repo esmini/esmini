@@ -2713,6 +2713,27 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^47.700, 0, Ego, 277.187, -237.830, 0.000, 3.203, 0.000, 0.000, 12.944, -0.125, 5.799', csv, re.MULTILINE))
         self.assertTrue(re.search('^80.000, 0, Ego, 188.436, -1.875, 0.000, 0.000, 0.000, 0.000, 19.444, -0.000, 3.357', csv, re.MULTILINE))
 
+    def test_osi2csv(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/cut-in.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1 --osi_file")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
+
+        if use_package("OSI"):
+            # Check OSI data, that misc objects are added but appearing only once
+            osi_csv = generate_csv_from_osi()
+            lines = [line.strip() for line in osi_csv.splitlines() if line.strip()]
+            expected_cols = len(lines[0].split(","))
+
+            for line_num, line in enumerate(lines, start=1):
+                # check nr columns of all rows matches the first row
+                num_cols = len(line.split(","))
+                self.assertTrue(num_cols == expected_cols, f"csv line {line_num}: Expected {expected_cols} columns, found {num_cols}.")
+
+            # check values of a few random rows
+            self.assertTrue(lines[132] == '0.000000, 166, misc_obj166, 2, 0, 7.887475, 516.040382, -0.571041, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, -1.630025, 0.000201, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000')
+            self.assertTrue(lines[938] == '7.000000, 37, obj37, 1, MEDIUM_CAR, 6.315084, 274.827883, 0.269692, 0.761141, 35.992651, -0.065520, 2.035548, -0.031802, -0.004935, 1.552224, 0.001827, -0.000010, -0.056813, 0.000000, 0.000000, -0.543809, 0.000000, 0.000000, 36.000698, -0.004703, 0.000000')
+
 
 if __name__ == "__main__":
     # execute only if run as a script
