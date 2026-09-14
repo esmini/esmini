@@ -703,14 +703,16 @@
             <object type="obstacle" subtype="delineator" name="road_delineator" id="9" s="40" t="-2.5" zOffset="0.0" />
             <object type="obstacle" subtype="delineator" name="road_delineator" id="10" s="50" t="-3.25" zOffset="0.0" />
             <object type="obstacle" subtype="delineator" name="road_delineator" id="11" s="60" t="-4" zOffset="0.0">
-                <repeat distance="10.0" tStart="-4.0" tEnd="-4.0" length="280" s="60.0" />
+                <repeat distance="10.0" tStart="-4.0" tEnd="-4.0" length="280" s="60.0" heightStart="1.275" heightEnd="1.275" widthStart="0.4"
+                    widthEnd="0.4" lengthStart="0.6" lengthEnd="0.6" zOffsetStart="0.0" zOffsetEnd="0.0" />
             </object>
             <object type="obstacle" subtype="delineator" name="road_delineator" id="12" s="350" t="-3.25" zOffset="0.0" />
             <object type="obstacle" subtype="delineator" name="road_delineator" id="13" s="360" t="-2.5" zOffset="0.0" />
             <object type="obstacle" subtype="delineator" name="road_delineator" id="14" s="40" t="-10.6" zOffset="0.0" hdg="3.141592" />
             <object type="obstacle" subtype="delineator" name="road_delineator" id="15" s="50" t="-11.15" zOffset="0.0" hdg="3.141592" />
-            <object type="obstacle" subtype="delineator" name="road_delineator" id="16" s="60" t="-12.1" zOffset="0.0" hdg="3.141592">
-                <repeat distance="10.0" tStart="-11.7" tEnd="-11.7" length="280" s="60.0" hdg="3.141592" />
+            <object type="obstacle" subtype="delineator" name="road_delineator" id="16" s="60" t="-12.1" zOffset="0.0" hdg="3.141592" height="1.2">
+                <repeat distance="10.0" tStart="-11.7" tEnd="-11.7" length="280" s="60.0" heightStart="1.275" heightEnd="1.275" widthStart="0.4"
+                    widthEnd="0.4" lengthStart="0.6" lengthEnd="0.6" zOffsetStart="0.0" zOffsetEnd="0.0" />
             </object>
             <object type="obstacle" subtype="delineator" name="road_delineator" id="17" s="350" t="-11.15" zOffset="0.0" hdg="3.141592" />
             <object type="obstacle" subtype="delineator" name="road_delineator" id="18" s="360" t="-10.6" zOffset="0.0" hdg="3.141592" />
