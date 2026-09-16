@@ -654,7 +654,7 @@ class TestSuite(unittest.TestCase):
 
         # osg viewer, which replayer depends on, fails on CI headless mac system
         if sys.platform != "darwin":
-            if use_package("OSG"):
+            if check_config_bool_true("USE_OSG"):
                 log = run_replayer(COMMON_REPLAYER_ARGS + '--collision continue')
                 self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC2 \\(id 2\\) at time 5.25.', log, re.MULTILINE)  is not None)
                 self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
@@ -1668,7 +1668,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^.0.000.* Controller ALKS_R157SM_Controller active on domains: Longitudinal \\(mask=0x1\\)', log[-1], re.MULTILINE)  is not None)
 
         # make sure replayer is available, which is not the case when USE_OSG=FALSE has been defined in build configuration
-        if use_package("OSG"):
+        if check_config_bool_true("USE_OSG"):
             if len(models) > 0:
                 with open(STDOUT_FILENAME, "w") as f:
                     if len(models) > 1:
@@ -2009,7 +2009,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^19.600, 3, object_2, 463.889, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 5.928', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.600, 5, object_3, 422.222, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 6.261', csv, re.MULTILINE))
 
-        if use_package("OSI"):
+        if check_config_bool_true("RUN_OSI_TESTS"):
             # Check OSI data, that misc objects are added but appearing only once
             osi_csv = generate_csv_from_osi()
             self.assertTrue(re.search('^1.600000, 15, obj15, 1, MEDIUM_CAR, 2.77.*$\n^1.600000, 16, misc_obj16, 2, 3, 100.0.*$\n^1.700000, 14, obj14, 0, MEDIUM_CAR, 44.44',
@@ -2339,7 +2339,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^35.010, 1, LeadVehicle, 387.300, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 2.387', csv, re.MULTILINE))
 
     def test_osi_traffic_command(self):
-        if use_package("OSI"):
+        if check_config_bool_true("RUN_OSI_TESTS"):
             # this test case verify that OpenSCENARIO XML actions are registered as OSI traffic commands
             log, duration, cpu_time, stdout = run_scenario(esmini_arguments=COMMON_ESMINI_ARGS + " --headless", application='code-examples-bin/osi-traffic_command')
 
@@ -2404,7 +2404,7 @@ class TestSuite(unittest.TestCase):
         self.controller_conflict_common('1_3')
 
     def test_cut_in_sumo(self):
-        if use_package("SUMO"):
+        if check_config_bool_true("USE_SUMO"):
             log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_sumo.xosc'), COMMON_ESMINI_ARGS + "--seed 2 --fixed_timestep 0.5 --log_level debug")
 
             # Check some initialization steps
@@ -2470,7 +2470,7 @@ class TestSuite(unittest.TestCase):
             print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 
     def test_sumo_test(self):
-        if use_package("SUMO"):
+        if check_config_bool_true("USE_SUMO"):
             if self.build_type("Release"):
                 log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/sumo-test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 20.0")
 
@@ -2719,7 +2719,7 @@ class TestSuite(unittest.TestCase):
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
 
-        if use_package("OSI"):
+        if check_config_bool_true("RUN_OSI_TESTS"):
             # Check OSI data, that misc objects are added but appearing only once
             osi_csv = generate_csv_from_osi()
             lines = [line.strip() for line in osi_csv.splitlines() if line.strip()]

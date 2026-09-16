@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 import sys
+from unittest import result
 import psutil
 
 ESMINI_PATH = os.path.realpath(os.pardir)
@@ -138,7 +139,7 @@ def run_replayer(replayer_arguments = None):
 
     assert False, 'No log file'
 
-def use_package(pack_name):
+def check_config_bool_true(variable):
     result = subprocess.run(
         ["cmake", "-B", "../build", "-N", "-L"],
         capture_output=True,
@@ -146,7 +147,11 @@ def use_package(pack_name):
         check=True,
         shell=False
     )
-    return result.stdout.find("RUN_" + pack_name + "_TESTS:BOOL=TRUE" or "RUN_" + pack_name + "_TESTS:BOOL=ON") != -1
+
+    target = f"{variable}:BOOL=".upper()
+    stdout_upper = result.stdout.upper()
+
+    return f"{target}TRUE" in stdout_upper or f"{target}ON" in stdout_upper
 
 def generate_csv(filename=DAT_FILENAME):
 
@@ -162,7 +167,7 @@ def generate_csv(filename=DAT_FILENAME):
 
 def generate_csv_from_osi(filename=OSI_FILENAME):
 
-    if use_package("OSI"):
+    if check_config_bool_true("RUN_OSI_TESTS"):
         import osi2csv
 
         osi = osi2csv.OSIFile(filename)
