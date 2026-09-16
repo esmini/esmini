@@ -1099,6 +1099,8 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
     source_reference->add_identifier("object_type:MiscObject");
     std::string obj_name = fmt::format("object_name:{}", obj.name_);
     source_reference->add_identifier(obj_name);
+    std::string id_str = fmt::format("object_id:{}", obj.GetId());
+    source_reference->add_identifier(id_str);
 
     // Add source reference if available in scenario
     if (!obj.GetSourceReference().empty())

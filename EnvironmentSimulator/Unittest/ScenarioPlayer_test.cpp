@@ -1697,10 +1697,11 @@ TEST(OSI, TestStationaryObjects)
 
     EXPECT_EQ(osi_gt_ptr->stationary_object(7).model_reference(), "");
     ASSERT_EQ(osi_gt_ptr->stationary_object(7).source_reference_size(), 1);
-    ASSERT_EQ(osi_gt_ptr->stationary_object(7).source_reference(0).identifier_size(), 3);
+    ASSERT_EQ(osi_gt_ptr->stationary_object(7).source_reference(0).identifier_size(), 4);
     EXPECT_EQ(osi_gt_ptr->stationary_object(7).source_reference(0).identifier(0), "object_type:MiscObject");
     EXPECT_EQ(osi_gt_ptr->stationary_object(7).source_reference(0).identifier(1), "object_name:Box3");
-    EXPECT_EQ(osi_gt_ptr->stationary_object(7).source_reference(0).identifier(2), "box_123XY");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(7).source_reference(0).identifier(2), "object_id:0");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(7).source_reference(0).identifier(3), "box_123XY");
 
     // verify correct location of second OSC box object
     ASSERT_EQ(osi_gt_ptr->stationary_object(8).id().value(), 13);
@@ -1716,10 +1717,11 @@ TEST(OSI, TestStationaryObjects)
 
     EXPECT_EQ(osi_gt_ptr->stationary_object(8).model_reference(), "../models/box_cc_by.osgb");
     ASSERT_EQ(osi_gt_ptr->stationary_object(8).source_reference_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->stationary_object(8).source_reference(0).identifier_size(), 3);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(8).source_reference(0).identifier_size(), 4);
     EXPECT_EQ(osi_gt_ptr->stationary_object(8).source_reference(0).identifier(0), "object_type:MiscObject");
     EXPECT_EQ(osi_gt_ptr->stationary_object(8).source_reference(0).identifier(1), "object_name:Box4");
-    EXPECT_EQ(osi_gt_ptr->stationary_object(8).source_reference(0).identifier(2), "box_123XZ");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(8).source_reference(0).identifier(2), "object_id:1");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(8).source_reference(0).identifier(3), "box_123XZ");
 
     // verify correct location of OpenDRIVE traffic sign
     ASSERT_EQ(osi_gt_ptr->traffic_sign(0).id().value(), 4);
