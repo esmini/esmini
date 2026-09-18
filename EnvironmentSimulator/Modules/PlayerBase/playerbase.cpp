@@ -1572,11 +1572,16 @@ int ScenarioPlayer::Init()
     opt.AddOption("osi_freq", "Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps", "frequency");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
-    opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
     opt.AddOption("osi_static_reporting",
                   "Decide how the static data should be reported, 0=Default (first frame), 1=API (expose on API) 2=API_AND_LOG (Always log)",
                   "mode",
                   "0");
+    opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
+    opt.AddOption("osi_receiver_port", "Port where to send OSI UDP packages (1025 .. 65535)", "port", std::to_string(DEFAULT_OSI_OUT_PORT));
+    opt.AddOption("osi_receiver_udp_data_size",
+                  "Maximum bytes for OSI data to send as UDP packets, before fragmentation (1024 .. 65499)",
+                  "size",
+                  std::to_string(DEFAULT_OSI_UDP_DATA_SIZE));
 #endif
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)", "index");
@@ -1948,14 +1953,28 @@ int ScenarioPlayer::Init()
     odr_manager = scenarioEngine->getRoadManager();
 
 #ifdef _USE_OSI
+    unsigned int osi_port            = DEFAULT_OSI_OUT_PORT;
+    unsigned int osi_udp_packet_size = DEFAULT_OSI_UDP_DATA_SIZE;
+
     osiReporter = new OSIReporter(scenarioEngine);
     osiReporter->SetCounterPtr(&frame_counter_);
     osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
     scenarioEngine->storyBoard.SetOSIReporter(osiReporter);
 
+    if (opt.GetOptionSet("osi_receiver_port"))
+    {
+        // Note: Validation performed in osiReporter->OpenSocket()
+        osi_port = static_cast<unsigned int>(strtoi(opt.GetOptionValue("osi_receiver_port")));
+    }
+    if (opt.GetOptionSet("osi_receiver_udp_data_size"))
+    {
+        // Note: Validation performed in osiReporter->OpenSocket()
+        osi_udp_packet_size = static_cast<unsigned int>(strtoi(opt.GetOptionValue("osi_receiver_udp_data_size")));
+    }
+
     if (opt.GetOptionSet("osi_receiver_ip"))
     {
-        osiReporter->OpenSocket(opt.GetOptionValue("osi_receiver_ip"));
+        osiReporter->OpenSocket(opt.GetOptionValue("osi_receiver_ip"), osi_port, osi_udp_packet_size);
         if (osiReporter->GetOSIFrequency() == 0)
         {
             osiReporter->SetOSIFrequency(1);

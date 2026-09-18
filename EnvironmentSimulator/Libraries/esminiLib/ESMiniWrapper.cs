@@ -1847,6 +1847,13 @@ namespace ESMini
         public static extern int SE_OpenOSISocket(string ipaddr);
 
         /// <summary>
+        /// Send OSI packages over UDP to specified IP address, port and with a threshold for
+        /// maximum size for each OSI data package. Value bigger than data_max_size will be split into multiple packages.
+        /// </summary>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_OpenCustomOSISocket(string ipaddr, uint port, uint data_max_size);
+
+        /// <summary>
         /// Switch off logging to OSI file(s)
         /// </summary>
         /// <returns>0 if successful, -1 if not</returns>
