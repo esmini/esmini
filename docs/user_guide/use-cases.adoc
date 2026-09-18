@@ -614,6 +614,31 @@ See link:support-qa.html#_osi_for_python_on_windows[OSI for Python on Windows] f
 The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py].
 ====
 
+==== Visualize `.osi` in Lichtblick (`.mcap`)
+
+`.osi` trace files can be converted to `.mcap` and viewed in https://lichtblick-suite.github.io/lichtblick/[Lichtblick].
+
+*Prepare an `.osi` file compatible with the converter*
+
+. Open a terminal
+. Navigate to /path/to/esmini/root and run:
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file --osi_static_reporting 2` (`--osi_static_reporting 2` is required)
+
+*Install the Lichtblick converter plug-in*
+
+. Download the latest release of https://github.com/lichtblick-suite/asam-osi-converter/releases/[asam-osi-converter]
+. Open https://lichtblick-suite.github.io/lichtblick/[Lichtblick] in Google Chrome
+. Drag and drop the `.foxe` file from the downloaded `asam-osi-converter` release into the UI
+. Wait for plug-in to be installed
+
+*Convert `.osi` to `.mcap`*
+
+. `pip install asam-osi-utilities`
+. Clone https://github.com/lichtblick-suite/asam-osi-utilities[asam-osi-utilities]
+. Navigate to `asam-osi-utilities/python/examples`
+. Run `python convert_osi2mcap.py --input-type GroundTruth ~/path/to/my_gt.osi my_gt.mcap`
+. Load `my_gt.mcap` in Lichtblick
+
 === esmini in Unity
 
 esmini shared library works also as plugin in Unity (Win, Linux, Mac). A simple example can be downloaded from https://www.dropbox.com/scl/fi/5d41set5lusce8lkw84xy/esmini-player_v3_0_0.unitypackage?rlkey=as9xfmmzfhlcrfo3brzsk34xu&st=y0n8g0yu&dl=1[here]. The package contains everything needed to get going:
