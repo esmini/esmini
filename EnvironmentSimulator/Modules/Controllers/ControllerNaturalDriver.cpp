@@ -16,6 +16,7 @@
 
 #include "ControllerNaturalDriver.hpp"
 #include "playerbase.hpp"
+#include "OSCPrivateAction.hpp"
 
 using namespace scenarioengine;
 
@@ -170,8 +171,29 @@ void ControllerNaturalDriver::Step(double dt)
         }
         else
         {
-            auto lane_change = LaneChangeActionStruct{object_->GetId(), 0, target_lane_, 2, 2, lane_change_duration_};
-            player_->player_server_->InjectLaneChangeAction(lane_change);
+            if (player_ != nullptr && player_->player_server_ != nullptr)
+            {
+                auto lane_change = LaneChangeActionStruct{object_->GetId(), 0, target_lane_, 2, 2, lane_change_duration_};
+                player_->player_server_->InjectLaneChangeAction(lane_change);
+            }
+            else
+            {
+                // No ScenarioPlayer (headless library mode): build the same action as
+                // PlayerServer::InjectLaneChangeAction and inject it through the engine
+                LatLaneChangeAction* a = new LatLaneChangeAction(nullptr);
+                a->SetName("NaturalDriverLaneChange");
+                a->object_                = object_;
+                a->transition_.shape_     = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
+                a->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
+                a->transition_.SetParamTargetVal(lane_change_duration_);
+                a->max_num_executions_ = 1;
+
+                LatLaneChangeAction::TargetAbsolute* target = new LatLaneChangeAction::TargetAbsolute;
+                target->value_                              = target_lane_;
+                a->target_                                  = target;
+
+                scenario_engine_->AddInjectedAction(a);
+            }
             lane_change_injected = true;
         }
 

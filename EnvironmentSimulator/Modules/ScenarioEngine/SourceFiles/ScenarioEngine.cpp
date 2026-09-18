@@ -109,12 +109,49 @@ int ScenarioEngine::InitScenario(const pugi::xml_document& xml_doc, bool disable
 
 ScenarioEngine::~ScenarioEngine()
 {
+    for (OSCAction* action : owned_injected_actions_)
+    {
+        delete action;
+    }
+    owned_injected_actions_.clear();
+
     scenarioReader->UnloadControllers();
     delete scenarioReader;
     scenarioReader = 0;
     SE_Env::Inst().SetOSCFilePath("");
     LOG_INFO("Closing");
     txtLogger.SetLoggerTime(nullptr);
+}
+
+int ScenarioEngine::AddInjectedAction(OSCAction* action)
+{
+    LOG_INFO("Adding action {}", action->GetName());
+
+    // Ensure there is a list to inject into. If no external list (e.g. PlayerServer's) has been
+    // registered, fall back to the engine-owned list so controllers can inject without a player.
+    if (injected_actions_ == nullptr)
+    {
+        injected_actions_ = &owned_injected_actions_;
+    }
+
+    // abort any action of same type and object
+    for (auto& a : *injected_actions_)
+    {
+        if (a->action_type_ == action->action_type_ &&
+            ((a->GetBaseType() != OSCAction::BaseType::PRIVATE) ||
+             (static_cast<OSCPrivateAction*>(a)->object_ == static_cast<OSCPrivateAction*>(action)->object_)))
+        {
+            LOG_WARN("Action {} of type {} already ongoing{}, stopping it",
+                     a->GetName(),
+                     a->Type2Str(),
+                     a->GetBaseType() == OSCAction::BaseType::PRIVATE ? (" for " + static_cast<OSCPrivateAction*>(a)->object_->GetName()) : "");
+            a->End();
+        }
+    }
+
+    injected_actions_->push_back(action);
+
+    return 0;
 }
 
 void ScenarioEngine::UpdateGhostMode()
@@ -186,6 +223,26 @@ int ScenarioEngine::step(double deltaSimTime)
             else
             {
                 action->Step(simulationTime_, deltaSimTime);
+            }
+        }
+    }
+
+    // When the engine owns the injected-actions list (headless library mode, no PlayerServer),
+    // reap completed actions here since there is no PlayerServer::Step() to do it.
+    // In the native ScenarioPlayer path injected_actions_ points elsewhere, so this is skipped.
+    if (injected_actions_ == &owned_injected_actions_)
+    {
+        for (size_t i = 0; i < owned_injected_actions_.size();)
+        {
+            if (owned_injected_actions_[i]->GetCurrentState() == OSCAction::State::COMPLETE)
+            {
+                LOG_INFO("Injected action {} finished", owned_injected_actions_[i]->GetName());
+                delete owned_injected_actions_[i];
+                owned_injected_actions_.erase(owned_injected_actions_.begin() + static_cast<long>(i));
+            }
+            else
+            {
+                ++i;
             }
         }
     }
