@@ -44,7 +44,8 @@ Object::Object(Type type)
       is_active_(false),
       model3d_full_path_(""),
       color_(""),
-      source_reference_({})
+      source_reference_({}),
+      source_reference_set_(false)
 {
     lookahead_sensor_pos_[0] = 0;
     lookahead_sensor_pos_[1] = 0;
@@ -1591,6 +1592,15 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
         {
             addObject(trailer_vehicle, activate, call_index + 1);
         }
+    }
+
+    if ((obj->GetType() == Object::Type::VEHICLE || obj->GetType() == Object::Type::PEDESTRIAN) && !obj->source_reference_set_)
+    {
+        std::string type_str = (obj->GetType() == Object::Type::VEHICLE) ? "Vehicle" : "Pedestrian";
+        obj->AddSourceReference("entity_id:" + std::to_string(obj->GetId()));
+        obj->AddSourceReference("entity_type:" + type_str);
+        obj->AddSourceReference("entity_name:" + obj->GetName());
+        obj->source_reference_set_ = true;
     }
 
     return obj->id_;

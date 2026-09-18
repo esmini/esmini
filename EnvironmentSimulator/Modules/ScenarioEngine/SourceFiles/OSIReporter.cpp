@@ -106,7 +106,6 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
 
     obj_osi_internal.static_gt         = new osi3::GroundTruth();
     obj_osi_internal.static_updated_gt = new osi3::GroundTruth();
-    obj_osi_internal.dynamic_gt        = new osi3::GroundTruth();
     obj_osi_external.gt                = new osi3::GroundTruth();
     obj_osi_external.sv                = new osi3::SensorView();
     obj_osi_external.tc                = new osi3::TrafficCommand();
@@ -117,9 +116,6 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
     obj_osi_internal.static_gt->mutable_version()->set_version_major(current_osi_version.version_major());
     obj_osi_internal.static_gt->mutable_version()->set_version_minor(current_osi_version.version_minor());
     obj_osi_internal.static_gt->mutable_version()->set_version_patch(current_osi_version.version_patch());
-
-    obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(0);
-    obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(0);
 
     obj_osi_external.tc->mutable_timestamp()->set_seconds(0);
     obj_osi_external.tc->mutable_timestamp()->set_nanos(0);
@@ -140,12 +136,6 @@ OSIReporter::~OSIReporter()
     {
         obj_osi_internal.static_updated_gt->Clear();
         delete obj_osi_internal.static_updated_gt;
-    }
-
-    if (obj_osi_internal.dynamic_gt)
-    {
-        obj_osi_internal.dynamic_gt->Clear();
-        delete obj_osi_internal.dynamic_gt;
     }
 
     if (obj_osi_external.gt)
@@ -351,8 +341,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
         {
             SerializeDynamicAndStaticData();
         }
-        // Merge for API
-        obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
+
         obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
 
         counter_offset_  = GetCounter();
@@ -362,8 +351,6 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
     {
         // We always want to update the dynamic ground truth
         UpdateOSIDynamicGroundTruth(objects);
-        obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
-
         UpdateOSIStaticGroundTruth(objects);
 
         switch (static_update_mode_)
@@ -444,15 +431,15 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<scenarioengine::Object *
 
 void OSIReporter::SerializeDynamicData()
 {
-    obj_osi_internal.static_updated_gt->SerializeToString(&osiGroundTruth.ground_truth);
-    obj_osi_internal.dynamic_gt->AppendToString(&osiGroundTruth.ground_truth);
+    obj_osi_internal.static_updated_gt->AppendToString(&osiGroundTruth.ground_truth);
+    obj_osi_external.gt->AppendToString(&osiGroundTruth.ground_truth);
     osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
 }
 
 void OSIReporter::SerializeDynamicAndStaticData()
 {
     obj_osi_internal.static_gt->AppendToString(&osiGroundTruth.ground_truth);
-    obj_osi_internal.dynamic_gt->AppendToString(&osiGroundTruth.ground_truth);
+    obj_osi_external.gt->AppendToString(&osiGroundTruth.ground_truth);
     osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
 }
 
@@ -592,22 +579,21 @@ void OSIReporter::CheckDynamicTypeAndUpdate(const scenarioengine::Object &obj)
 
 int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<scenarioengine::Object *> &objects)
 {
-    obj_osi_internal.dynamic_gt->clear_moving_object();
-    obj_osi_internal.dynamic_gt->clear_timestamp();
+    obj_osi_external.gt->Clear();
 
     if (SE_Env::Inst().IsOSITimeStampSet())
     {
         // use excplicit timestamp
-        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(static_cast<int64_t>((SE_Env::Inst().GetOSITimeStamp() / 1000000000)));
-        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((SE_Env::Inst().GetOSITimeStamp() % 1000000000)));
+        obj_osi_external.gt->mutable_timestamp()->set_seconds(static_cast<int64_t>((SE_Env::Inst().GetOSITimeStamp() / 1000000000)));
+        obj_osi_external.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((SE_Env::Inst().GetOSITimeStamp() % 1000000000)));
     }
     else
     {
         // report simulation time
         double   time    = scenario_engine_->getSimulationTime();
         uint32_t seconds = static_cast<uint32_t>(floor(time));
-        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(seconds);
-        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((time - seconds) * 1e9));
+        obj_osi_external.gt->mutable_timestamp()->set_seconds(seconds);
+        obj_osi_external.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((time - seconds) * 1e9));
     }
 
     // Set OSI Moving Object Position
@@ -1146,13 +1132,12 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
 int OSIReporter::UpdateOSIMovingObject(const Object &obj)
 {
     // Create OSI Moving object
-    obj_osi_internal.mobj = obj_osi_internal.dynamic_gt->add_moving_object();
+    obj_osi_internal.mobj = obj_osi_external.gt->add_moving_object();
 
     // Set OSI Moving Object Mutable ID
     obj_osi_internal.mobj->mutable_id()->set_value(obj.g_id_);
 
     // Set OSI Moving Object Type and Classification
-    std::string entity_type = "Vehicle";
     if (obj.GetType() == Object::Type::VEHICLE)
     {
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
@@ -1233,7 +1218,6 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     }
     else if (obj.GetType() == Object::Type::PEDESTRIAN)
     {
-        entity_type = "Pedestrian";
         switch (static_cast<Pedestrian::Category>(obj.category_))
         {
             case Pedestrian::Category::PEDESTRIAN:
@@ -1466,12 +1450,14 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     auto source_reference = obj_osi_internal.mobj->add_source_reference();
     source_reference->set_type(SOURCE_REF_TYPE_OSC);
 
-    std::string ent_id   = fmt::format("entity_id:{}", obj.GetId());
-    std::string ent_type = fmt::format("entity_type:{}", entity_type);
-    std::string ent_name = fmt::format("entity_name:{}", obj.GetName());
-    source_reference->add_identifier(ent_id);
-    source_reference->add_identifier(ent_type);
-    source_reference->add_identifier(ent_name);
+    // Set source reference if available
+    if (!obj.GetSourceReference().empty())
+    {
+        for (const auto &ref : obj.GetSourceReference())
+        {
+            source_reference->add_identifier(ref);
+        }
+    }
 
     // Color
     if (!obj.GetColorStr().empty())
@@ -1480,15 +1466,6 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
         obj_osi_internal.mobj->mutable_color_description()->mutable_rgb()->set_red(rgb.r);
         obj_osi_internal.mobj->mutable_color_description()->mutable_rgb()->set_green(rgb.g);
         obj_osi_internal.mobj->mutable_color_description()->mutable_rgb()->set_blue(rgb.b);
-    }
-
-    // Set source reference if available
-    if (!obj.GetSourceReference().empty())
-    {
-        for (const auto &ref : obj.GetSourceReference())
-        {
-            source_reference->add_identifier(ref);
-        }
     }
 
     auto *odr = roadmanager::Position::GetOpenDrive();
@@ -1506,7 +1483,13 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
 
         if (odr->CartesianToGeoPosition(x, y, lat, lon))
         {
-            source_reference->add_identifier(fmt::format("geo_pos:{:.6f},{:.6f}", lat, lon));
+            char buf[48];
+            int  len = snprintf(buf, sizeof(buf), "geo_pos:%.6f,%.6f", lat, lon);
+            if (obj_osi_internal.mobj->source_reference_size() == 0)
+            {
+                obj_osi_internal.mobj->add_source_reference();
+            }
+            obj_osi_internal.mobj->mutable_source_reference(0)->add_identifier(buf, static_cast<size_t>(len));
         }
     }
 
@@ -3297,7 +3280,7 @@ int OSIReporter::UpdateStaticTrafficSignals()
 
 int OSIReporter::UpdateDynamicTrafficSignals()
 {
-    obj_osi_internal.dynamic_gt->clear_traffic_light();
+    obj_osi_external.gt->clear_traffic_light();
 
     for (auto signal : roadmanager::Position::GetOpenDrive()->GetDynamicSignals())
     {
@@ -3306,7 +3289,7 @@ int OSIReporter::UpdateDynamicTrafficSignals()
             continue;
         }
 
-        AddTrafficLightToGt(obj_osi_internal.dynamic_gt, signal);
+        AddTrafficLightToGt(obj_osi_external.gt, signal);
     }
 
     return 0;
@@ -3758,7 +3741,7 @@ void OSIReporter::UpdateEnvironment(const OSCEnvironment &environment)
 {
     if (environment.IsEnvironment())
     {
-        obj_osi_internal.dynamic_gt->clear_environmental_conditions();
+        obj_osi_external.gt->clear_environmental_conditions();
         if (environment.IsWeatherSet())
         {
             UpdateEnvironmentWeather(environment);
@@ -3774,11 +3757,11 @@ void OSIReporter::UpdateEnvironmentWeather(const OSCEnvironment &environment)
 {
     if (environment.IsAtmosphericPressureSet())
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_atmospheric_pressure(environment.GetAtmosphericPressure());
+        obj_osi_external.gt->mutable_environmental_conditions()->set_atmospheric_pressure(environment.GetAtmosphericPressure());
     }
     if (environment.IsTemperatureSet())
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_temperature(environment.GetTemperature());
+        obj_osi_external.gt->mutable_environmental_conditions()->set_temperature(environment.GetTemperature());
     }
     if (environment.IsFractionalCloudStateSet())
     {
@@ -3799,8 +3782,8 @@ void OSIReporter::UpdateEnvironmentWeather(const OSCEnvironment &environment)
     }
     if (environment.IsWindSet())
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_wind()->set_origin_direction(environment.GetWind().direction);
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_wind()->set_speed(environment.GetWind().speed);
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_wind()->set_origin_direction(environment.GetWind().direction);
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_wind()->set_speed(environment.GetWind().speed);
     }
 }
 
@@ -3808,117 +3791,117 @@ void OSIReporter::UpdateEnvironmentFractionalCloudState(const OSCEnvironment &en
 {
     if (environment.GetFractionalCloudState() == "zeroOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_ZERO_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "oneOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_ONE_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "twoOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_TWO_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "threeOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_THREE_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "fourOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_FOUR_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "fiveOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_FIVE_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "sixOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_SIX_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "sevenOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_SEVEN_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "eightOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_EIGHT_OKTAS);
     }
     else if (environment.GetFractionalCloudState() == "nineOktas")
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_SKY_OBSCURED);
     }
     else
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
             osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_OTHER);
     }
 }
 
 void OSIReporter::UpdateEnvironmentSun(const OSCEnvironment &environment)
 {
-    obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_sun()->set_elevation(environment.GetSun().elevation);
-    obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_sun()->set_azimuth(environment.GetSun().azimuth);
+    obj_osi_external.gt->mutable_environmental_conditions()->mutable_sun()->set_elevation(environment.GetSun().elevation);
+    obj_osi_external.gt->mutable_environmental_conditions()->mutable_sun()->set_azimuth(environment.GetSun().azimuth);
     if (environment.IsSunIntensitySet())
     {
         double intensity = environment.GetSunIntensity();
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_sun()->set_intensity(intensity);
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_sun()->set_intensity(intensity);
         if (intensity > 10000)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL9);
         }
         else if (intensity > 1000)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL8);
         }
         else if (intensity > 400)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL7);
         }
         else if (intensity > 20)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL6);
         }
         else if (intensity > 10)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL5);
         }
         else if (intensity > 3)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL4);
         }
         else if (intensity > 1)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL3);
         }
         else if (intensity > 0.01)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL2);
         }
         else if (intensity > 0)
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL1);
         }
         else
         {
-            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+            obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
                 osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_OTHER);
         }
     }
@@ -3928,25 +3911,24 @@ void OSIReporter::UpdateEnvironmentTimeOfDay(const OSCEnvironment &environment)
 {
     if (!environment.GetTimeOfDay().animation)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
             GetSecondsSinceMidnight(environment.GetTimeOfDay().datetime));
 
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_unix_timestamp(
-            GetEpochTimeFromString(environment.GetTimeOfDay().datetime));
+        obj_osi_external.gt->mutable_environmental_conditions()->set_unix_timestamp(GetEpochTimeFromString(environment.GetTimeOfDay().datetime));
     }
     else
     {
-        auto dyn_gt_timestamp = obj_osi_internal.dynamic_gt->mutable_timestamp()->seconds();
+        auto dyn_gt_timestamp = obj_osi_external.gt->mutable_timestamp()->seconds();
         if (!environment_timestamp_offset_.has_value() && dyn_gt_timestamp > 0)
         {
             environment_timestamp_offset_ = dyn_gt_timestamp;
         }
 
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
+        obj_osi_external.gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
             GetSecondsSinceMidnight(environment.GetTimeOfDay().datetime) +
             static_cast<uint32_t>(dyn_gt_timestamp - environment_timestamp_offset_.value_or(0)));
 
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_unix_timestamp(
+        obj_osi_external.gt->mutable_environmental_conditions()->set_unix_timestamp(
             GetEpochTimeFromString(environment.GetTimeOfDay().datetime) + dyn_gt_timestamp -
             environment_timestamp_offset_.value_or(0));  // plus simulation time, nanosec is wrong
     }
@@ -3956,39 +3938,39 @@ void OSIReporter::UpdateEnvironmentFog(const double visibility_range)
 {
     if (visibility_range > 40000)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_EXCELLENT_VISIBILITY);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_EXCELLENT_VISIBILITY);
     }
     else if (visibility_range > 10000)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_GOOD_VISIBILITY);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_GOOD_VISIBILITY);
     }
     else if (visibility_range > 4000)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MODERATE_VISIBILITY);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MODERATE_VISIBILITY);
     }
     else if (visibility_range > 2000)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_POOR_VISIBILITY);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_POOR_VISIBILITY);
     }
     else if (visibility_range > 1000)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MIST);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MIST);
     }
     else if (visibility_range > 200)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_LIGHT);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_LIGHT);
     }
     else if (visibility_range > 50)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_THICK);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_THICK);
     }
     else if (visibility_range >= 0)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_DENSE);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_DENSE);
     }
     else
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_OTHER);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_OTHER);
     }
 }
 
@@ -3996,43 +3978,38 @@ void OSIReporter::UpdateEnvironmentPrecipitation(const double precipitation_inte
 {
     if (precipitation_intensity > 149)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
-            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_EXTREME);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_EXTREME);
     }
     else if (precipitation_intensity > 34)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_HEAVY);
     }
     else if (precipitation_intensity > 8.1)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
-            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
     }
     else if (precipitation_intensity > 1.9)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_MODERATE);
     }
     else if (precipitation_intensity > 0.5)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
-            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_LIGHT);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_LIGHT);
     }
     else if (precipitation_intensity > 0.1)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_LIGHT);
     }
     else if (precipitation_intensity >= 0)
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
-            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_NONE);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_NONE);
     }
     else
     {
-        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
-            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_OTHER);
+        obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_OTHER);
     }
 }
 

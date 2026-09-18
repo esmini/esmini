@@ -794,6 +794,7 @@ namespace scenarioengine
         std::string              color_;
         Rgb                      color_rgb_;
         std::vector<std::string> source_reference_;
+        bool                     source_reference_set_;
         id_t                     osi_index_ = ID_UNDEFINED;  // global OSI index
     };
 

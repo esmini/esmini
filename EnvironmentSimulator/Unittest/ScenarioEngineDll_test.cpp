@@ -1531,11 +1531,11 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 #else
     ASSERT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier_size(), 5);
 #endif  //  _USE_PROJ
-    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(0), "entity_id:1");
-    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(1), "entity_type:Vehicle");
-    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(2), "entity_name:OverTaker");
-    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(3), "model_year:2019");
-    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(4), "make:esmini_car");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(0), "model_year:2019");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(1), "make:esmini_car");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(2), "entity_id:1");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(3), "entity_type:Vehicle");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(4), "entity_name:OverTaker");
 
     // verify color populated from the color property
     ASSERT_EQ(osi_gt_ptr->moving_object(0).has_color_description(), true);
