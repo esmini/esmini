@@ -840,6 +840,14 @@ namespace ESMini
         public static extern int SE_InitWithArgs(int argc, string argv);
 
         /// <summary>
+        /// Get the complete OpenSCENARIO XML as string
+        /// Any resolved parameters and expressions according to options save_xosc and save_xosc_resolved
+        /// </summary>
+        /// <returns>XML string (allocated and handled by esmini)</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern IntPtr SE_GetXMLString();
+
+        /// <summary>
         /// Step the simulation forward with specified timestep
         /// </summary>
         /// <param name="dt">time step in seconds</param>

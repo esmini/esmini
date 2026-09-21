@@ -189,6 +189,8 @@ namespace scenarioengine
             return &doc_;
         }
 
+        const char* GetOSCString();
+
         std::vector<Controller*> controller_;
 
         static Parameters parameters;  // static to enable set via callback during creation of object
@@ -209,6 +211,7 @@ namespace scenarioengine
         std::string           description_;
         StoryBoard*           story_board_;
         bool                  has_lightstate_action_;
+        std::string           osc_string_;  // may be populated if requested via API
 
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);

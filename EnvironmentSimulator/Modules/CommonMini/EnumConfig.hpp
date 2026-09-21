@@ -118,6 +118,7 @@ namespace esmini_options
         SAVE_GENERATED_MODEL_VISIBLE,    // 106
         OPTIMIZE_3D_MODEL,               // 107
         DISABLE_SHADOWS,                 // 108
+        SAVE_XOSC_RESOLVED,              // 109
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -189,6 +190,7 @@ namespace esmini_options
         {"save_generated_model", SAVE_GENERATED_MODEL},
         {"save_generated_model_visible", SAVE_GENERATED_MODEL_VISIBLE},
         {"save_xosc", SAVE_XOSC},
+        {"save_xosc_resolved", SAVE_XOSC_RESOLVED},
         {"seed", SEED},
         {"sensors", SENSORS},
         {"server", SERVER},

@@ -17,8 +17,10 @@
 #include <vector>
 #include <stdexcept>
 #include <fstream>
+#include <sstream>
 #include <stdio.h>
 #include <tuple>
+#include "pugixml.hpp"
 
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -6640,6 +6642,12 @@ TEST_P(TrailTest, TrailTestPositionMode)
     SE_Close();
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    TrailTestPositionModePosition,
+    TrailTest,
+    testing::Values(std::make_tuple("position", 71.0, -6.0, 64, 0.0445, 79.9937, -5.7766, 8, 0.1624, 84.8936, -4.8236, 2, 0.0118),
+                    std::make_tuple("time", 60.9999, -5.994, 64, 0.2758, 65.9984, -5.8872, 8, 0.1624, 70.9764, -5.4374, 2, -0.0157)));
+
 TEST(APITest, TestGetTimeToCollision)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/ttc_condition.xosc";
@@ -6707,11 +6715,114 @@ TEST(APITest, TestGetGeoPos)
 }
 #endif
 
-INSTANTIATE_TEST_SUITE_P(
-    TrailTestPositionModePosition,
-    TrailTest,
-    testing::Values(std::make_tuple("position", 71.0, -6.0, 64, 0.0445, 79.9937, -5.7766, 8, 0.1624, 84.8936, -4.8236, 2, 0.0118),
-                    std::make_tuple("time", 60.9999, -5.994, 64, 0.2758, 65.9984, -5.8872, 8, 0.1624, 70.9764, -5.4374, 2, -0.0157)));
+static const char* parameter_and_expression_save_test_xml = R"(
+<?xml version="1.0"?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="parameter overwrite test" author="esmini team" revMajor="1" revMinor="3" date="2026-09-22T08:00:00" />
+   <ParameterDeclarations>
+      <ParameterDeclaration name="my_double_param" parameterType="double" value="7.5" />
+      <ParameterDeclaration name="my_int_param" parameterType="int" value="5" />
+      <ParameterDeclaration name="my_bool_param" parameterType="boolean" value="true" />
+      <ParameterDeclaration name="my_string_param" parameterType="double" value="AnyString" />
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles" />
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork />
+   <Entities>
+      <ScenarioObject name="car_AnyString-5">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="car_AnyString-5">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="7.5" y="3.7999999999999998" h="0.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <VisibilityAction sensors="false" graphics="true" traffic="true" />
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+   </Storyboard>
+</OpenSCENARIO>
+)";
+
+static std::string NormalizeXMLString(const std::string& xml)
+{
+    pugi::xml_document doc;
+    const auto         result = doc.load_string(xml.c_str());
+    if (!result)
+    {
+        return {};
+    }
+
+    std::stringstream ss;
+    doc.save(ss, "  ");
+    return ss.str();
+}
+
+static bool CompareNormalizedXML(const std::string& xml_a, const std::string& xml_b)
+{
+    return NormalizeXMLString(xml_a) == NormalizeXMLString(xml_b);
+}
+
+static std::string ReadFileToString(const std::string& path)
+{
+    std::ifstream file(path, std::ios::binary);
+    if (!file.is_open())
+    {
+        return {};
+    }
+
+    std::stringstream ss;
+    ss << file.rdbuf();
+    return ss.str();
+}
+
+TEST(APITest, TestGetXMLString)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/parameters_and_expressions_for_save.xosc";
+    const char* args[]        = {"--osc", scenario_file.c_str(), "--save_xosc_resolved", "--headless"};
+
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(args[0]), args), 0);
+    ASSERT_EQ(SE_GetNumberOfObjects(), 1);
+
+    const char* xml_string = SE_GetXMLString();
+    ASSERT_NE(xml_string, nullptr);
+
+    EXPECT_TRUE(CompareNormalizedXML(xml_string, parameter_and_expression_save_test_xml));
+
+    SE_Close();
+}
+
+TEST(APITest, TestResolvedSaveMatchesReferenceFile)
+{
+    const std::string scenario_file  = "../../../EnvironmentSimulator/Unittest/xosc/parameters_and_expressions_for_save.xosc";
+    const std::string generated_file = "parameters_and_expressions_for_save_0_of_0.xosc";
+    const std::string reference_file = "../../../EnvironmentSimulator/Unittest/xosc/parameters_and_expressions_for_save_resolved.xosc";
+
+    std::remove(generated_file.c_str());
+
+    const char* args[] = {"--osc", scenario_file.c_str(), "--save_xosc_resolved", "--headless"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(args[0]), args), 0);
+    ASSERT_EQ(SE_GetNumberOfObjects(), 1);
+    SE_Close();
+
+    ASSERT_TRUE(fs::exists(generated_file));
+    EXPECT_TRUE(CompareNormalizedXML(ReadFileToString(generated_file), ReadFileToString(reference_file)));
+
+    std::remove(generated_file.c_str());
+}
 
 int main(int argc, char** argv)
 {

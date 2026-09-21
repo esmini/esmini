@@ -604,6 +604,15 @@ extern "C"
         return InitScenario();
     }
 
+    SE_DLL_API const char *SE_GetXMLString()
+    {
+        if (player == nullptr)
+        {
+            return nullptr;
+        }
+        return player->scenarioEngine->scenarioReader->GetOSCString();
+    }
+
     static int AddCommonArguments(int disable_ctrls, int use_viewer, int threads, int record)
     {
         (void)record;

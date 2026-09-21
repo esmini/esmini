@@ -630,6 +630,13 @@ extern "C"
     SE_DLL_API int SE_InitWithArgs(int argc, const char *argv[]);
 
     /**
+            Get the complete OpenSCENARIO XML as string
+            Any resolved parameters and expressions according to options save_xosc and save_xosc_resolved
+            @return XML string (allocated and handled by esmini)
+    */
+    SE_DLL_API const char *SE_GetXMLString();
+
+    /**
             Step the simulation forward with specified timestep
             @param dt time step in seconds
             @return 0 if successful, -1 if not

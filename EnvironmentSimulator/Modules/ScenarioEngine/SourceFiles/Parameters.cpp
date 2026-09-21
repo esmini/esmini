@@ -455,11 +455,19 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
                     if (rs.type == EXPR_RETURN_DOUBLE)
                     {
                         LOG_INFO("Expr {} = {} = {:.10f}", attr.value(), expr, rs._double);
+                        if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::SAVE_XOSC_RESOLVED))
+                        {
+                            attr.set_value(rs._double);
+                        }
                         return_value = std::to_string(rs._double);
                     }
                     else if (rs.type == EXPR_RETURN_STRING)
                     {
                         LOG_INFO("Expr {} = {} = {}", attr.value(), expr, rs._string.string);
+                        if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::SAVE_XOSC_RESOLVED))
+                        {
+                            attr.set_value(rs._string.string);
+                        }
                         return_value = rs._string.string;
                     }
                     clear_expr_result(&rs);
@@ -473,6 +481,10 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
             {
                 // Resolve variable
                 return_value = getParameter(attr.value());
+                if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::SAVE_XOSC_RESOLVED))
+                {
+                    attr.set_value(return_value.c_str());
+                }
             }
         }
         else

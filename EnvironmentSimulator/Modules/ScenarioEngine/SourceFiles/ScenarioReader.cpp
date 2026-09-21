@@ -136,6 +136,18 @@ int ScenarioReader::RemoveController(Controller *controller)
     return -1;
 }
 
+const char *scenarioengine::ScenarioReader::GetOSCString()
+{
+    if (osc_string_.empty())
+    {
+        std::ostringstream oss;
+        doc_.save(oss);
+        osc_string_ = oss.str();
+    }
+
+    return osc_string_.c_str();
+}
+
 int ScenarioReader::loadOSCFile(const char *path)
 {
     pugi::xml_parse_result result = doc_.load_file(path);

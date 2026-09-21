@@ -1597,6 +1597,11 @@ int ScenarioPlayer::Init()
                   "mode",
                   "continue",
                   false);
+    opt.AddOption("save_xosc_resolved",
+                  "Save OpenSCENARIO file with all parameter and attribute values resolved. Modes: quit, continue.",
+                  "mode",
+                  "continue",
+                  false);
     opt.AddOption("seed", "Specify seed number for random generator", "number");
     opt.AddOption("sensors", "Show sensor frustums. Toggle key 'r'");
     opt.AddOption("server", "Launch server to receive state of external Ego simulator");
@@ -1926,7 +1931,16 @@ int ScenarioPlayer::Init()
     }
 
     // Save xml
-    if (opt.GetOptionSet("save_xosc"))
+    if (opt.GetOptionSetByEnum(esmini_options::CONFIG_ENUM::SAVE_XOSC_RESOLVED))
+    {
+        if (!opt.GetOptionSetByEnum(esmini_options::CONFIG_ENUM::SAVE_XOSC))
+        {
+            LOG_DEBUG("SAVE_XOSC_RESOLVED implies SAVE_XOSC");
+            opt.SetOptionValue("save_xosc", opt.GetOptionValueByEnum(esmini_options::CONFIG_ENUM::SAVE_XOSC_RESOLVED));
+        }
+    }
+
+    if (opt.GetOptionSetByEnum(esmini_options::CONFIG_ENUM::SAVE_XOSC))
     {
         std::string         filename = FileNameOf(scenarioEngine->getScenarioFilename());
         pugi::xml_document* xml_doc  = scenarioEngine->scenarioReader->GetDXMLDocument();

@@ -138,6 +138,8 @@ Options:
       Save generated 3D model with visible objects only (n/a when a scenegraph is loaded)
   --save_xosc [mode]  (default if value omitted: continue)
       Save OpenSCENARIO file with any populated parameter values (from distribution). Modes: quit, continue.
+  --save_xosc_resolved [mode]  (default if value omitted: continue)
+      Save OpenSCENARIO file with all parameter and attribute values resolved. Modes: quit, continue.
   --seed <number>
       Specify seed number for random generator
   --sensors
