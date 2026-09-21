@@ -95,8 +95,6 @@ void StoryBoard::Start(double simTime)
 
 void StoryBoard::Step(double simTime, double dt)
 {
-    EvalTriggers(simTime);
-
     for (auto action : init_.global_action_)
     {
         // skip update for during ghost restart phases
@@ -124,6 +122,9 @@ void StoryBoard::Step(double simTime, double dt)
             action->Step(simTime, dt);
         }
     }
+
+    // Finish Init actions before storyboard triggers can start competing actions.
+    EvalTriggers(simTime);
 
     StoryBoardElement::Step(simTime, dt);
 }

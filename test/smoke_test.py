@@ -35,6 +35,16 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n.16.740.* StopCondition: true, delay: 5.00, CutInManeuver, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising\\n', log)  is not None)
         self.assertTrue(re.search('\\n.21.740.* StopCondition: true\\n', log)  is not None)
 
+    def test_init_instantaneous_actions(self):
+        log, duration, cpu_time, _ = run_scenario(
+            os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/init_instantaneous_actions.xosc'),
+            COMMON_ESMINI_ARGS + '--log_level debug')
+
+        self.assertNotIn('Stopping Init Car', log)
+        event_start = log.index('EventSpeedAction initState -> startTransition -> runningState')
+        self.assertLess(log.index('Init Car TeleportAction runningState -> endTransition -> completeState'), event_start)
+        self.assertLess(log.index('Init Car LongitudinalAction runningState -> endTransition -> completeState'), event_start)
+
     def test_ltap_od(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS \
             + '--disable_controllers')
