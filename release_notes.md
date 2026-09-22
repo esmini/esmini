@@ -1,5 +1,26 @@
 ## esmini release notes
 
+### 2026-09-22 Version 3.8.2
+
+New features:
+- Retrieve XML with resolved parameters and attributes ([issue #843](https://github.com/esmini/esmini/issues/843))
+  - option `--save_osc_resolved` expands the XML and saves to file
+  - can then also be fetched via esminiLib API [SE_GetXMLString()](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L632-L637).
+
+Improvements and fixes:
+- OSI optimizations:
+  - Set source_reference on object once
+  - Remove use of `fmt` in moving object updates
+  - Remove unnecessary copying of ground truth content
+- Add info how to visualize OSI in lichtblick to [User guide - Visualize .osi in Lichtblick](https://esmini.github.io/use-cases.html#_visualize_osi_in_lichtblick_mcap)
+- Add misc object scenario id to OSI source_reference
+- Fix missing id for stationary objects in [osi2csv.py](https://github.com/esmini/esmini/blob/dev/scripts/osi2csv.py)
+- Add missing delineator 3D model to demo package
+- Fix corrupt log entry in direct junction validation ([PR #835](https://github.com/esmini/esmini/pull/835))
+- Update [OSC coverage](https://github.com/esmini/esmini/blob/dev/osc_coverage.txt)
+- Git LFS cleanup: Migrate remaining two images to standard Git blobs
+- Fix smoke test config checks unintentionally blocking a few test cases
+
 ### 2026-09-08 Version 3.8.1
 
 New features:
