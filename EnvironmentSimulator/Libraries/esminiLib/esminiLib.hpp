@@ -1577,6 +1577,12 @@ extern "C"
     SE_DLL_API int SE_OpenOSISocket(const char *ipaddr);
 
     /**
+            Send OSI packages over UDP to specified IP address, port and with a threshold for
+            maximum size for each OSI data package. Value bigger than data_max_size will be split into multiple packages.
+    */
+    SE_DLL_API int SE_OpenCustomOSISocket(const char *ipaddr, unsigned int port, unsigned int data_max_size);
+
+    /**
             Switch off logging to OSI file(s)
             @return 0 if successful, -1 if not
     */

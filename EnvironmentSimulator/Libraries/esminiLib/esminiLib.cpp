@@ -1706,6 +1706,24 @@ extern "C"
         return returnString.c_str();
     }
 
+    SE_DLL_API int SE_OpenCustomOSISocket(const char *ipaddr, unsigned int port, unsigned int data_max_size)
+    {
+#ifdef _USE_OSI
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
+        player->osiReporter->OpenSocket(ipaddr, port, data_max_size);
+#else
+        (void)ipaddr;
+        (void)port;
+        (void)data_max_size;
+#endif  // _USE_OSI
+
+        return 0;
+    }
+
     SE_DLL_API int SE_OpenOSISocket(const char *ipaddr)
     {
 #ifdef _USE_OSI
