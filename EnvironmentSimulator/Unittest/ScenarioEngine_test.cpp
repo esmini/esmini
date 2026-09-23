@@ -6509,6 +6509,46 @@ TEST(InitActions, TestInitActionsReorderingNoGhost)
     delete se;
 }
 
+// NaturalDriver without a ScenarioPlayer must inject lane changes through the engine, not crash.
+TEST(ControllerTest, NaturalDriverHeadlessLaneChange)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/highway_driver.xosc");
+    ASSERT_NE(se, nullptr);
+
+    scenario_step(se, 0.0);
+
+    Object* ego           = se->entities_.object_[0];
+    int     initial_lane  = ego->pos_.GetLaneId();
+    double  initial_speed = ego->GetSpeed();
+    EXPECT_EQ(initial_lane, -3);
+    EXPECT_NEAR(initial_speed, 25.0, 1e-3);
+
+    int  lane_after_1s = initial_lane;
+    bool lane_changed  = false;
+    for (int i = 0; i < 200; ++i)
+    {
+        scenario_step(se, 0.05);
+        int lane = ego->pos_.GetLaneId();
+        if (lane != initial_lane)
+        {
+            lane_changed = true;
+        }
+        if (i == 20)  // t = 1.05 s
+        {
+            lane_after_1s = lane;
+        }
+    }
+
+    EXPECT_TRUE(lane_changed);
+    EXPECT_EQ(lane_after_1s, -2);
+    EXPECT_EQ(ego->pos_.GetLaneId(), -2);
+
+    EXPECT_LT(ego->GetSpeed(), initial_speed);
+    EXPECT_NEAR(se->getSimulationTime(), 10.0, 1e-6);
+
+    delete se;
+}
+
 int main(int argc, char** argv)
 {
 #if 0  // set to 1 and modify filter to run one single test
