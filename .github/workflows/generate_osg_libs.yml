@@ -46,6 +46,9 @@ jobs:
           name: osg ${{ runner.os }} lib package
           path: osg/osg_*.7z
 
-      - name: Debugging with tmate
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
+      - name: Debugging with Upterm
+        if: ${{ failure() }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          wait-timeout-minutes: 15
+          # limit-access-to-actor: true
