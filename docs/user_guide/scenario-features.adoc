@@ -714,6 +714,15 @@ This schema overcomes limitations from OpenDRIVE and OSI type incompatibility. F
 
 Each resolved repeat instance of a road object is emitted as a separate OSI stationary object. The first instance uses the object's global ID; additional instances receive new global IDs.
 
+=== Roadworks
+
+Basic roadworks can be modeled by defining temporary lane sections (see https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/v1.9.0/specification/11_lanes/11_02_lane_layers.html[OpenDRIVE 1.9 Lane layers]) and road delineators (see section above).
+
+Example scenario: https://github.com/esmini/esmini/blob/dev/resources/xosc/roadworks_permanent_temporary_layers.xosc[roadworks_permanent_temporary_layers.xosc].
+
+.Roadworks utilizing OpenDRIVE Lane Layer and road delineators.
+image::roadworks.jpg[]
+
 === Expressions
 From OpenSCENARIO v1.1 https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_expressions[expressions] including mathematical operations are supported in assignment of value to OpenSCENARIO https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameters[parameters] and XML element attributes. Examples:
 
