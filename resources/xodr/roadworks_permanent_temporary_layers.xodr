@@ -3,9 +3,7 @@
     <header name="construction_site_permanent_lanes" revMajor="1" revMinor="9" date="2024-08-05 17:23:42.502776" north="0.0" south="0.0" east="0.0"
         west="0.0" />
     <road rule="RHT" id="1" junction="-1" length="400.0">
-        <link>
-            <successor elementType="road" elementId="2" contactPoint="start" />
-        </link>
+        <link/>
         <planView>
             <geometry s="0" x="-100.0" y="0.0" hdg="0.0" length="400.0">
                 <line />
