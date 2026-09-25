@@ -1865,8 +1865,8 @@ idx_t Road::GetLaneSectionIdxByS(double s, idx_t start_at) const
             }
             else
             {
-                // s is within road bounds, use last lane section
-                i = GetNumberOfLaneSections() - 1;
+                // s is within road bounds, use last permanent lane section
+                i = last_permanent_lane_section_idx_ != IDX_UNDEFINED ? last_permanent_lane_section_idx_ : GetNumberOfLaneSections() - 1;
             }
         }
     }
@@ -3664,6 +3664,15 @@ void Road::AddLaneSection(LaneSection* lane_section)
     }
 
     lane_section_.push_back(lane_section);
+
+    if (lane_section->GetLayer() == LAYER_PERMANENT)
+    {
+        last_permanent_lane_section_idx_ = static_cast<idx_t>(lane_section_.size() - 1);
+    }
+    else if (lane_section->GetLayer() == LAYER_TEMPORARY)
+    {
+        last_temporary_lane_section_idx_ = static_cast<idx_t>(lane_section_.size() - 1);
+    }
 }
 
 void Road::CalculateLaneSectionLengths()
@@ -3673,21 +3682,32 @@ void Road::CalculateLaneSectionLengths()
         return;
     }
 
+    std::sort(lane_section_.begin(),
+              lane_section_.end(),
+              [](const LaneSection* lhs, const LaneSection* rhs)
+              {
+                  if (lhs->GetLayer() != rhs->GetLayer())
+                  {
+                      return lhs->GetLayer() < rhs->GetLayer();
+                  }
+                  return lhs->GetS() < rhs->GetS();
+              });
+
     LOG_DEBUG("CalculateLaneSectionLengths: Road {} has {} lane sections, road length = {:.2f}", GetId(), lane_section_.size(), GetLength());
 
     // Find the last section for each layer to ensure proper extension to road end
-    int last_permanent_idx = -1;
-    int last_temporary_idx = -1;
+    last_permanent_lane_section_idx_ = IDX_UNDEFINED;
+    last_temporary_lane_section_idx_ = IDX_UNDEFINED;
 
     for (size_t i = 0; i < lane_section_.size(); i++)
     {
         if (lane_section_[i]->GetLayer() == LAYER_PERMANENT)
         {
-            last_permanent_idx = static_cast<int>(i);
+            last_permanent_lane_section_idx_ = static_cast<idx_t>(i);
         }
         else if (lane_section_[i]->GetLayer() == LAYER_TEMPORARY)
         {
-            last_temporary_idx = static_cast<int>(i);
+            last_temporary_lane_section_idx_ = static_cast<idx_t>(i);
         }
     }
 
@@ -3700,8 +3720,8 @@ void Road::CalculateLaneSectionLengths()
         bool         is_last_in_layer = false;
 
         // Check if this is the last section of its layer
-        if ((lane_section->GetLayer() == LAYER_PERMANENT && static_cast<int>(i) == last_permanent_idx) ||
-            (lane_section->GetLayer() == LAYER_TEMPORARY && static_cast<int>(i) == last_temporary_idx))
+        if ((lane_section->GetLayer() == LAYER_PERMANENT && static_cast<idx_t>(i) == last_permanent_lane_section_idx_) ||
+            (lane_section->GetLayer() == LAYER_TEMPORARY && static_cast<idx_t>(i) == last_temporary_lane_section_idx_))
         {
             is_last_in_layer = true;
         }
@@ -11048,7 +11068,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         if (s_ + ds_road > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
         {
             // beyond end of road, ensure last lane section
-            lane_section_idx_ = road->GetNumberOfLaneSections() - 1;
+            lane_section_idx_ = road->GetLaneSectionIdxByS(road->GetLength());
 
             // Calculate remaining s-value once we moved to the connected road
             ds_road = s_ + ds_road - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();

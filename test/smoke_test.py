@@ -2775,7 +2775,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^16.500, 3, permanent_layer_vehicle, 264.000, -8.375, 0.000, 0.000, 0.000, 0.000, 16.000, 0.000, 0.303', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.100, 0, Ego, 281.838, -8.375, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 4.438', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.100, 1, Lead, 216.471, -6.100, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 1.757', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.100, 2, temp_layer_vehicle, 300.000, -8.375, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 3.204', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.100, 2, temp_layer_vehicle, 300.000, -4.625, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 3.204', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.100, 3, permanent_layer_vehicle, 300.000, -8.375, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 3.204', csv, re.MULTILINE))
 
 if __name__ == "__main__":

@@ -2972,7 +2972,9 @@ namespace roadmanager
               name_(name),
               length_(0),
               junction_(ID_UNDEFINED),
-              rule_(rule)
+              rule_(rule),
+              last_permanent_lane_section_idx_(IDX_UNDEFINED),
+              last_temporary_lane_section_idx_(IDX_UNDEFINED)
         {
         }
         ~Road();
@@ -3266,6 +3268,8 @@ namespace roadmanager
         std::vector<Elevation *>                elevation_profile_;
         std::vector<Elevation *>                super_elevation_profile_;
         std::vector<LaneSection *>              lane_section_;
+        idx_t                                   last_permanent_lane_section_idx_;
+        idx_t                                   last_temporary_lane_section_idx_;
         std::vector<LaneOffset *>               lane_offset_;
         std::vector<Signal *>                   signal_;
         std::vector<RMObject *>                 object_;
