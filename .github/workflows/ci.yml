@@ -22,7 +22,7 @@ on:
 env:
   ESMINI_SLIM_TEST: -D USE_OSG=OFF -D USE_SUMO=OFF -D USE_OSI=OFF -D USE_GTEST=ON -D USE_IMPLOT=OFF -D USE_PROJ=OFF
   ESMINI_CHECKS: -D ENABLE_WARNINGS_AS_ERRORS=ON -D ENABLE_INCLUDE_WHAT_YOU_USE=ON
-  USE_TMATE: false
+  USE_UPTERM: false
 
 jobs:
   lint:
@@ -236,9 +236,12 @@ jobs:
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'
 
-      - name: Debugging with tmate
-        if: ${{ failure() && env.USE_TMATE == 'true' }}
-        uses: mxschmitt/action-tmate@v3
+      - name: Debugging with Upterm
+        if: ${{ failure() && env.USE_UPTERM == 'true' }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          wait-timeout-minutes: 15
+          # limit-access-to-actor: true
 
   test-no-external-modules:
     needs: [lint]
@@ -274,10 +277,10 @@ jobs:
             resources/models
           key: ${{ runner.os }}-external-resources
 
-      # run xml validation only here.
-      # 1. Only needs to run once
-      # 2. It's not dependent on configuration, so it can be run by any config
-      # 3. This configuration is faster so validation won't add to total CI run time
+        # run xml validation only here.
+        # 1. Only needs to run once
+        # 2. It's not dependent on configuration, so it can be run by any config
+        # 3. This configuration is faster so validation won't add to total CI run time
       - name: Run schema validation
         if: runner.os == 'Linux' && matrix.configuration == 'Release'
         run: python3 scripts/run_schema_comply.py resources EnvironmentSimulator
@@ -330,9 +333,12 @@ jobs:
         shell: bash
         run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w $DEBUG_FLAG
 
-      - name: Debugging with tmate
-        if: ${{ failure() && env.USE_TMATE == 'true' }}
-        uses: mxschmitt/action-tmate@v3
+      - name: Debugging with Upterm
+        if: ${{ failure() && env.USE_UPTERM == 'true' }}
+        uses: owenthereal/action-upterm@v1
+        with:
+          wait-timeout-minutes: 15
+          # limit-access-to-actor: true
 
   release:
     needs: [test, test-no-external-modules]
