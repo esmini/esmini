@@ -304,6 +304,21 @@ jobs:
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
+      - name: Set up esminiJS prerequisites
+        if: matrix.os == 'ubuntu-22.04' && matrix.configuration == 'Release'
+        run: |
+          sudo apt-get install -y cmake bzip2 ninja-build
+          git clone https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
+          "$RUNNER_TEMP/emsdk/emsdk" install 6.0.10
+          "$RUNNER_TEMP/emsdk/emsdk" activate 6.0.10
+
+      - name: Build esminiJS
+        if: matrix.os == 'ubuntu-22.04' && matrix.configuration == 'Release'
+        run: |
+          source "$RUNNER_TEMP/emsdk/emsdk_env.sh"
+          ./build.sh
+        working-directory: EnvironmentSimulator/Libraries/esminiJS
+
       - name: Compile C# wrapper tests
         if: runner.os == 'Windows'
         run: |
