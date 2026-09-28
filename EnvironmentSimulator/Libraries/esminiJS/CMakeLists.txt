@@ -118,6 +118,7 @@ list(
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/PlayerBase/Plot.cpp")
 
 list(
+    # Remove OSI-related files
     REMOVE_ITEM
     SCENARIOENGINE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/ScenarioEngine/SourceFiles/OSIReporter.hpp")
@@ -125,8 +126,6 @@ list(
     REMOVE_ITEM
     SCENARIOENGINE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp")
-
-# Remove OSI-related files
 list(
     REMOVE_ITEM
     SCENARIOENGINE_SOURCES

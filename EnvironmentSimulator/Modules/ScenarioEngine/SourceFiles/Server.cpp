@@ -40,8 +40,6 @@ namespace scenarioengine
     static void ServerThread(void *args)
     {
         (void)args;
-        static unsigned short int iPortIn = ESMINI_DEFAULT_INPORT;  // Port for incoming packages
-        (void)iPortIn;
         EgoStateBuffer_t buf;
 
         state                = SERV_NOT_STARTED;

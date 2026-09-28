@@ -6,6 +6,7 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "ScenarioEngine.hpp"
+#include "playerbase.hpp"
 
 namespace esmini
 {
@@ -201,8 +202,8 @@ namespace esmini
 
         std::string                     xosc_file_;
         OpenScenarioConfig              config_;
-        scenarioengine::ScenarioEngine* scenario_engine_ = nullptr;
-        __int64                         time_stamp_      = 0;
+        scenarioengine::ScenarioPlayer* player_     = nullptr;
+        __int64                         time_stamp_ = 0;
         ScenarioRoadGeometry            road_geometry_cache_;
         bool                            has_road_geometry_cache_ = false;
     };
