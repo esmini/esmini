@@ -33,25 +33,25 @@ Tested on Windows 10 (from CMD), macOS (Catalina) and Linux (Ubuntu 22.04, glic 
     git pull
     ```
 
-* Download and install the latest SDK tools
+* Download and install the specified sdk version
 
     Linux & Mac
     ```
-    ./emsdk install latest
+    ./emsdk install 6.0.10
     ```
     Windows cmd
     ```
-    emsdk install latest
+    emsdk install 6.0.10
     ```
 * Make the "latest" SDK "active" for the current user. (writes .emscripten file)
 
     Linux & Mac
     ```
-    ./emsdk activate latest
+    ./emsdk activate 6.0.10
     ```
     Windows cmd
     ```
-    emsdk activate latest
+    emsdk activate 6.0.10
     ```
 
 * Activate PATH and other environment variables in the current terminal

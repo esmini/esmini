@@ -253,10 +253,8 @@ namespace scenarioengine
 
     static void ServerThread(void *args)
     {
-        ScenarioPlayer           *player  = reinterpret_cast<ScenarioPlayer *>(args);
-        static unsigned short int iPortIn = ESMINI_DEFAULT_ACTION_INPORT;  // Port for incoming packages
-        (void)iPortIn;
-        ActionStruct buf;
+        ScenarioPlayer *player = reinterpret_cast<ScenarioPlayer *>(args);
+        ActionStruct    buf;
         state                = SERV_NOT_STARTED;
         UDPServer *udpServer = new UDPServer(ESMINI_DEFAULT_ACTION_INPORT);
         if (udpServer->GetStatus() != 0)

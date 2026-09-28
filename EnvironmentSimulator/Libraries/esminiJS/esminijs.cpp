@@ -82,9 +82,9 @@ namespace esmini
             state.object_type     = static_cast<int>(object->GetType());
             state.object_category = object->category_;
             state.has_ghost       = object->ghost_ != nullptr;
-            state.sensor_x        = static_cast<float>(object->sensor_pos_[0]);
-            state.sensor_y        = static_cast<float>(object->sensor_pos_[1]);
-            state.sensor_z        = static_cast<float>(object->sensor_pos_[2]);
+            state.sensor_x        = static_cast<float>(object->lookahead_sensor_pos_[0]);
+            state.sensor_y        = static_cast<float>(object->lookahead_sensor_pos_[1]);
+            state.sensor_z        = static_cast<float>(object->lookahead_sensor_pos_[2]);
             state.trail_x         = static_cast<float>(object->trail_closest_pos_.x);
             state.trail_y         = static_cast<float>(object->trail_closest_pos_.y);
             state.trail_z         = static_cast<float>(object->trail_closest_pos_.z);
@@ -549,22 +549,30 @@ namespace esmini
 
     OpenScenario::~OpenScenario()
     {
-        delete scenario_engine_;
+        // ScenarioPlayer's destructor deletes scenarioEngine, so only player_ needs to be deleted here.
+        delete player_;
     }
 
     void OpenScenario::reset()
     {
-        delete scenario_engine_;
-        scenario_engine_ = new scenarioengine::ScenarioEngine(xosc_file_, false);
-        time_stamp_      = 0;
-        DirtyBits::SetReadFront();
+        delete player_;
+
+        char* argv              = "";
+        player_                 = new scenarioengine::ScenarioPlayer(1, &argv);
+        player_->scenarioEngine = new scenarioengine::ScenarioEngine(xosc_file_, false);
+
+        player_->scenarioEngine->SetInjectedActionsPtr(player_->player_server_->GetInjectedActionsPtr());
+
+        time_stamp_              = 0;
         has_road_geometry_cache_ = false;
         road_geometry_cache_     = ScenarioRoadGeometry{};
 
-        if (scenario_engine_->GetInitStatus() != 0)
+        if (player_->scenarioEngine->GetInitStatus() != 0)
         {
             throw std::runtime_error("Failed to initialize scenario: " + xosc_file_);
         }
+
+        player_->InitControllersPostPlayer();
     }
 
     double OpenScenario::resolve_time_step(double requested_time_step)
@@ -585,10 +593,10 @@ namespace esmini
     std::vector<ScenarioObjectState> OpenScenario::collect_object_states() const
     {
         std::vector<ScenarioObjectState> object_states;
-        object_states.reserve(scenario_engine_->entities_.object_.size());
+        object_states.reserve(player_->scenarioEngine->entities_.object_.size());
 
-        const double simulation_time = scenario_engine_->getSimulationTime();
-        for (const auto* object : scenario_engine_->entities_.object_)
+        const double simulation_time = player_->scenarioEngine->getSimulationTime();
+        for (const auto* object : player_->scenarioEngine->entities_.object_)
         {
             if (object == nullptr)
             {
@@ -604,59 +612,43 @@ namespace esmini
     ScenarioFrame OpenScenario::make_frame(int status, double time_step) const
     {
         ScenarioFrame frame;
-        frame.simulation_time = scenario_engine_->getSimulationTime();
+        frame.simulation_time = player_->scenarioEngine->getSimulationTime();
         frame.time_step       = time_step;
         frame.status          = status;
-        frame.quit            = scenario_engine_->GetQuitFlag();
+        frame.quit            = player_->scenarioEngine->GetQuitFlag();
         frame.object_states   = collect_object_states();
         return frame;
     }
 
     int OpenScenario::step(double dt)
     {
-        DirtyBits::SetReadFront();
         const double time_step = resolve_time_step(dt);
-        const int    status    = scenario_engine_->step(time_step);
-
-        if (status >= 0)
-        {
-            scenario_engine_->prepareGroundTruth(time_step);
-            scenario_engine_->SwapAndClearDirtyBits();
-            DirtyBits::SetReadBack();
-        }
+        const int    status    = player_->Frame(time_step, true);
 
         return status;
     }
 
     ScenarioFrame OpenScenario::step_frame(double dt)
     {
-        DirtyBits::SetReadFront();
         const double time_step = resolve_time_step(dt);
-        const int    status    = scenario_engine_->step(time_step);
-
-        if (status >= 0)
-        {
-            scenario_engine_->prepareGroundTruth(time_step);
-            scenario_engine_->SwapAndClearDirtyBits();
-            DirtyBits::SetReadBack();
-        }
+        const int    status    = player_->Frame(time_step, true);
 
         return make_frame(status, time_step);
     }
 
     int OpenScenario::get_object_count() const
     {
-        return static_cast<int>(scenario_engine_->entities_.object_.size());
+        return static_cast<int>(player_->scenarioEngine->entities_.object_.size());
     }
 
     double OpenScenario::get_simulation_time() const
     {
-        return scenario_engine_->getSimulationTime();
+        return player_->scenarioEngine->getSimulationTime();
     }
 
     bool OpenScenario::is_quit() const
     {
-        return scenario_engine_->GetQuitFlag();
+        return player_->scenarioEngine->GetQuitFlag();
     }
 
     std::vector<ScenarioObjectState> OpenScenario::get_object_states() const
@@ -671,24 +663,24 @@ namespace esmini
             throw std::out_of_range("Object index out of range");
         }
 
-        const auto* object = scenario_engine_->entities_.object_[static_cast<size_t>(index)];
-        return copy_state_from_object(object, scenario_engine_->getSimulationTime());
+        const auto* object = player_->scenarioEngine->entities_.object_[static_cast<size_t>(index)];
+        return copy_state_from_object(object, player_->scenarioEngine->getSimulationTime());
     }
 
     double OpenScenario::time_to_collision(int object_a_id, int object_b_id, bool free_space, int cs, int dist_type) const
     {
-        if (scenario_engine_ == nullptr)
+        if (player_->scenarioEngine == nullptr)
         {
             return -1.0;
         }
 
-        scenarioengine::Object* obj_a = scenario_engine_->entities_.GetObjectById(object_a_id);
+        scenarioengine::Object* obj_a = player_->scenarioEngine->entities_.GetObjectById(object_a_id);
         if (obj_a == nullptr)
         {
             return -1.0;
         }
 
-        scenarioengine::Object* obj_b = scenario_engine_->entities_.GetObjectById(object_b_id);
+        scenarioengine::Object* obj_b = player_->scenarioEngine->entities_.GetObjectById(object_b_id);
 
         double ttc = -1.0;
         obj_a->TimeToCollision(obj_b,
@@ -703,12 +695,12 @@ namespace esmini
     {
         ScenarioRoadGeometry geometry;
 
-        if (scenario_engine_ == nullptr || scenario_engine_->getRoadManager() == nullptr)
+        if (player_->scenarioEngine == nullptr || player_->scenarioEngine->getRoadManager() == nullptr)
         {
             return geometry;
         }
 
-        roadmanager::OpenDrive* open_drive = scenario_engine_->getRoadManager();
+        roadmanager::OpenDrive* open_drive = player_->scenarioEngine->getRoadManager();
         geometry.odr_filename              = open_drive->GetOpenDriveFilename();
 
         for (unsigned int road_index = 0; road_index < open_drive->GetNumOfRoads(); ++road_index)
@@ -1105,12 +1097,9 @@ namespace esmini
                 dt = SE_getSimTimeStep(local_time_stamp, effective_config.min_time_step, effective_config.max_time_step);
             }
 
-            status = scenario_engine_->step(dt);
+            status = player_->Frame(dt, true);
             if (status >= 0)
             {
-                scenario_engine_->prepareGroundTruth(dt);
-                scenario_engine_->SwapAndClearDirtyBits();
-                DirtyBits::SetReadBack();
                 auto frame_states = collect_object_states();
                 objects_sts.insert(objects_sts.end(), frame_states.begin(), frame_states.end());
             }
