@@ -2658,6 +2658,21 @@ namespace roadmanager
         static std::string Type2Str(ObjectType type);
         static ObjectType  Str2Type(std::string type);
 
+        /**
+        Friction coefficient set via a <material friction="..."/> child of this object (ASAM
+        OpenDRIVE t_road_objects_object_material, e.g. a "patch" object), NaN if not set.
+        Overrides lane material within the object's s/t bounding area (outline polygon if
+        present, else rectangular/circular bounding area).
+        */
+        double GetFriction() const
+        {
+            return friction_;
+        }
+        void SetFriction(double friction)
+        {
+            friction_ = friction;
+        }
+
         std::string GetName() const
         {
             return name_;
@@ -2891,6 +2906,7 @@ namespace roadmanager
         std::string                model3d_full_path_;
         std::string                texture_filename_;
         double                     texture_scale_ = 1.0;
+        double                     friction_      = std::nan("");  // from <material friction="..."/>, unset by default
     };
 
     enum class SpeedUnit
@@ -3033,11 +3049,22 @@ namespace roadmanager
         double          GetLaneWidthByS(double s, int lane_id) const;
         Lane::LaneType  GetLaneTypeByS(double s, int lane_id) const;
         Lane::Material *GetLaneMaterialByS(double s, int lane_id) const;
-        double          GetSpeedByS(double s) const;
-        RoadType        GetRoadTypeByS(double s) const;
-        bool            GetZAndPitchByS(double s, double *z_centerline, double *z_prim, double *z_primPrim, double *pitch, idx_t *index) const;
-        bool            UpdateRollByS(double s, double *roadSuperElevationPrim, double *roll, idx_t *index) const;
-        unsigned int    GetNumberOfLaneSections() const
+
+        /**
+        Look up friction from object-level <material> patches (e.g. <object type="patch">) at
+        given road s/t position. Uses the object's outline polygon if present, otherwise its
+        rectangular/circular bounding area (length/width/heading or radius).
+        @param s road s coordinate
+        @param t road t coordinate
+        @param friction Reference parameter, set to resulting friction coefficient [-]
+        @return true if any object friction patch applies at given position
+        */
+        bool         GetObjectFriction(double s, double t, double *friction) const;
+        double       GetSpeedByS(double s) const;
+        RoadType     GetRoadTypeByS(double s) const;
+        bool         GetZAndPitchByS(double s, double *z_centerline, double *z_prim, double *z_primPrim, double *pitch, idx_t *index) const;
+        bool         UpdateRollByS(double s, double *roadSuperElevationPrim, double *roll, idx_t *index) const;
+        unsigned int GetNumberOfLaneSections() const
         {
             return static_cast<unsigned int>(lane_section_.size());
         }

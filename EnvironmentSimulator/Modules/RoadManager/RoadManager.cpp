@@ -2101,6 +2101,116 @@ Lane::Material* Road::GetLaneMaterialByS(double s, int lane_id) const
     return nullptr;
 }
 
+namespace
+{
+    struct PolyPoint
+    {
+        double s;
+        double t;
+    };
+
+    // Even-odd (crossing number) point-in-polygon test; s/t must be in the same local frame as the polygon points.
+    bool PointInPolygon(double s, double t, const std::vector<PolyPoint>& polygon)
+    {
+        bool inside = false;
+        if (polygon.empty())
+        {
+            return inside;
+        }
+
+        for (size_t i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++)
+        {
+            const PolyPoint& pi = polygon[i];
+            const PolyPoint& pj = polygon[j];
+            if (((pi.t > t) != (pj.t > t)) && (s < (pj.s - pi.s) * (t - pi.t) / (pj.t - pi.t) + pi.s))
+            {
+                inside = !inside;
+            }
+        }
+
+        return inside;
+    }
+}  // namespace
+
+bool Road::GetObjectFriction(double s, double t, double* friction) const
+{
+    // last matching object wins, friction is not additive
+    bool found = false;
+
+    for (unsigned int i = 0; i < GetNumberOfObjects(); i++)
+    {
+        RMObject* obj = GetRoadObject(i);
+        if (obj == nullptr || std::isnan(obj->GetFriction()))
+        {
+            continue;
+        }
+
+        double delta_s = s - obj->GetS();
+        double delta_t = t - obj->GetT();
+        double heading = obj->GetHOffset();
+
+        bool inside = false;
+        if (obj->GetNumberOfOutlines() > 0)
+        {
+            // Polygon-shaped patch: test against every outline, in the same s/t-delta frame as delta_s/delta_t.
+            for (unsigned int j = 0; j < obj->GetNumberOfOutlines() && !inside; j++)
+            {
+                Outline* outline = obj->GetOutline(j);
+                if (outline == nullptr || outline->corner_.size() < 3)
+                {
+                    continue;
+                }
+
+                std::vector<PolyPoint> polygon;
+                polygon.reserve(outline->corner_.size());
+                for (OutlineCorner* corner : outline->corner_)
+                {
+                    if (OutlineCornerRoad* cr = dynamic_cast<OutlineCornerRoad*>(corner))
+                    {
+                        // Already a road (s,t) offset from the object center - no rotation needed.
+                        polygon.push_back({cr->s_ - cr->center_s_, cr->t_ - cr->center_t_});
+                    }
+                    else if (OutlineCornerLocal* cl = dynamic_cast<OutlineCornerLocal*>(corner))
+                    {
+                        // Local (u,v) is defined along the object's heading - rotate into the s/t-delta frame.
+                        polygon.push_back({cos(heading) * cl->u_ - sin(heading) * cl->v_, sin(heading) * cl->u_ + cos(heading) * cl->v_});
+                    }
+                }
+
+                if (PointInPolygon(delta_s, delta_t, polygon))
+                {
+                    inside = true;
+                }
+            }
+        }
+        else
+        {
+            double longitudinal = cos(heading) * delta_s + sin(heading) * delta_t;
+            double lateral      = -sin(heading) * delta_s + cos(heading) * delta_t;
+
+            if (obj->GetRadius() > SMALL_NUMBER)
+            {
+                inside = (longitudinal * longitudinal + lateral * lateral) <= (obj->GetRadius() * obj->GetRadius());
+            }
+            else
+            {
+                inside = fabs(longitudinal) <= obj->GetLength() / 2.0 && fabs(lateral) <= obj->GetWidth() / 2.0;
+            }
+        }
+
+        if (inside)
+        {
+            if (friction != nullptr)
+            {
+                *friction = obj->GetFriction();
+            }
+            found = true;
+        }
+    }
+
+    return found;
+}
+
 Geometry* Road::GetGeometry(unsigned int idx) const
 {
     if (idx >= geometry_.size())
@@ -5392,6 +5502,18 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
                     validity.toLane_   = atoi(validity_node.attribute("toLane").value());
                     obj->validity_.push_back(validity);
+                }
+
+                for (pugi::xml_node material_node = object.child("material"); material_node; material_node = material_node.next_sibling("material"))
+                {
+                    if (!material_node.attribute("friction").empty())
+                    {
+                        obj->SetFriction(material_node.attribute("friction").as_double());
+
+                        // Object-level friction patches are inherently local/varying, so the global
+                        // single-friction-value optimization must not be used once any exist.
+                        SetFriction(std::nan(""));
+                    }
                 }
 
                 for (pugi::xml_node userDataNode = object.child("userData"); userDataNode; userDataNode = userDataNode.next_sibling("userData"))
@@ -12270,6 +12392,13 @@ Position::ReturnCode Position::GetRoadLaneInfo(RoadLaneInfo* data) const
         Lane::Material* m = road->GetLaneMaterialByS(GetS(), GetLaneId());
         data->friction    = m != nullptr ? m->friction : FRICTION_DEFAULT;
         data->lane_type   = road->GetLaneTypeByS(GetS(), GetLaneId());
+
+        // Object-level friction patch, if present, takes precedence over lane material
+        double object_friction = 0.0;
+        if (road->GetObjectFriction(GetS(), GetT(), &object_friction))
+        {
+            data->friction = object_friction;
+        }
     }
 
     return ReturnCode::OK;

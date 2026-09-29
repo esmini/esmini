@@ -4393,6 +4393,54 @@ TEST(LaneMaterialTest, TestLaneFriction)
     EXPECT_EQ(lane->GetMaterialByIdx(5), nullptr);
 }
 
+TEST(ObjectMaterialTest, TestObjectFrictionPatch)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/object_material_friction.xodr"), true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    // Object friction patches are local by nature, so the single-value global friction
+    // optimization must be disabled as soon as any exists.
+    EXPECT_EQ(std::isnan(odr->GetFriction()), true);
+
+    Position pos;
+
+    // Inside the patch (object at s=50, t=-1.75, length=10, width=1.75)
+    pos.SetTrackPos(0, 50.0, -1.75);
+    RoadLaneInfo info_inside{};
+    pos.GetRoadLaneInfo(&info_inside);
+    EXPECT_NEAR(info_inside.friction, 0.3, 1e-3);
+
+    // Outside the patch (patch spans s=45..55), falls back to default lane friction
+    pos.SetTrackPos(0, 10.0, -1.75);
+    RoadLaneInfo info_outside{};
+    pos.GetRoadLaneInfo(&info_outside);
+    EXPECT_NEAR(info_outside.friction, FRICTION_DEFAULT, 1e-3);
+}
+
+TEST(ObjectMaterialTest, TestObjectFrictionOutline)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/object_material_friction.xodr"), true);
+
+    Position pos;
+
+    // patch_2 (object at s=80, t=-1.75) is a triangle outline, not its [-5,5]x[-2,2] bounding box:
+    // corners (u,v) = (-5,-2), (5,-2), (0,2)
+
+    // Centroid of the triangle: clearly inside
+    pos.SetTrackPos(0, 80.0, -1.75);
+    RoadLaneInfo info_inside{};
+    pos.GetRoadLaneInfo(&info_inside);
+    EXPECT_NEAR(info_inside.friction, 0.2, 1e-3);
+
+    // Inside the rectangular bounding box but outside the triangle (near the top-left corner,
+    // cut off by the slanted edge from (-5,-2) to (0,2)): must fall back to default lane friction
+    pos.SetTrackPos(0, 75.1, 0.15);
+    RoadLaneInfo info_outside_triangle{};
+    pos.GetRoadLaneInfo(&info_outside_triangle);
+    EXPECT_NEAR(info_outside_triangle.friction, FRICTION_DEFAULT, 1e-3);
+}
+
 TEST(RoadId, TestStringRoadId)
 {
     ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/fabriksgatan_mixed_id_types.xodr"), true);
