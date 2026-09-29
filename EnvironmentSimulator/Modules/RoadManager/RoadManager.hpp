@@ -14,6 +14,7 @@
 #define OPENDRIVE_HH_
 
 #include <cmath>
+#include <optional>
 #include <string>
 #include <map>
 #include <vector>
@@ -2335,6 +2336,36 @@ namespace roadmanager
         std::string restrictions_;
     };
 
+    class Material
+    {
+    public:
+        Material() = default;
+
+        double GetFriction() const
+        {
+            return friction_;
+        }
+
+        bool HasFriction() const
+        {
+            return has_friction_;
+        }
+
+        void SetFriction(double friction)
+        {
+            friction_     = friction;
+            has_friction_ = true;
+        }
+
+        std::string   surface_;
+        double        roughness_     = 1.0;
+        RoadMarkColor roadMarkColor_ = RoadMarkColor::WHITE;
+
+    private:
+        double friction_     = 1.0;
+        bool   has_friction_ = false;
+    };
+
     // OpenDRIVE object marking (ASAM OpenDRIVE 1.8.0, section 13.8).
     // A marking is either attached to one side of the object bounding box (side_ != NONE),
     // or defined along outline edges by referencing outline corner ids (corner_references_).
@@ -2658,21 +2689,6 @@ namespace roadmanager
         static std::string Type2Str(ObjectType type);
         static ObjectType  Str2Type(std::string type);
 
-        /**
-        Friction coefficient set via a <material friction="..."/> child of this object (ASAM
-        OpenDRIVE t_road_objects_object_material, e.g. a "patch" object), NaN if not set.
-        Overrides lane material within the object's s/t bounding area (outline polygon if
-        present, else rectangular/circular bounding area).
-        */
-        double GetFriction() const
-        {
-            return friction_;
-        }
-        void SetFriction(double friction)
-        {
-            friction_ = friction;
-        }
-
         std::string GetName() const
         {
             return name_;
@@ -2764,6 +2780,14 @@ namespace roadmanager
         void SetParkingSpace(ParkingSpace parking_space)
         {
             parking_space_ = std::move(parking_space);
+        }
+        const Material *GetMaterial() const
+        {
+            return material_ ? &material_.value() : nullptr;
+        }
+        void SetMaterial(Material material)
+        {
+            material_ = std::move(material);
         }
         Orientation GetOrientation() const
         {
@@ -2900,13 +2924,13 @@ namespace roadmanager
         Repeat                    *repeat_ = nullptr;
         std::vector<Repeat *>      repeats_;
         ParkingSpace               parking_space_;
+        std::optional<Material>    material_;
         std::vector<ObjectMarking> markings_;
         double                     color_[4]              = {0.0, 0.0, 0.0, 0.0};
         TunnelComponentType        tunnel_component_type_ = TunnelComponentType::NO_TUNNEL;
         std::string                model3d_full_path_;
         std::string                texture_filename_;
         double                     texture_scale_ = 1.0;
-        double                     friction_      = std::nan("");  // from <material friction="..."/>, unset by default
     };
 
     enum class SpeedUnit
