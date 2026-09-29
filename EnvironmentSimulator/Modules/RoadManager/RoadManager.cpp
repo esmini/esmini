@@ -2139,8 +2139,9 @@ bool Road::GetObjectFriction(double s, double t, double* friction) const
 
     for (unsigned int i = 0; i < GetNumberOfObjects(); i++)
     {
-        RMObject* obj = GetRoadObject(i);
-        if (obj == nullptr || std::isnan(obj->GetFriction()))
+        RMObject*       obj      = GetRoadObject(i);
+        const Material* material = obj != nullptr ? obj->GetMaterial() : nullptr;
+        if (material == nullptr || !material->HasFriction())
         {
             continue;
         }
@@ -2202,7 +2203,7 @@ bool Road::GetObjectFriction(double s, double t, double* friction) const
         {
             if (friction != nullptr)
             {
-                *friction = obj->GetFriction();
+                *friction = material->GetFriction();
             }
             found = true;
         }
@@ -5446,6 +5447,27 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     obj->SetParkingSpace(roadmanager::ParkingSpace(access, restrictions));
                 }
 
+                pugi::xml_node material_node = object.child("material");
+                if (!material_node.empty())
+                {
+                    Material material;
+
+                    material.surface_       = material_node.attribute("surface").value();
+                    material.roughness_     = material_node.attribute("roughness").as_double(1.0);
+                    material.roadMarkColor_ = LaneRoadMark::ParseColor(material_node);
+
+                    if (!material_node.attribute("friction").empty())
+                    {
+                        material.SetFriction(material_node.attribute("friction").as_double());
+
+                        // Object-level friction patches are inherently local/varying, so the global
+                        // single-friction-value optimization must not be used once any exist.
+                        SetFriction(std::nan(""));
+                    }
+
+                    obj->SetMaterial(material);
+                }
+
                 pugi::xml_node markings_node = object.child("markings");
                 if (!markings_node.empty())
                 {
@@ -5502,18 +5524,6 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
                     validity.toLane_   = atoi(validity_node.attribute("toLane").value());
                     obj->validity_.push_back(validity);
-                }
-
-                for (pugi::xml_node material_node = object.child("material"); material_node; material_node = material_node.next_sibling("material"))
-                {
-                    if (!material_node.attribute("friction").empty())
-                    {
-                        obj->SetFriction(material_node.attribute("friction").as_double());
-
-                        // Object-level friction patches are inherently local/varying, so the global
-                        // single-friction-value optimization must not be used once any exist.
-                        SetFriction(std::nan(""));
-                    }
                 }
 
                 for (pugi::xml_node userDataNode = object.child("userData"); userDataNode; userDataNode = userDataNode.next_sibling("userData"))
