@@ -640,6 +640,7 @@ SensorViewFrustum::SensorViewFrustum(Viewer* viewer, ObjectSensor* sensor, osg::
     txNode_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
     txNode_->setPosition(osg::Vec3(static_cast<float>(sensor_->pos_.x), static_cast<float>(sensor_->pos_.y), static_cast<float>(sensor_->pos_.z)));
     txNode_->setAttitude(osg::Quat(sensor_->pos_.h, osg::Vec3(0, 0, 1)));
+    txNode_->setName("txNode");
     parent->addChild(txNode_);
 
     // Create geometry

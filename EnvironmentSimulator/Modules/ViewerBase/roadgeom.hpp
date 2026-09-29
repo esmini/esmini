@@ -179,6 +179,7 @@ namespace roadgeom
         double                                                         lane_friction_          = 1.0;
         roadmanager::OpenDrive*                                        odrManager_             = nullptr;
         osg::Node*                                                     environment_            = nullptr;
+        osg::Vec3d                                                     origin_                 = {0.0, 0.0, 0.0};
         std::string                                                    exe_dir_                = "";
         int                                                            roadmark_texture_found_ = -1;
         int SaveToFile(const std::string& filename, bool visible = true, osg::Node::NodeMask mask = ~0u);

@@ -611,7 +611,8 @@ namespace roadgeom
                        bool                    generate_road_surface,
                        bool                    generate_road_objects,
                        std::string             exe_path)
-        : environment_(environment)
+        : environment_(environment),
+          origin_(origin)
     {
         if (!generate_road_surface && !generate_road_objects)
         {
@@ -1260,6 +1261,8 @@ namespace roadgeom
         {
             AddGroundSurface();
         }
+
+        LOG_DEBUG("Created road geometry, internal offset: {:.3f}, {:.3f}, {:.3f}", origin_[0], origin_[1], origin_[2]);
     }
 
     osg::ref_ptr<osg::Geometry> createTiledFace(const osg::Vec3&                    v0,
@@ -3268,7 +3271,12 @@ namespace roadgeom
         TextureRestoreVisitor texture_restore_visitor;
         copy->accept(texture_restore_visitor);
 
-        retval = osgDB::writeNodeFile(*copy, filename, writeOptions.get());
+        // Geometry is relative to origin_, restore OpenDRIVE coordinates so the file is scenario independent
+        osg::ref_ptr<osg::MatrixTransform> origin_tx = new osg::MatrixTransform(osg::Matrix::translate(origin_));
+        origin_tx->setName(copy->getName() + "_translate");
+        origin_tx->addChild(copy);
+
+        retval = osgDB::writeNodeFile(*origin_tx, filename, writeOptions.get());
 
         if (retval)
         {
