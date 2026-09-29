@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="6" name="" version="1" date="" north="0" south="0" east="0" west="0"/>
+    <road name="road" length="100" id="0" junction="-1">
+        <link/>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0" length="100">
+                <line/>
+            </geometry>
+        </planView>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" width="0.15"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.5" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" width="0.15"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+            <object id="patch_1" s="50" t="-1.75" type="patch" length="10" width="1.75" hdg="0" zOffset="0" pitch="0" roll="0" orientation="none">
+                <material friction="0.3"/>
+            </object>
+            <object id="patch_2" s="80" t="-1.75" type="patch" hdg="0" zOffset="0" pitch="0" roll="0" orientation="none">
+                <outlines>
+                    <outline id="0" closed="true">
+                        <cornerLocal id="0" u="-5" v="-2" z="0" height="0"/>
+                        <cornerLocal id="1" u="5" v="-2" z="0" height="0"/>
+                        <cornerLocal id="2" u="0" v="2" z="0" height="0"/>
+                    </outline>
+                </outlines>
+                <material friction="0.2"/>
+            </object>
+        </objects>
+    </road>
+</OpenDRIVE>
