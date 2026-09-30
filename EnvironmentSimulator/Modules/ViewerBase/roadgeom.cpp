@@ -34,6 +34,8 @@
 #include <osgUtil/Tessellator>  // to tessellate multiple contours
 #include <osgDB/WriteFile>
 
+#include <algorithm>
+
 #include "CommonMini.hpp"
 
 // cppcheck-suppress [unknownMacro]
@@ -2143,6 +2145,12 @@ namespace roadgeom
         // Per-corner extrusion height, scaled by the repeat height factor (1.0 when not repeated/scaled).
         auto cornerHeight = [&](roadmanager::OutlineCorner* corner) { return corner->GetHeight() * height_scale; };
 
+        // Lift flat (zero height) outlines slightly to avoid z-fighting with the road surface, keeping them below road marks
+        bool   flat   = std::all_of(outline->corner_.begin(),
+                                outline->corner_.end(),
+                                [&](roadmanager::OutlineCorner* corner) { return fabs(cornerHeight(corner)) < SMALL_NUMBER; });
+        double z_lift = flat ? 0.5 * ROADMARK_Z_OFFSET : 0.0;
+
         // Resolve a corner world position, optionally via a caller provided function (e.g. per repeat
         // instance placement). Falls back to the corner's own road based position.
         auto getPos = [&](roadmanager::OutlineCorner* corner, double& x, double& y, double& z)
@@ -2155,6 +2163,7 @@ namespace roadgeom
             {
                 corner->GetPos(x, y, z);
             }
+            z += z_lift;
         };
 
         bool roof = outline->roof_ ? true : false;

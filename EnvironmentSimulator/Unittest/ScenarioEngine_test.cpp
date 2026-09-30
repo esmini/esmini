@@ -4338,7 +4338,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     Vehicle* obj = static_cast<Vehicle*>(entities->object_[0]);
     EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.3, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
@@ -4348,35 +4348,85 @@ TEST(Friction, TestFrictionPerWheel)
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
-    while (se->getSimulationTime() < 1.8 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 0.3 - SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
     obj = static_cast<Vehicle*>(entities->object_[0]);
     EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.7, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
-    while (se->getSimulationTime() < 1.9 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 0.4 - SMALL_NUMBER)
+    {
+        scenario_step(se, 0.1);
+    }
+    obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.3, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 0.5 - SMALL_NUMBER)
+    {
+        scenario_step(se, 0.1);
+    }
+    obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 1.2 - SMALL_NUMBER)
+    {
+        scenario_step(se, 0.1);
+    }
+    obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 0.3, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 0.3, 1E-3);
+
+    while (se->getSimulationTime() < 2.2 - SMALL_NUMBER)
+    {
+        scenario_step(se, 0.1);
+    }
+    obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 0.3, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 2.5 + SMALL_NUMBER)
+    {
+        scenario_step(se, 0.1);
+    }
+    obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.7, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 0.3, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 3.2 - SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
     EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.8, 1E-3);
-    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 0.7, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
-    while (se->getSimulationTime() < 3.9 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
     EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 0.7, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
-    while (se->getSimulationTime() < 4.0 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 7.7 - SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
@@ -4385,7 +4435,16 @@ TEST(Friction, TestFrictionPerWheel)
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 0.8, 1E-3);
 
-    while (se->getSimulationTime() < 12.1 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 7.8 + SMALL_NUMBER)
+    {
+        scenario_step(se, 0.1);
+    }
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
+
+    while (se->getSimulationTime() < 12.1 - SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
@@ -4394,7 +4453,7 @@ TEST(Friction, TestFrictionPerWheel)
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
-    while (se->getSimulationTime() < 13.7 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 13.8 - SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
@@ -4403,7 +4462,7 @@ TEST(Friction, TestFrictionPerWheel)
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 0.4, 1E-3);
 
-    while (se->getSimulationTime() < 20.0 + SMALL_NUMBER)
+    while (se->getSimulationTime() < 20.1 - SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }

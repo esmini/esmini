@@ -1037,6 +1037,8 @@ Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Uni
 .Road with various friction segments, coefficient evaluated per wheel
 image::friction.jpg[]
 
+From v3.10.0, esmini also supports road-object friction, specified as part of the OpenDRIVE https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/v1.9.0/specification/13_objects/13_05_object_material.html[material] properties. This is useful for adding patches with different friction values to the road surface, such as icy spots or oil spills. As an OpenDRIVE road object, a patch can be shaped as a circle, rotated rectangle, or polygon (outline). An object with a defined friction value overrides lane friction at each wheel position. If patches overlap at a wheel position, the last matching object takes precedence.
+
 === Environment conditions
 From v2.49.0 esmini supports the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EnvironmentAction.html[`EnvironmentAction`], which allows you to set weather state, road conditions, and time of the day.
 

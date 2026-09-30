@@ -845,6 +845,14 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                                      ? environment.GetRoadCondition().friction_scale_factor * friction_global
                                                      : friction_global;
                 }
+#if 0  // for friction debugging
+                LOG_DEBUG("t {:.2f} obj {} axle {:.2f} wheel {} friction: {:.2f}",
+                          getSimulationTime(),
+                          i,
+                          axle->positionX,
+                          wheel.index,
+                          wheel.friction_coefficient);
+#endif
             }
         }
     }
