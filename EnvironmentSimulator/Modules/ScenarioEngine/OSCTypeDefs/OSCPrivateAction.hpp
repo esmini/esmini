@@ -963,9 +963,7 @@ namespace scenarioengine
         roadmanager::Position position_;
 
         TeleportAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT,
-                               parent,
-                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, parent, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
               ghost_restart_(false)
         {
         }

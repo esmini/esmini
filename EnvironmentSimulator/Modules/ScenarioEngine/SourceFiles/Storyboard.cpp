@@ -123,6 +123,9 @@ void StoryBoard::Step(double simTime, double dt)
         }
     }
 
+    // Finish Init actions before storyboard triggers can start competing actions.
+    EvalTriggers(simTime);
+
     StoryBoardElement::Step(simTime, dt);
 }
 
