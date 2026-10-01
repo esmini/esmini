@@ -5847,11 +5847,20 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
         }
         else if (envChildName == "RoadCondition")
         {
-            std::string friction = parameters.ReadAttribute(envChild, "frictionScaleFactor");
-            if (friction.empty())
+            double friction = 1.0;  // default value if frictionScaleFactor is not provided
+
+            if (envChild.attribute("frictionScaleFactor").empty())
             {
-                LOG_WARN("Ignorning {} in Envirnoment, mandatory attribute frictionScaleFactor missing", envChildName);
-                continue;
+                LOG_WARN("Missing mandatory attribute frictionScaleFactor in Environment {}", envChildName);
+
+                if (envChild.attribute("wetness").empty())
+                {
+                    continue;  // Skip this RoadCondition if both frictionScaleFactor and wetness are missing
+                }
+            }
+            else
+            {
+                friction = std::stod(envChild.attribute("frictionScaleFactor").value());
             }
 
             std::optional<scenarioengine::WetnessType> wetness;
@@ -5864,7 +5873,7 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                 }
             }
 
-            env.SetRoadCondition(RoadCondition{std::stod(friction), wetness, std::nullopt});
+            env.SetRoadCondition(RoadCondition{friction, wetness, std::nullopt});
         }
         else
         {

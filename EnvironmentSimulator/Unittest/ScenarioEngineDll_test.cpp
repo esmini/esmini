@@ -3946,16 +3946,21 @@ TEST(EnvironmentTest, OSIFrictionScaleFactor)
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 1.0000, 1E-3);
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 1.0000, 1E-3);
 
-    SE_StepDT(1.0);
-
+    SE_StepDT(0.95);
     // Front wheels on road with lower friction, rear wheels on road with default friction, no scale factor
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.8000, 1E-3);
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.8000, 1E-3);
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 1.0000, 1E-3);
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 1.0000, 1E-3);
 
-    SE_StepDT(1.0);
+    SE_StepDT(0.05);
+    // Front wheels on road with lower friction, rear wheels on road with default friction, scale factor applied
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.7200, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.7200, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 0.9000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 0.9000, 1E-3);
 
+    SE_StepDT(1.0);
     // All wheels on road with lower friction, scale factor applied
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.7200, 1E-3);
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.7200, 1E-3);
@@ -3963,7 +3968,6 @@ TEST(EnvironmentTest, OSIFrictionScaleFactor)
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 0.7200, 1E-3);
 
     SE_StepDT(1.0);
-
     // Front wheels on road with default friction, rear wheels on road with lower friction, scale factor applied
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.9000, 1E-3);
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.9000, 1E-3);
@@ -3971,7 +3975,6 @@ TEST(EnvironmentTest, OSIFrictionScaleFactor)
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 0.7200, 1E-3);
 
     SE_StepDT(1.0);
-
     // All wheels on road with default friction, scale factor applied
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.9000, 1E-3);
     EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.9000, 1E-3);
@@ -4007,14 +4010,10 @@ TEST(EnvironmentTest, OSISurfaceWaterFilm)
     // no wetness set yet, dry road
     expect_water_film_of_all_lanes(0.0);
 
-    // the environment actions are reported in the OSI data one frame after being triggered
     SE_StepDT(1.0);  // environment action with wetness "wetWithPuddles" triggered
-    SE_StepDT(1.0);  // environment action with wetness "highFlooded" triggered
-
     expect_water_film_of_all_lanes(1.0);
 
-    SE_StepDT(0.1);
-
+    SE_StepDT(1.0);  // environment action with wetness "highFlooded" triggered
     expect_water_film_of_all_lanes(50.0);
 
     SE_Close();
