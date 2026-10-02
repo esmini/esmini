@@ -227,9 +227,12 @@ sequenceDiagram
            app->>lib: ManipulateObject()
            lib->>se: ManipulateObject()
         end
+        se->>se: EvaluateTriggers()
         opt
             player->>viewer: Update()
         end
+        player->>player: UpdateOSIGroundTruth()
+        player-->>app: Init return (via lib)
         opt
            app->>lib: GetObjectStates()
            lib->>player: GetObjectStates()
@@ -238,7 +241,6 @@ sequenceDiagram
            player-->>lib: states
            lib-->>app: states
         end
-        se->>se: EvaluateTriggers()
         app->>app: step app
     end
 ....
