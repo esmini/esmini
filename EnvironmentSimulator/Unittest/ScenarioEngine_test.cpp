@@ -1745,6 +1745,12 @@ TEST(ControllerTest, TestFollowReferenceController)
     EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 10.0, 1e-3);
     EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -1.5349, 1e-3);
     EXPECT_NEAR(se->entities_.object_[1]->GetSpeed(), 0.0, 1e-3);
+    ASSERT_TRUE(se->entities_.object_[1]->IsGhost());
+    const Vehicle* ghost = static_cast<const Vehicle*>(se->entities_.object_[1]);
+    ASSERT_EQ(ghost->GetWheelData().size(), 4);
+    EXPECT_EQ(ghost->GetWheelData()[0].axle, 0);
+    EXPECT_EQ(ghost->GetWheelData()[0].index, 0);
+    EXPECT_NEAR(ghost->GetWheelData()[0].x, 2.98, 1e-3);
 
     // move forward to just after the linear lane change started, check state sample at that point
     while (se->getSimulationTime() < 9.2 - SMALL_NUMBER)

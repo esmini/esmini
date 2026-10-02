@@ -1816,6 +1816,11 @@ Vehicle& Vehicle::operator=(const Vehicle& v)
     Object::operator=(v);
     trailer_coupler_ = coupler;
     trailer_hitch_   = hitch;
+    wheel_data       = v.wheel_data;
+    max_pitch_angle_ = v.max_pitch_angle_;
+    rear_axle_pos_   = v.rear_axle_pos_;
+    rear_axle_vel_   = v.rear_axle_vel_;
+    rear_axle_speed_ = v.rear_axle_speed_;
 
     if (trailer)
     {
