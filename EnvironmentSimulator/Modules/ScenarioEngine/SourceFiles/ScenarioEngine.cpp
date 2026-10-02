@@ -354,7 +354,7 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
-    // Check some states
+    // Check some states and update odometers
     for (size_t i = 0; i < entities_.object_.size(); i++)
     {
         Object* obj = entities_.object_[i];
@@ -384,6 +384,13 @@ int ScenarioEngine::step(double deltaSimTime)
         {
             obj->SetStandStill(false);
         }
+
+        if (!obj->dirty_.Check(Object::DirtyBit::TELEPORT))  // do not update odometer if object has been teleported
+        {
+            double dx = obj->pos_.GetX() - obj->state_old.pos_x;
+            double dy = obj->pos_.GetY() - obj->state_old.pos_y;
+            obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive
+        }
     }
 
     // Check for collisions
@@ -392,12 +399,10 @@ int ScenarioEngine::step(double deltaSimTime)
         DetectCollisions();
     }
 
-    frame_nr_++;
-
-    // Check both start and stop triggers
+    // Now when all objects have been updated, evaluate start and stop triggers and start any new actions
     storyBoard.EvalTriggers(simulationTime_);
 
-    // Dont return if stop yet, so playerbase has a chance to write logfiles etc.
+    frame_nr_++;
 
     return 0;
 }
@@ -738,11 +743,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             obj->state_old.vel_z  = obj->pos_.GetVelZ();
             obj->state_old.h      = obj->pos_.GetH();
             obj->state_old.h_rate = obj->pos_.GetHRate();
-
-            if (!obj->dirty_.Check(Object::DirtyBit::TELEPORT))
-            {
-                obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
-            }
 
             if (!(obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTART))  // skip ghost sample during restart
             {
