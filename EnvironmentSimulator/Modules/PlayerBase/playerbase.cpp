@@ -286,6 +286,7 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
             }
         }
 
+        // Prepare ground truth for OSI and other consumers, including any reported states from callbacks
         scenarioEngine->prepareGroundTruth(timestep_s);
 
         // Write to dat

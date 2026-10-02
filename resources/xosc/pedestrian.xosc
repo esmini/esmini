@@ -184,7 +184,7 @@
                                             <EntityRef entityRef="Ego"/>
                                         </TriggeringEntities>
                                         <EntityCondition>
-                                            <TraveledDistanceCondition value="5"/>
+                                            <TraveledDistanceCondition value="6"/>
                                         </EntityCondition>
                                     </ByEntityCondition>
                                 </Condition>

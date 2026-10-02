@@ -1747,7 +1747,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*pedestrian.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('.0.700.* ped_walk_event: true, delay: 0.00, traveled_dist: 6.00 >= 5.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.0.700.* ped_walk_event: true, delay: 0.00, traveled_dist: 7.00 >= 6.00, edge: rising', log)  is not None)
         self.assertTrue(re.search('.3.800.* brake_Condition: true, delay: 0.00, TTC: 1.18 < 1.20, edge rising', log)  is not None)
         self.assertTrue(re.search('.14.500.* QuitCondition: true, delay: 0.00, distance 4.87 < tolerance \\(5.00\\), edge: rising', log)  is not None)
 
