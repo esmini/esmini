@@ -738,9 +738,17 @@ namespace scenarioengine
             return FileNameOf(model3d_full_path_);
         }
 
-        void AddSourceReference(const std::string& source_reference)
+        void ClearSourceReference()
         {
-            source_reference_.push_back(source_reference);
+            source_reference_.clear();
+        }
+
+        void AddSourceReference()
+        {
+            std::string type_str = (this->GetType() == Object::Type::VEHICLE) ? "Vehicle" : "Pedestrian";
+            source_reference_.push_back("entity_id:" + std::to_string(this->GetId()));
+            source_reference_.push_back("entity_type:" + type_str);
+            source_reference_.push_back("entity_name:" + this->GetName());
         }
 
         void SetSourceReference(std::vector<std::string> source_reference)

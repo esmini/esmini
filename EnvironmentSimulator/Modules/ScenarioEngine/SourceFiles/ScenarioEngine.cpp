@@ -989,6 +989,10 @@ void ScenarioEngine::SetupGhost(Object* object)
         ctrl->LinkObject(ghost);
     }
 
+    // Update source_reference for ghost
+    ghost->ClearSourceReference();
+    ghost->AddSourceReference();
+
     // Copy all init actions
     for (auto& action : object->initActions_)
     {

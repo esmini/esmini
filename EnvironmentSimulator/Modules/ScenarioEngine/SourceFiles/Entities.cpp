@@ -1596,10 +1596,7 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
 
     if ((obj->GetType() == Object::Type::VEHICLE || obj->GetType() == Object::Type::PEDESTRIAN) && !obj->source_reference_set_)
     {
-        std::string type_str = (obj->GetType() == Object::Type::VEHICLE) ? "Vehicle" : "Pedestrian";
-        obj->AddSourceReference("entity_id:" + std::to_string(obj->GetId()));
-        obj->AddSourceReference("entity_type:" + type_str);
-        obj->AddSourceReference("entity_name:" + obj->GetName());
+        obj->AddSourceReference();
         obj->source_reference_set_ = true;
     }
 
