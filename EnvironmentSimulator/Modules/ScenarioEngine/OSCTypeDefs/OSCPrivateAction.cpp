@@ -3627,6 +3627,8 @@ int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status
 
 void OverrideControlAction::Start(double simTime)
 {
+    OSCAction::Start(simTime);
+
     for (size_t i = 0; i < overrideActionList.size(); i++)
     {
         if (object_->GetGhost() && overrideActionList[i].active == false && object_->overrideActionList[overrideActionList[i].type].active == true)
@@ -3638,13 +3640,6 @@ void OverrideControlAction::Start(double simTime)
         }
         object_->overrideActionList[overrideActionList[i].type] = overrideActionList[i];
     }
-    OSCAction::Start(simTime);
-}
-
-void OverrideControlAction::Step(double simTime, double dt)
-{
-    (void)simTime;
-    (void)dt;
 
     OSCAction::End();
 }

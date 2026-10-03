@@ -1703,7 +1703,6 @@ namespace scenarioengine
         {
         }
 
-        void Step(double simTime, double dt);
         void Start(double simTime);
 
         OSCPrivateAction* Copy()

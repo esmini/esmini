@@ -856,10 +856,10 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('^.-2.000.* FirstLaneChangeManeuver initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.1.200.* ActivateSteeringAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.100.* ActivateSteeringAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.4.300.* DeactivateSteeringEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.4.300.* Trigging ghost restart on OverrideControllerAction inactivating OVERRIDE_STEERING_WHEEL', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.4.400.* ReturnToLaneAction initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.300.* ReturnToLaneAction initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.8.100.* StopTrigger: true, delay: 0.00, 8.1000 > 8.0000, edge: none', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
@@ -867,17 +867,16 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^-2.000, 0, Ego, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-2.000, 1, Ego_ghost, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.700, 0, Ego, 77.000, -1.481, 0.000, 0.026, 0.000, 0.000, 10.000, 0.026, 1.745', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.700, 1, Ego_ghost, 96.867, 0.439, 0.000, 0.155, 0.000, 0.000, 10.000, 0.000, 0.076', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.700, 1, Ego_ghost, 96.863, 0.250, 0.000, 6.213, 0.000, 0.000, 10.000, -0.067, 0.076', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.700, -1, Ego_ghost_-1, 96.726, 1.242, 0.000, 0.171, 0.000, 0.000, 10.000, -0.074, 2.339', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.100, 0, Ego, 90.893, 0.121, 0.000, 0.166, 0.000, 0.000, 10.000, -0.006, 4.046', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.100, 1, Ego_ghost, 110.867, 0.439, 0.000, 0.155, 0.000, 0.000, 10.000, 0.000, 2.377', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.100, -1, Ego_ghost_-1, 110.706, 1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 4.640', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.200, 0, Ego, 91.879, 0.283, 0.000, 0.162, 0.000, 0.000, 10.000, -0.014, 0.619', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.200, 1, Ego_ghost, 111.867, 0.439, 0.000, 0.155, 0.000, 0.000, 10.000, 0.000, 5.234', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.200, 1, Ego_ghost, 111.747, -1.523, 0.000, 6.235, 0.000, 0.000, 10.000, 0.067, 5.234', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.200, -1, Ego_ghost_-1, 111.706, 1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.214', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 99.848, 0.879, 0.000, 0.007, 0.000, 0.000, 10.000, -0.037, 4.627', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 1, Ego_ghost, 119.853, 0.032, 0.000, 6.173, 0.000, 0.000, 10.000, -0.055, 2.958', csv, re.MULTILINE))
-        self.assertTrue(re.search('^8.100, 0, Ego, 130.755, -1.249, 0.000, 6.217, 0.000, 0.000, 10.000, 0.023, 5.234', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 0, Ego, 92.867, 0.439, 0.000, 0.155, 0.000, 0.000, 10.000, -0.021, 3.477', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 1, Ego_ghost, 112.746, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.142, 1.808', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.849, 0.381, 0.000, 6.176, 0.000, 0.000, 10.000, -0.062, 4.627', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 1, Ego_ghost, 119.746, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 2.958', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.100, 0, Ego, 130.740, -1.605, 0.000, 0.004, 0.000, 0.000, 10.000, 0.002, 5.234', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.100, 1, Ego_ghost, 150.746, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 3.565', csv, re.MULTILINE))
 
     def test_maneuver_groups_x_3(self):

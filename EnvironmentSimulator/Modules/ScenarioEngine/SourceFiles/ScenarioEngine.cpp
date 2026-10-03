@@ -121,6 +121,10 @@ void ScenarioEngine::UpdateGhostMode()
 {
     if (SE_Env::Inst().GetGhostMode() == GhostMode::RESTART)
     {
+        LOG_INFO("Ghost {}, turn back time {:.2f}s to {:.2f}",
+                 trueTime_ > SMALL_NUMBER ? "restart" : "headstart",
+                 SE_Env::Inst().GetGhostHeadstart(),
+                 simulationTime_ - SE_Env::Inst().GetGhostHeadstart());
         simulationTime_ -= SE_Env::Inst().GetGhostHeadstart();
         SE_Env::Inst().SetGhostMode(GhostMode::RESTARTING);
     }
@@ -128,6 +132,7 @@ void ScenarioEngine::UpdateGhostMode()
     {
         if (simulationTime_ > trueTime_ - SMALL_NUMBER)
         {
+            LOG_INFO("Ghost {} done", trueTime_ > SMALL_NUMBER ? "restart" : "headstart");
             SE_Env::Inst().SetGhostMode(GhostMode::NORMAL);
         }
     }

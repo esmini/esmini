@@ -145,10 +145,10 @@
                               </LaneChangeAction>
                            </LateralAction>
                         </PrivateAction>
-                     </Action>                     
+                     </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="ReturnToLaneCondition" delay="0" conditionEdge="none">
+                           <Condition name="ReturnToLaneCondition" delay="0.0" conditionEdge="none">
                               <ByValueCondition>
                                  <StoryboardElementStateCondition storyboardElementRef="DeactivateSteeringEvent" storyboardElementType="event" state="completeState"/>
                               </ByValueCondition>
