@@ -2899,7 +2899,7 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     float  length = tempModelBB._max.x() - tempModelBB._min.x();
     float  width  = tempModelBB._max.y() - tempModelBB._min.y();
     float  height = tempModelBB._max.z() - tempModelBB._min.z();
-    float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f;
+    float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f + model_x_offset;
     double bbMinZ = bbCenter.z() - bbDimensions.z() / 2.0;
 
     // Draw only wireframe

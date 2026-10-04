@@ -694,7 +694,7 @@ namespace viewer
                                                    std::string                    name,
                                                    OSCBoundingBox*                boundingBox,
                                                    double                         refpoint_x_offset,
-                                                   double                         modlel_x_offset,
+                                                   double                         model_x_offset,
                                                    const std::vector<SE_Point2D>* outline,
                                                    EntityScaleMode                scaleMode = EntityScaleMode::NONE,
                                                    std::string                    bb_color  = "");
