@@ -1617,6 +1617,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("view_mode",
                   "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"/\"filled_boundingbox\" toggle key ','",
                   "view_mode");
+    opt.AddOption("wheel_angle_filter", "Smooth wheel angle by critically damped spring. 0 = no filter", "tension", "250");
     opt.AddOption("wireframe", "Global wireframe mode, toggle key 'w'");
 
     if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)

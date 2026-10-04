@@ -26,6 +26,11 @@ Object::Object(Type type)
       g_id_(ID_UNDEFINED),
       speed_(0),
       wheel_angle_(0),
+      wheel_angle_filter_(0.0,
+                          0.0,
+                          SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::WHEEL_ANGLE_FILTER)
+                              ? MAX(0.0, strtod(SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::WHEEL_ANGLE_FILTER)))
+                              : 0.0),
       wheel_rot_(0),
       ghost_trail_s_(0),
       trail_follow_index_(0),

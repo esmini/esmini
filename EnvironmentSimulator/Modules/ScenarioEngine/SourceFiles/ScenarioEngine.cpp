@@ -711,13 +711,34 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     // Update wheel rotations of internal scenario objects
                     if (!obj->dirty_.Check(Object::DirtyBit::WHEEL_ANGLE))
                     {
-                        if (fabs(obj->GetSpeed()) > SMALL_NUMBER && !NEAR_NUMBERS(v->rear_axle_speed_, 0.0))
+                        const bool moving = fabs(obj->GetSpeed()) > SMALL_NUMBER && !NEAR_NUMBERS(v->rear_axle_speed_, 0.0);
+                        // Steering angle according to simple bicycle model
+                        const double wheel_angle =
+                            moving ? SIGN(v->rear_axle_speed_) * atan2(heading_rate_new * v->front_axle_.positionX, fabs(v->rear_axle_speed_)) : 0.0;
+
+                        if (obj->wheel_angle_filter_.GetTension() > SMALL_NUMBER)
                         {
-                            // Calculate steering angle according to simple bicycle model
-                            obj->wheel_angle_ =
-                                SIGN(v->rear_axle_speed_) * atan2(heading_rate_new * v->front_axle_.positionX, fabs(v->rear_axle_speed_));
+                            // heading rate is not valid after a teleport, keep previous target
+                            if (moving && !obj->dirty_.Check(Object::DirtyBit::TELEPORT))
+                            {
+                                obj->wheel_angle_filter_.SetTargetValue(wheel_angle);
+                            }
+                            obj->wheel_angle_filter_.UpdateCriticalClosedForm(dt);
+                            obj->wheel_angle_ = obj->wheel_angle_filter_.GetValue();
                             obj->dirty_.SetBits(Object::DirtyBit::WHEEL_ANGLE);
                         }
+                        else if (moving)
+                        {
+                            obj->wheel_angle_ = wheel_angle;
+                            obj->dirty_.SetBits(Object::DirtyBit::WHEEL_ANGLE);
+                        }
+                    }
+                    else
+                    {
+                        // follow externally set angle to avoid a jump when it is no longer reported
+                        obj->wheel_angle_filter_.SetValue(obj->wheel_angle_);
+                        obj->wheel_angle_filter_.SetTargetValue(obj->wheel_angle_);
+                        obj->wheel_angle_filter_.SetV(0.0);
                     }
 
                     if (!obj->dirty_.Check(Object::DirtyBit::WHEEL_ROTATION))

@@ -119,6 +119,7 @@ namespace esmini_options
         OPTIMIZE_3D_MODEL,               // 107
         DISABLE_SHADOWS,                 // 108
         SAVE_XOSC_RESOLVED,              // 109
+        WHEEL_ANGLE_FILTER,              // 110
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -226,6 +227,7 @@ namespace esmini_options
         {"view_mode", VIEW_MODE},
         {"hide_ghost", HIDE_GHOST},
         {"ghost_trail_dt", GHOST_TRAIL_DT},
+        {"wheel_angle_filter", WHEEL_ANGLE_FILTER},
         {"wireframe", WIREFRAME},
         {"view_ghost_restart", VIEW_GHOST_RESTART},
         {"hide_obj_outline", HIDE_OBJ_OUTLINE},
