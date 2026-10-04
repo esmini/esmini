@@ -124,6 +124,5 @@ function(_calculate_test_flag_default _out_var _use_flag _default_version _selec
     endif()
 
     # Pass the calculated local value back up
-    message(STATUS "Result" ${_result})
     set(${_out_var} ${_result} PARENT_SCOPE)
 endfunction()
