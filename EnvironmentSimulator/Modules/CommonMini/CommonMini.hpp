@@ -1294,13 +1294,14 @@ class DampedSpring
     */
 public:
     // Custom damping factor, set 0 for no damping
-    DampedSpring() : x_(0), x0_(0), t_(0), d_(0), v_(0), a_(0), critical_(false){};
+    DampedSpring() : x_(0), x0_(0), t_(0), t_sqrt_(0), d_(0), v_(0), a_(0), critical_(false){};
 
     // Custom damping factor, set 0 for no damping
     DampedSpring(double startValue, double targetValue, double tension, double damping)
         : x_(startValue),
           x0_(targetValue),
           t_(tension),
+          t_sqrt_(sqrt(tension)),
           d_(damping),
           v_(0),
           a_(0),
@@ -1311,7 +1312,8 @@ public:
         : x_(startValue),
           x0_(targetValue),
           t_(tension),
-          d_(2 * sqrt(tension)),
+          t_sqrt_(sqrt(tension)),
+          d_(2 * t_sqrt_),
           v_(0),
           a_(0),
           critical_(true){};
@@ -1321,6 +1323,23 @@ public:
         a_ = -t_ * (x_ - x0_) - d_ * v_;
         v_ = v_ + a_ * timeStep;
         x_ = x_ + v_ * timeStep;
+    }
+
+    void UpdateCriticalClosedForm(double timeStep)
+    {
+        if (!critical_ || timeStep < 0.0)
+        {
+            Update(timeStep);
+            return;
+        }
+
+        double w     = t_sqrt_;
+        double e     = x_ - x0_;
+        double c     = v_ + w * e;
+        double decay = exp(-w * timeStep);
+        x_           = x0_ + (e + c * timeStep) * decay;
+        v_           = (v_ - w * c * timeStep) * decay;
+        a_           = -t_ * (x_ - x0_) - 2 * w * v_;
     }
 
     void SetValue(double value)
@@ -1354,11 +1373,17 @@ public:
 
     void SetTension(double tension)
     {
-        t_ = tension;
+        t_      = tension;
+        t_sqrt_ = sqrt(t_);
         if (critical_)
         {
-            d_ = 2 * sqrt(t_);
+            d_ = 2 * t_sqrt_;
         }
+    }
+
+    double GetTension() const
+    {
+        return t_;
     }
 
     void SetDamping(double damping)
@@ -1369,7 +1394,7 @@ public:
 
     void SetOptimalDamping()
     {
-        d_        = 2 * sqrt(t_);
+        d_        = 2 * t_sqrt_;
         critical_ = true;
     }
 
@@ -1377,6 +1402,7 @@ private:
     double x_;
     double x0_;
     double t_;
+    double t_sqrt_;
     double d_;
     double v_;
     double a_;
