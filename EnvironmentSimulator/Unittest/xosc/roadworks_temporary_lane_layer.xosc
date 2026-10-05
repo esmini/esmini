@@ -108,16 +108,6 @@
                         </LongitudinalAction>
                     </PrivateAction>
                     <PrivateAction>
-                        <LateralAction>
-                            <LaneChangeAction>
-                                <LaneChangeActionDynamics dynamicsShape="cubic" value="2.0" dynamicsDimension="rate"/>
-                                <LaneChangeTarget>
-                                    <RelativeTargetLane value="0" entityRef="Ego"/>
-                                </LaneChangeTarget>
-                            </LaneChangeAction>
-                        </LateralAction>
-                    </PrivateAction>
-                    <PrivateAction>
                         <RoutingAction>
                             <PreferredLaneLayerAction layer="temporary"/>
                         </RoutingAction>
