@@ -82,9 +82,9 @@ namespace esmini
             state.object_type     = static_cast<int>(object->GetType());
             state.object_category = object->category_;
             state.has_ghost       = object->ghost_ != nullptr;
-            state.sensor_x        = static_cast<float>(object->sensor_pos_[0]);
-            state.sensor_y        = static_cast<float>(object->sensor_pos_[1]);
-            state.sensor_z        = static_cast<float>(object->sensor_pos_[2]);
+            state.sensor_x        = static_cast<float>(object->lookahead_sensor_pos_[0]);
+            state.sensor_y        = static_cast<float>(object->lookahead_sensor_pos_[1]);
+            state.sensor_z        = static_cast<float>(object->lookahead_sensor_pos_[2]);
             state.trail_x         = static_cast<float>(object->trail_closest_pos_.x);
             state.trail_y         = static_cast<float>(object->trail_closest_pos_.y);
             state.trail_z         = static_cast<float>(object->trail_closest_pos_.z);
