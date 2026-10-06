@@ -923,12 +923,15 @@ namespace roadmanager
             LANE_TYPE_ON_RAMP         = (1 << 20),  // 1048576
             LANE_TYPE_CURB            = (1 << 21),  // 2097152
             LANE_TYPE_CONNECTING_RAMP = (1 << 22),  // 4194304
+            LANE_TYPE_BUS             = (1 << 23),  // 8388608
+            LANE_TYPE_HOV             = (1 << 24),  // 16777216
             LANE_TYPE_REFERENCE_LINE  = (1 << 0),   // 1
             LANE_TYPE_ANY_DRIVING     = LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP |
-                                    LANE_TYPE_CONNECTING_RAMP | LANE_TYPE_BIDIRECTIONAL,                                                  // 6160898
-            LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP | LANE_TYPE_SHOULDER | LANE_TYPE_PARKING,  // 6161294
-            LANE_TYPE_ANY      = -1,
-            LANE_TYPE_TUNNEL   = -2
+                                    LANE_TYPE_CONNECTING_RAMP | LANE_TYPE_BIDIRECTIONAL,  // 6160898
+            LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP | LANE_TYPE_SHOULDER | LANE_TYPE_PARKING |
+                                 LANE_TYPE_ENTRY | LANE_TYPE_BUS | LANE_TYPE_HOV,  // 31327118
+            LANE_TYPE_ANY    = -1,
+            LANE_TYPE_TUNNEL = -2
         } LaneType;
 
         struct LaneHeight
