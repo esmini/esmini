@@ -1835,12 +1835,13 @@ static void CheckAndAdjustRoadSValue(const id_t road_id, double &s)
 
 static id_t ResolveRoadIdFromStr(std::string road_id_str)
 {
-    id_t   road_id           = ID_UNDEFINED;
-    double road_id_as_double = std::nan("");
+    id_t        road_id           = ID_UNDEFINED;
+    double      road_id_as_double = std::nan("");
+    std::size_t processed_chars   = 0;
 
     try
     {
-        road_id_as_double = std::stod(road_id_str);
+        road_id_as_double = std::stod(road_id_str, &processed_chars);
     }
     catch (const std::exception &e)
     {
@@ -1848,7 +1849,11 @@ static id_t ResolveRoadIdFromStr(std::string road_id_str)
         road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
     }
 
-    if (!std::isnan(road_id_as_double))
+    if (processed_chars < road_id_str.length())
+    {
+        road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
+    }
+    else if (!std::isnan(road_id_as_double))
     {
         if (NEAR_NUMBERS(road_id_as_double, static_cast<id_t>(road_id_as_double)))
         {
