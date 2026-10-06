@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2026-10-06 Version 3.9.0
+
+New behaviors:
+- Simulation step sequence updated
+  - from: trig and start new actions, step actions, bump time
+  - to: bump time, step actions, trig and start new actions
+  - expect minor deviations in output for some scenarios
+  - see issue [#695](https://github.com/esmini/esmini/issues/695) for some further info and motivation
+
+Improvements and fixes:
+ - Fix missing OSI ghost wheel data (bug introduced in v3.8.1)
+ - Fix broken OSI ghost source_reference (bug introduced in v3.8.2)
+
 ### 2026-09-22 Version 3.8.2
 
 New features:
