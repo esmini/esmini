@@ -8,6 +8,7 @@
 #include "CommonMini.hpp"
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
+#include "OSCPrivateAction.hpp"
 #include "ControllerUDPDriver.hpp"
 #include "ControllerLooming.hpp"
 #include "ControllerALKS_R157SM.hpp"
@@ -30,6 +31,13 @@ static void scenario_step(ScenarioEngine* scenario_engine, double dt)
 
     scenario_engine->SwapAndClearDirtyBits();
     DirtyBits::SetReadBack();
+}
+
+TEST(TeleportActionTest, DoesNotClaimLongitudinalOrLateralControl)
+{
+    TeleportAction action(nullptr);
+
+    EXPECT_EQ(action.GetDomains(), static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE));
 }
 
 TEST(DistanceTest, CalcDistanceVariations)
