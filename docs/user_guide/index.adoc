@@ -23,6 +23,7 @@ Main sections:
 . xref:openscenegraph-3d-models.adoc[OpenSceneGraph and 3D models]
 . xref:support-qa.adoc[Support / Q&A]
 . xref:command-reference.adoc[Command reference]
+. xref:known-deviations.adoc[Known deviations from standards]
 . xref:build-guide.adoc[Build guide]
 . xref:developers-contributors.adoc[For esmini developers and contributors]
 . xref:inner-workings.adoc[Inner workings]

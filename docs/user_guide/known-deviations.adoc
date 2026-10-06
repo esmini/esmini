@@ -1,0 +1,61 @@
+= esmini user guide - Known deviations from standards
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Known deviations from standards
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+
+This section lists known intentional differences between esmini behavior and the OpenSCENARIO XML, OpenDRIVE, and OSI standards. The list is not exhaustive (others could exist), and is subject to change at any time.
+
+Unsupported features and partial support are tracked separately in https://github.com/esmini/esmini/blob/dev/osc_coverage.txt[osc_coverage.txt] and https://github.com/esmini/esmini/blob/dev/odr_coverage.txt[odr_coverage.txt]. Tool-specific properties and `userData` conventions are not considered as deviations.
+
+Each deviation includes a *Standard reference* field for links to the relevant specification version and clause, table, or model element.
+
+[#deviations-openscenario]
+=== OpenSCENARIO XML
+
+==== TeleportAction domains
+
+esmini intentionally lets `TeleportAction` operate on both the lateral and longitudinal domains, to interrupt actions ongoing on a conflicting domain.
+
+*Example:* A `LaneChangeAction` is ongoing when a `TeleportAction` is triggered for the same entity. In esmini, the ongoing lane change is cancelled because the teleport claims the lateral domain. This avoids continuing the original lane change after the entity has been moved to a new position, which most likely makes sense.
+
+*Standard reference:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/12_annexes/12_01_action_table.html[OpenSCENARIO XML v1.4.0 / Annex A (normative): Action tables]. The `TeleportAction` row specifies "No" for both "Assigns longitudinal control strategy" and "Assigns lateral control strategy".
+
+==== Trajectory elevation
+
+When `z` value is omitted, i.e. elevation is not specified, esmini will project the `z` points to the road surface.
+
+See link:positioning.html#_trajectory_interpolation_and_alignment[Positioning / Trajectory interpolation and alignment] for details, including how omitted elevation affects orientation alignment.
+
+*Standard reference:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/WorldPosition.html[OpenSCENARIO XML v1.4.0 / WorldPosition].
+
+==== Initial acceleration in SpeedProfileAction
+
+To preserve acceleration continuity, esmini uses the entity's current acceleration at the start of `SpeedProfileAction` rather than assuming zero initial acceleration. The final acceleration is zero.
+
+See link:scenario-features.html#_initial_acceleration_taken_into_account[Scenario features / Speed profile / Initial acceleration taken into account].
+
+*Standard reference:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/SpeedProfileAction.html[OpenSCENARIO XML v1.4.0 / SpeedProfileAction].
+
+[#deviations-opendrive]
+=== OpenDRIVE
+
+No known deviations are currently documented. This does not imply complete feature coverage or correctness.
+
+esmini-specific `userData` extensions, such as marking lateral offset, object color, and texture mapping, are documented in link:scenario-features.html#_road_objects[Scenario features / Road objects]. These use an extension mechanism and are not classified as deviations here.
+
+[#deviations-osi]
+=== OSI
+
+==== Static-content reporting
+
+By default, esmini reports and logs static objects only once rather than repeating them in every frame. Objects created during initialization appear in the first frame; static MiscObjects added later appear in the frame in which they are created. This is to increase simulation performance and reduce osi logfile size.
+
+See link:esmini-lib-programming.html#_osi_settings[esmini lib programming / OSI settings] and link:esmini-lib-programming.html#_osi_data_via_api_call[OSI data via API call] for details.
+
+*Standard reference:* https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/interface/architecture/ground_truth.html[OpenSimulationInterface v3.5.0 / Ground truth].
+
