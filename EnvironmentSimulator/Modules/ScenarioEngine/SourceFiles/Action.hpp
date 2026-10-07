@@ -171,6 +171,11 @@ namespace scenarioengine
         {
             LOG_INFO("Starting {} type: {} content: {}", Type2Str(), user_action_type_, content_);
             OSCAction::Start(simTime);
+            if (GetCurrentState() == State::RUNNING)
+            {
+                SetTransition(Transition::END_TRANSITION);
+                SetState(State::COMPLETE);
+            }
         }
 
         void Step(double, double) override
