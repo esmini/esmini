@@ -1097,7 +1097,7 @@ int Object::Distance(Object*                           target,
             {
                 pivot_obj = pivot_obj->TowVehicle();
             }
-            while (target_obj->TowVehicle())
+            while (target_front_obj->TowVehicle())
             {
                 target_front_obj = target_front_obj->TowVehicle();
             }
@@ -1154,7 +1154,7 @@ int Object::Distance(Object*                           target,
             {
                 pivot_obj = pivot_obj->TowVehicle();
             }
-            while (target_obj->TowVehicle())
+            while (target_front_obj->TowVehicle())
             {
                 target_front_obj = target_front_obj->TowVehicle();
             }
