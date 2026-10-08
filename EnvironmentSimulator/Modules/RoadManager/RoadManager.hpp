@@ -3927,13 +3927,14 @@ namespace roadmanager
 
     typedef struct
     {
-        double ds;          // delta s (longitudinal distance)
-        double dt;          // delta t (lateral distance)
-        int    dLaneId;     // delta laneId (increasing left and decreasing to the right)
-        double dx;          // delta x (world coordinate system)
-        double dy;          // delta y (world coordinate system)
-        bool   dOppLane;    // true if the two position objects are in opposite sides of reference lane
-        bool   dDirection;  // delta direction (are the two positions in the same direction or not)
+        double ds;            // delta s (longitudinal distance)
+        double dt;            // delta t (lateral distance)
+        int    dLaneId;       // delta laneId (increasing left and decreasing to the right)
+        double dx;            // delta x (world coordinate system)
+        double dy;            // delta y (world coordinate system)
+        bool   dOppLane;      // true if the two position objects are in opposite sides of reference lane
+        bool   dDirection;    // delta direction (are the two positions in the same direction or not)
+        bool   dRoadAligned;  // true if road at pos B has same s-direction as road of pos A (along the connecting path)
     } PositionDiff;
 
     enum class CoordinateSystem

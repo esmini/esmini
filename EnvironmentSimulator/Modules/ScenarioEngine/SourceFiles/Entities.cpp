@@ -1181,7 +1181,7 @@ int Object::Distance(Object*                           target,
             struct
             {
                 int                       return_value = -1;
-                roadmanager::PositionDiff pos_diff     = {LARGE_NUMBER, LARGE_NUMBER, 0, 0.0, 0.0, false, false};
+                roadmanager::PositionDiff pos_diff     = {LARGE_NUMBER, LARGE_NUMBER, 0, 0.0, 0.0, false, false, false};
             } candidate_info;
 
             // start measuring from frontmost towing vehicle
@@ -1385,6 +1385,187 @@ int Object::Distance(const Position&                   target,
     return 0;
 }
 
+int Object::RelativeSpeed(Object*                           target,
+                          roadmanager::CoordinateSystem     cs,
+                          roadmanager::RelativeDistanceType relDistType,
+                          double&                           speed,
+                          double                            maxDist)
+{
+    if (target == nullptr)
+    {
+        return -1;
+    }
+
+    // Handle/convert depricated value
+    if (relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
+    {
+        relDistType = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+    }
+
+    roadmanager::Position& pos_a = pos_;
+    roadmanager::Position& pos_b = target->pos_;
+
+    // relative velocity in world coordinates
+    double dvx = pos_b.GetVelX() - pos_a.GetVelX();
+    double dvy = pos_b.GetVelY() - pos_a.GetVelY();
+
+    // rate of change of Euclidean distance, signed according to Position::getRelativeDistance()
+    auto euclidean_rate = [&]() -> double
+    {
+        double dx   = pos_b.GetX() - pos_a.GetX();
+        double dy   = pos_b.GetY() - pos_a.GetY();
+        double len  = sqrt(dx * dx + dy * dy);
+        double rate = 0.0;
+
+        if (len < SMALL_NUMBER)
+        {
+            // coinciding positions, distance can only increase
+            rate = sqrt(dvx * dvx + dvy * dvy);
+        }
+        else
+        {
+            rate = (dx * dvx + dy * dvy) / len;
+        }
+
+        double x_local = 0.0;
+        double y_local = 0.0;
+        RotateVec2D(dx, dy, -pos_a.GetH(), x_local, y_local);
+        rate *= (x_local > 0) ? 1.0 : -1.0;
+
+        return rate;
+    };
+
+    if (relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN)
+    {
+        speed = euclidean_rate();
+    }
+    else if (relDistType == RelativeDistanceType::REL_DIST_LATERAL || relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+    {
+        if (cs == CoordinateSystem::CS_LANE)
+        {
+            LOG_WARN_ONCE("Lane coordinateSystem not supported yet. Falling back to Road coordinate system.");
+            cs = CoordinateSystem::CS_ROAD;
+        }
+
+        if (cs == CoordinateSystem::CS_ENTITY)
+        {
+            double v_long = 0.0;
+            double v_lat  = 0.0;
+            RotateVec2D(dvx, dvy, -pos_a.GetH(), v_long, v_lat);
+            speed = (relDistType == RelativeDistanceType::REL_DIST_LATERAL) ? v_lat : v_long;
+        }
+        else if (cs == CoordinateSystem::CS_ROAD)
+        {
+            roadmanager::PositionDiff diff;
+            if (pos_a.Delta(&pos_b, diff, true, maxDist) == false)
+            {
+                return -1;
+            }
+
+            double vt_a = 0.0;
+            double vs_a = 0.0;
+            double vt_b = 0.0;
+            double vs_b = 0.0;
+            pos_a.GetVelTS(vt_a, vs_a);
+            pos_b.GetVelTS(vt_b, vs_b);
+
+            // align target road s/t axes with the road of this object
+            double road_sign = diff.dRoadAligned ? 1.0 : -1.0;
+
+            if (relDistType == RelativeDistanceType::REL_DIST_LATERAL)
+            {
+                // delta t is expressed along t-axis of the target road, see Position::Delta()
+                speed = vt_b - road_sign * vt_a;
+            }
+            else
+            {
+                // delta s is positive in the direction this object is facing along the road
+                // (note: in some cases across multiple roads, Distance() sign differs, see RoadPath::Calculate())
+                double dir_a = IsAngleForward(pos_a.GetHRelative()) ? 1.0 : -1.0;
+                speed        = dir_a * (road_sign * vs_b - vs_a);
+            }
+        }
+        else if (cs == CoordinateSystem::CS_TRAJECTORY)
+        {
+            roadmanager::RMTrajectory* traj = pos_a.GetTrajectory();
+
+            if (traj == nullptr || traj->shape_ == nullptr)
+            {
+                LOG_INFO("RelativeSpeed warning: No trajectory for pos_a. Measuring Euclidian relative speed.");
+                speed = euclidean_rate();
+            }
+            else
+            {
+                roadmanager::TrajVertex v_a;
+                double                  h_a = pos_a.GetH();
+                if (traj->shape_->pline_.Evaluate(pos_a.GetTrajectoryS(), v_a, 0) != IDX_UNDEFINED)
+                {
+                    h_a = v_a.h_true;
+                }
+
+                double vs_a = 0.0;
+                double vt_a = 0.0;
+                RotateVec2D(pos_a.GetVelX(), pos_a.GetVelY(), -h_a, vs_a, vt_a);
+
+                if (pos_b.GetTrajectory() != nullptr && traj->name_ == pos_b.GetTrajectory()->name_)
+                {
+                    // assume same trajectory for both positions
+                    roadmanager::TrajVertex v_b;
+                    double                  h_b = pos_b.GetH();
+                    if (traj->shape_->pline_.Evaluate(pos_b.GetTrajectoryS(), v_b, 0) != IDX_UNDEFINED)
+                    {
+                        h_b = v_b.h_true;
+                    }
+
+                    double vs_b = 0.0;
+                    double vt_b = 0.0;
+                    RotateVec2D(pos_b.GetVelX(), pos_b.GetVelY(), -h_b, vs_b, vt_b);
+
+                    speed = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? vt_b - vt_a : vs_b - vs_a;
+                }
+                else
+                {
+                    // treat pos_b as a position outside trajectory, project it's velocity at closest point on trajectory
+                    roadmanager::TrajVertex v_b;
+                    idx_t                   index = 0;
+                    if (traj->shape_->FindClosestPoint(pos_b.GetX(), pos_b.GetY(), v_b, index) == 0)
+                    {
+                        if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+                        {
+                            double vs_b = 0.0;
+                            double vt_b = 0.0;
+                            RotateVec2D(pos_b.GetVelX(), pos_b.GetVelY(), -v_b.h_true, vs_b, vt_b);
+                            speed = vs_b - vs_a;
+                        }
+                        else
+                        {
+                            // lateral distance is measured as Euclidean distance, see Position::Distance()
+                            speed = euclidean_rate();
+                        }
+                    }
+                    else
+                    {
+                        LOG_WARN("RelativeSpeed warning: No closest point found on trajectory. Measuring Euclidian relative speed.");
+                        speed = euclidean_rate();
+                    }
+                }
+            }
+        }
+        else
+        {
+            LOG_ERROR("RelativeSpeed: Unhandled case: cs {} relDistType {}", cs, relDistType);
+            return -1;
+        }
+    }
+    else
+    {
+        LOG_ERROR("RelativeSpeed: Unhandled case: cs {} relDistType {}", cs, relDistType);
+        return -1;
+    }
+
+    return 0;
+}
+
 int Object::TimeHeadway(Object*                           target,
                         roadmanager::CoordinateSystem     cs,
                         roadmanager::RelativeDistanceType relDistType,
@@ -1425,26 +1606,12 @@ int Object::TimeToCollision(Object*                           target,
 
     if (this->Distance(target, cs, relDistType, freeSpace, rel_dist, maxDist) != 0)
     {
-        rel_dist = LARGE_NUMBER;
+        return -1;
     }
 
-    if (fabs(target->pos_.GetVelX()) < SMALL_NUMBER && fabs(target->pos_.GetVelY()) < SMALL_NUMBER)
+    if (this->RelativeSpeed(target, cs, relDistType, rel_speed, maxDist) != 0)
     {
-        // target standing still, consider only speed of triggering entity
-        rel_speed = this->GetSpeed();
-    }
-    else
-    {
-        double rel_vel[2] = {0.0, 0.0};
-        // Calculate relative speed along target's velocity direction
-        double proj_speed = ProjectPointOnVector2DSignedLength(this->pos_.GetVelX(),
-                                                               this->pos_.GetVelY(),
-                                                               target->pos_.GetVelX(),
-                                                               target->pos_.GetVelY(),
-                                                               rel_vel[0],
-                                                               rel_vel[1]);
-
-        rel_speed = SIGN(this->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(target->GetSpeed()));
+        return -1;
     }
 
     // TTC not defined for cases:
@@ -1456,7 +1623,8 @@ int Object::TimeToCollision(Object*                           target,
     }
     else
     {
-        ttc = rel_dist / rel_speed;
+        // RelativeSpeed is the distance rate, negative when a positive distance is closing.
+        ttc = -rel_dist / rel_speed;
         if (ttc < 0.0)
         {
             ttc = -1.0;

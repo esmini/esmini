@@ -719,6 +719,203 @@ TEST(DistanceTest, TestTrajectoryDistance)
     delete se;
 }
 
+struct RelSpeedTestState
+{
+    double x;
+    double y;
+    double h;
+    double vx;
+    double vy;
+};
+
+static void SetRelSpeedTestState(Object& obj, const RelSpeedTestState& s, double time)
+{
+    obj.pos_.SetInertiaPos(s.x + s.vx * time, s.y + s.vy * time, s.h);
+    obj.SetVel(s.vx, s.vy, 0.0);
+}
+
+// Verify that relative speed equals the rate of change of the corresponding ref-point distance
+static void CheckRelativeSpeedByFiniteDiff(const RelSpeedTestState&          state_a,
+                                           const RelSpeedTestState&          state_b,
+                                           roadmanager::CoordinateSystem     cs,
+                                           roadmanager::RelativeDistanceType rel_dist_type,
+                                           double                            expected_speed)
+{
+    const double dt = 1e-3;
+    Vehicle      obj_a;
+    Vehicle      obj_b;
+    double       speed  = 0.0;
+    double       dist_0 = 0.0;
+    double       dist_1 = 0.0;
+
+    SetRelSpeedTestState(obj_a, state_a, 0.0);
+    SetRelSpeedTestState(obj_b, state_b, 0.0);
+    ASSERT_EQ(obj_a.RelativeSpeed(&obj_b, cs, rel_dist_type, speed), 0);
+    EXPECT_NEAR(speed, expected_speed, 1e-3);
+
+    SetRelSpeedTestState(obj_a, state_a, -dt);
+    SetRelSpeedTestState(obj_b, state_b, -dt);
+    ASSERT_EQ(obj_a.Distance(&obj_b, cs, rel_dist_type, false, dist_0), 0);
+
+    SetRelSpeedTestState(obj_a, state_a, dt);
+    SetRelSpeedTestState(obj_b, state_b, dt);
+    ASSERT_EQ(obj_a.Distance(&obj_b, cs, rel_dist_type, false, dist_1), 0);
+
+    EXPECT_NEAR(speed, (dist_1 - dist_0) / (2 * dt), 1e-3);
+}
+
+TEST(RelativeSpeedTest, RefPointRelativeSpeed)
+{
+    ASSERT_EQ(Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/oppositeLaneRoad.xodr"), true);
+
+    using CS  = roadmanager::CoordinateSystem;
+    using RDT = roadmanager::RelativeDistanceType;
+
+    // same road, both facing road direction, target ahead and to the left
+    RelSpeedTestState a = {50.0, -1.5, 0.0, 10.0, 0.0};
+    RelSpeedTestState b = {80.0, 1.5, 0.0, 5.0, 1.0};
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LONGITUDINAL, -5.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LATERAL, 1.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_LANE, RDT::REL_DIST_LONGITUDINAL, -5.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_LONGITUDINAL, -5.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_LATERAL, 1.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_EUCLIDIAN, (30.0 * -5.0 + 3.0 * 1.0) / sqrt(30.0 * 30.0 + 3.0 * 3.0));
+
+    // pivot object facing opposite road direction, target behind it
+    a = {50.0, -1.5, M_PI, -10.0, 0.0};
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LONGITUDINAL, -15.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LATERAL, 1.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_LONGITUDINAL, -15.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_LATERAL, -1.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_EUCLIDIAN, -(30.0 * 15.0 + 3.0 * 1.0) / sqrt(30.0 * 30.0 + 3.0 * 3.0));
+
+    // skewed headings and lateral velocity components
+    a = {50.0, -1.5, 0.2, 9.0, 1.5};
+    b = {70.0, 1.0, -0.3, 6.0, -2.0};
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LONGITUDINAL, -3.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LATERAL, -3.5);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_LONGITUDINAL, -3.0 * cos(0.2) - 3.5 * sin(0.2));
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ENTITY, RDT::REL_DIST_LATERAL, 3.0 * sin(0.2) - 3.5 * cos(0.2));
+
+    // objects on connected roads with opposite s-direction (road 0 -> end of road 1)
+    a = {150.0, -1.5, 0.0, 10.0, 0.5};
+    b = {250.0, -1.5, 0.0, 8.0, -0.3};
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LONGITUDINAL, -2.0);
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LATERAL, 0.3 + 0.5);
+
+    // same as above, pivot facing opposite direction
+    // Note: Not checked by finite difference since Distance() sign is not consistent for this case across roads
+    // (RoadPath::Calculate() flips sign twice). Relative speed is positive along the pivot heading, as for same road case.
+    a = {150.0, -1.5, M_PI, 10.0, 0.5};
+    {
+        Vehicle obj_a;
+        Vehicle obj_b;
+        double  speed = 0.0;
+        SetRelSpeedTestState(obj_a, a, 0.0);
+        SetRelSpeedTestState(obj_b, b, 0.0);
+        ASSERT_EQ(obj_a.RelativeSpeed(&obj_b, CS::CS_ROAD, RDT::REL_DIST_LONGITUDINAL, speed), 0);
+        EXPECT_NEAR(speed, 2.0, 1e-3);
+    }
+    CheckRelativeSpeedByFiniteDiff(a, b, CS::CS_ROAD, RDT::REL_DIST_LATERAL, 0.3 + 0.5);
+
+    // unsupported combination
+    Vehicle obj_a;
+    Vehicle obj_b;
+    double  speed = 0.0;
+    EXPECT_EQ(obj_a.RelativeSpeed(&obj_b, CS::CS_WORLD, RDT::REL_DIST_LONGITUDINAL, speed), -1);
+    EXPECT_EQ(obj_a.RelativeSpeed(nullptr, CS::CS_ROAD, RDT::REL_DIST_LONGITUDINAL, speed), -1);
+}
+
+TEST(RelativeSpeedTest, TimeToCollisionSign)
+{
+    ASSERT_TRUE(Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/curve_r100.xodr"));
+    Vehicle ego;
+    Vehicle target;
+    ego.pos_.SetLanePos(0, -1, 20.0, 0.0);
+    target.pos_.SetLanePos(0, -1, 100.0, 0.0);
+    ego.pos_.SetHeading(0.0);
+    target.pos_.SetHeading(0.0);
+
+    const double ego_speed    = 120.0 / 3.6;
+    const double target_speed = 10.0 / 3.6;
+    for (auto cs : {CoordinateSystem::CS_ENTITY, CoordinateSystem::CS_ROAD})
+    {
+        SCOPED_TRACE(static_cast<int>(cs));
+        double speed = 0.0;
+        double ttc   = 0.0;
+        ego.SetVel(ego_speed, 0.0, 0.0);
+        target.SetVel(target_speed, 0.0, 0.0);
+        ASSERT_EQ(ego.RelativeSpeed(&target, cs, RelativeDistanceType::REL_DIST_LONGITUDINAL, speed), 0);
+        EXPECT_NEAR(speed, target_speed - ego_speed, 1e-6);
+        ASSERT_EQ(ego.TimeToCollision(&target, cs, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, ttc), 0);
+        EXPECT_NEAR(ttc, 80.0 / (ego_speed - target_speed), 1e-6);
+        ASSERT_EQ(target.TimeToCollision(&ego, cs, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, ttc), 0);
+        EXPECT_NEAR(ttc, 80.0 / (ego_speed - target_speed), 1e-6);
+
+        ego.SetVel(target_speed, 0.0, 0.0);
+        ASSERT_EQ(ego.TimeToCollision(&target, cs, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, ttc), 0);
+        EXPECT_EQ(ttc, -1.0);
+
+        target.SetVel(ego_speed, 0.0, 0.0);
+        ASSERT_EQ(ego.TimeToCollision(&target, cs, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, ttc), 0);
+        EXPECT_EQ(ttc, -1.0);
+
+        target.SetVel(0.0, 0.0, 0.0);
+        ASSERT_EQ(ego.TimeToCollision(&target, cs, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, ttc), 0);
+        EXPECT_NEAR(ttc, 80.0 / target_speed, 1e-6);
+    }
+
+    double ttc = 0.0;
+    EXPECT_EQ(ego.TimeToCollision(&target, CoordinateSystem::CS_WORLD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, ttc), -1);
+    EXPECT_EQ(ttc, -1.0);
+    EXPECT_EQ(ego.TimeToCollision(&target, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, ttc, 10.0), -1);
+    EXPECT_EQ(ttc, -1.0);
+}
+
+TEST(RelativeSpeedTest, TrajectoryRelativeSpeed)
+{
+    double dt = 0.1;
+
+    std::unique_ptr<ScenarioEngine> se = std::make_unique<ScenarioEngine>("../../../resources/xosc/lane-change_clothoid_based_trajectory.xosc");
+    ASSERT_NE(se, nullptr);
+    scenario_step(se.get(), 0.0);
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+    Object* obj0 = se->entities_.object_[0];
+
+    while (se->getSimulationTime() < 3.1 - SMALL_NUMBER)
+    {
+        scenario_step(se.get(), dt);
+    }
+    ASSERT_NE(obj0->pos_.GetTrajectory(), nullptr);
+    ASSERT_GT(obj0->GetSpeed(), 1.0);
+
+    // stationary target outside trajectory
+    Object obj1(Object::Type::VEHICLE);
+    obj1.pos_.SetTrackPos(1, 93, 0);
+    obj1.SetVel(0.0, 0.0, 0.0);
+
+    double speed = 0.0;
+    EXPECT_EQ(
+        obj0->RelativeSpeed(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, speed),
+        0);
+    EXPECT_NEAR(speed, -obj0->GetSpeed(), 0.05);
+
+    // target on same trajectory, same velocity
+    obj1.pos_.SetTrajectory(obj0->pos_.GetTrajectory()->Copy());
+    obj1.pos_.SetTrajectoryS(obj0->pos_.GetTrajectoryS() + 0.9);
+    obj1.SetVel(obj0->pos_.GetVelX(), obj0->pos_.GetVelY(), 0.0);
+    EXPECT_EQ(
+        obj0->RelativeSpeed(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, speed),
+        0);
+    EXPECT_NEAR(speed, 0.0, 0.05);
+    EXPECT_EQ(obj0->RelativeSpeed(&obj1, roadmanager::CoordinateSystem::CS_TRAJECTORY, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, speed),
+              0);
+    EXPECT_NEAR(speed, 0.0, 0.05);
+
+    delete (obj1.pos_.GetTrajectory());
+    obj1.pos_.SetTrajectory(nullptr);
+}
+
 TEST(TrajectoryTest, EnsureContinuation)
 {
     double          dt = 0.01;
@@ -3382,8 +3579,8 @@ static void EvaluateCrossingPair(Object& trig_obj, Object& obj, TrigByTimeToColl
     double obj_pos[2]      = {0.0, 0.0};
     double trig_obj_pos[2] = {0.0, 0.0};
 
-    // object behind triggering object, crossing its path at a right angle, so that the
-    // triggering object drives away from it and the gap grows by 10 m/s
+    // Object is behind and moves perpendicular to the triggering object. The
+    // triggering object is moving away along the line of sight.
     RotateVec2D(0.0, 0.0, heading, trig_obj_pos[0], trig_obj_pos[1]);
     trig_obj.pos_.SetInertiaPos(trig_obj_pos[0], trig_obj_pos[1], heading, false);
     RotateVec2D(-100.0, 0.0, heading, obj_pos[0], obj_pos[1]);
@@ -3393,15 +3590,14 @@ static void EvaluateCrossingPair(Object& trig_obj, Object& obj, TrigByTimeToColl
     trig_obj.SetVel(trig_obj.GetSpeed() * cos(trig_obj.pos_.GetH()), trig_obj.GetSpeed() * sin(trig_obj.pos_.GetH()), 0.0);
     obj.SetSpeed(10.0);
     obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
+
     EXPECT_EQ(t.CheckCondition(0.0), false);
     EXPECT_NEAR(t.ttc_, -1.0, 1e-3);
 
-    // object in front of triggering object, crossing its path at a right angle, so that
-    // the triggering object approaches it and the gap shrinks by 10 m/s
-    RotateVec2D(100.0, 0.0, heading, obj_pos[0], obj_pos[1]);
+    // The paths cross at a right angle and both objects reach the intersection
+    // after 10 seconds.
+    RotateVec2D(100.0, -100.0, heading, obj_pos[0], obj_pos[1]);
     obj.pos_.SetInertiaPos(obj_pos[0], obj_pos[1], heading + M_PI_2, false);
-
-    obj.SetSpeed(10.0);
     obj.SetVel(obj.GetSpeed() * cos(obj.pos_.GetH()), obj.GetSpeed() * sin(obj.pos_.GetH()), 0.0);
     EXPECT_EQ(t.CheckCondition(0.0), false);
     EXPECT_NEAR(t.ttc_, 10.0, 1e-3);

@@ -12749,7 +12749,8 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
             diff.dOppLane = true;
         }
 
-        if (SIGN(adjustedLaneIdA) == SIGN(GetLaneId()))
+        diff.dRoadAligned = SIGN(adjustedLaneIdA) == SIGN(GetLaneId());
+        if (diff.dRoadAligned)
         {
             // roads at current and target location are oriented the same way wrt driving direction
             diff.dt = tB - GetT();
@@ -12782,9 +12783,10 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
     }
     else  // no valid route found
     {
-        diff.dLaneId = 0;
-        diff.ds      = LARGE_NUMBER;
-        diff.dt      = LARGE_NUMBER;
+        diff.dRoadAligned = true;
+        diff.dLaneId      = 0;
+        diff.ds           = LARGE_NUMBER;
+        diff.dt           = LARGE_NUMBER;
     }
 
     getRelativeDistance(pos_b->GetX(), pos_b->GetY(), diff.dx, diff.dy);

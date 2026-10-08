@@ -466,6 +466,26 @@ namespace scenarioengine
                      double&                           dist,
                      double                            maxDist = LARGE_NUMBER);
 
+        /**
+        Relative speed of target with respect to this object, expressed as signed-distance rate (positive when distance increases).
+        Velocities are projected onto axes fixed to this object's frame; frame rotation is ignored.
+         - CS_ENTITY: this object's local axes
+         - CS_ROAD/CS_LANE: road axes, longitudinal sign according to this object's heading
+         - CS_TRAJECTORY: this object's trajectory axes (Euclidean if no trajectory)
+         - Euclidean: signed Euclidean distance rate
+        @param target The object to check
+        @param cs CoordinateSystem, see roadmanager::CoordinateSystem
+        @param relDistType, see roadmanager::RelativeDistanceType
+        @param speed Relative speed (output parameter)
+        @param maxDist Max distance to search for road path (CS_ROAD/CS_LANE)
+        @return 0 if successful and speed is valid, else -1
+        */
+        int RelativeSpeed(Object*                           target,
+                          roadmanager::CoordinateSystem     cs,
+                          roadmanager::RelativeDistanceType relDistType,
+                          double&                           speed,
+                          double                            maxDist = LARGE_NUMBER);
+
         int TimeHeadway(Object*                           target,
                         roadmanager::CoordinateSystem     cs,
                         roadmanager::RelativeDistanceType relDistType,
