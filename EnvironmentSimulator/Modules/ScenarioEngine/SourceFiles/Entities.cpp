@@ -854,7 +854,7 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
     return minDist;
 }
 
-int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, CoordinateSystem cs)
+int Object::FreeSpaceDistancePointRoadLane(const Position& target, double* latDist, double* longDist, CoordinateSystem cs)
 {
     *latDist  = LARGE_NUMBER;
     *longDist = LARGE_NUMBER;
@@ -887,13 +887,8 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
         vertices[i][2] = pos_.GetH();
     }
 
-    // Map XY point to road coordinates, but consider only roads reachable from point
-    Position pointPos = pos_;
+    Position pointPos = target;
     pointPos.SetRoute(0);  // don't mess with the route of the original position object
-    if (static_cast<int>(pointPos.XYZ2TrackPos(x, y, 0, true)) < 0)
-    {
-        return -1;
-    }
 
     // Find long and lat max values
     Position     pos[4];
@@ -1259,8 +1254,7 @@ int Object::Distance(Object*                           target,
     return 0;
 }
 
-int Object::Distance(double                            x,
-                     double                            y,
+int Object::Distance(const Position&                   target,
                      roadmanager::CoordinateSystem     cs,
                      roadmanager::RelativeDistanceType relDistType,
                      bool                              freeSpace,
@@ -1294,7 +1288,7 @@ int Object::Distance(double                            x,
 
             while (pivot_obj && iterations++ < 100 && fabs(candidate_info.dist) > 0.0)
             {
-                double tmp_dist = pivot_obj->FreeSpaceDistancePoint(x, y, &latDist, &longDist);
+                double tmp_dist = pivot_obj->FreeSpaceDistancePoint(target.GetX(), target.GetY(), &latDist, &longDist);
                 if (fabs(tmp_dist) < fabs(candidate_info.dist))
                 {
                     candidate_info.dist      = tmp_dist;
@@ -1341,7 +1335,7 @@ int Object::Distance(double                            x,
                    ((relDistType == RelativeDistanceType::REL_DIST_LATERAL && fabs(candidate_info.lat_dist) > 0.0) ||
                     (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL && fabs(candidate_info.long_dist) > 0.0)))
             {
-                int return_value = pivot_obj->FreeSpaceDistancePointRoadLane(x, y, &latDist, &longDist, cs);
+                int return_value = pivot_obj->FreeSpaceDistancePointRoadLane(target, &latDist, &longDist, cs);
                 if (return_value == 0)
                 {
                     if ((relDistType == RelativeDistanceType::REL_DIST_LATERAL && fabs(latDist) < fabs(candidate_info.lat_dist)) ||
@@ -1384,7 +1378,8 @@ int Object::Distance(double                            x,
     }
     else  // not freeSpace
     {
-        return pos_.Distance(x, y, cs, relDistType, dist, maxDist);
+        Position target_pos = target;
+        return pos_.Distance(&target_pos, cs, relDistType, dist, maxDist);
     }
 
     return 0;

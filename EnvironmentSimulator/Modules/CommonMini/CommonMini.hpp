@@ -77,6 +77,7 @@ using idx_t = uint32_t;
 
 const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";
 const std::string DEFAULT_CONFIG_FILE     = "config.yml";
+constexpr double  TwoPi                   = 2.0 * M_PI;
 
 // Time functions
 __int64 SE_getSystemTimeMilliseconds();           // get systemtime in ms

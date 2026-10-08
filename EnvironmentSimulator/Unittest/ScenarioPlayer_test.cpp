@@ -1329,6 +1329,7 @@ TEST(OSI, TestDirectJunctions)
     delete player;
 }
 
+// Checks roads being sorted by road ID
 TEST(OSI, TestLanePairingJunctionUnorderedRoads)
 {
     const char*     args[] = {"esmini",
@@ -1350,38 +1351,38 @@ TEST(OSI, TestLanePairingJunctionUnorderedRoads)
     ASSERT_NE(osi_gt_ptr, nullptr);
 
     // check all lane pairs
-    EXPECT_EQ(osi_gt_ptr->lane(0).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(0).id().value(), 9);
     EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).antecessor_lane_id().value(), 9);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).has_antecessor_lane_id(), false);
     EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).successor_lane_id().value(), 15);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).successor_lane_id().value(), 2);
 
-    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 5);
-    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).antecessor_lane_id().value(), 11);
-    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_successor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 11);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).successor_lane_id().value(), 5);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(1).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(1).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(1).successor_lane_id().value(), 18);
 
-    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 9);
+    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 15);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_antecessor_lane_id(), false);
-    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).antecessor_lane_id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_successor_lane_id(), false);
 
-    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 11);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 2);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).antecessor_lane_id().value(), 9);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 5);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).has_antecessor_lane_id(), false);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).successor_lane_id().value(), 18);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 15);
 
-    EXPECT_EQ(osi_gt_ptr->lane(4).id().value(), 15);
+    EXPECT_EQ(osi_gt_ptr->lane(4).id().value(), 5);
     EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).antecessor_lane_id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).antecessor_lane_id().value(), 11);
     EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).has_successor_lane_id(), false);
 
     EXPECT_EQ(osi_gt_ptr->lane(5).id().value(), 18);

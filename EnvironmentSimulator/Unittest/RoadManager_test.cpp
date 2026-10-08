@@ -2242,6 +2242,54 @@ TEST(EdgeCaseTest, TestSTruncation)
     EXPECT_NEAR(pos.GetY(), 0.2751, 1e-4);
 }
 
+TEST(LaneSectionLookupTest, PreferredLayerMatchesLinearSearch)
+{
+    ASSERT_TRUE(Position::LoadOpenDrive("../../../resources/xodr/roadworks_permanent_temporary_layers.xodr"));
+    const OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    bool has_temporary_sections = false;
+    for (idx_t road_idx = 0; road_idx < odr->GetNumOfRoads(); road_idx++)
+    {
+        Road *road = odr->GetRoadByIdx(road_idx);
+        ASSERT_NE(road, nullptr);
+
+        std::vector<double> sample_s{0.0, road->GetLength()};
+        for (idx_t section_idx = 0; section_idx < road->GetNumberOfLaneSections(); section_idx++)
+        {
+            LaneSection *section = road->GetLaneSectionByIdx(section_idx);
+            ASSERT_NE(section, nullptr);
+            has_temporary_sections = has_temporary_sections || section->GetLayer() == LAYER_TEMPORARY;
+            sample_s.push_back(section->GetS());
+            sample_s.push_back(section->GetS() + section->GetLength() * 0.5);
+        }
+
+        for (double s : sample_s)
+        {
+            idx_t regular_idx = road->GetLaneSectionIdxByS(s, 0);
+            for (Layer preferred_layer : {LAYER_PERMANENT, LAYER_TEMPORARY})
+            {
+                idx_t expected_idx = regular_idx;
+                if (regular_idx != IDX_UNDEFINED)
+                {
+                    double target_s = road->GetLaneSectionByIdx(regular_idx)->GetS();
+                    for (idx_t section_idx = 0; section_idx < road->GetNumberOfLaneSections(); section_idx++)
+                    {
+                        LaneSection *section = road->GetLaneSectionByIdx(section_idx);
+                        if (section->GetLayer() == preferred_layer && fabs(section->GetS() - target_s) < SMALL_NUMBER)
+                        {
+                            expected_idx = section_idx;
+                            break;
+                        }
+                    }
+                }
+                EXPECT_EQ(road->GetLaneSectionIdxByS(s, preferred_layer), expected_idx);
+            }
+        }
+    }
+    EXPECT_TRUE(has_temporary_sections);
+}
+
 TEST(LaneInfoTest, TestLaneWidthAndType)
 {
     Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/highway_exit.xodr");

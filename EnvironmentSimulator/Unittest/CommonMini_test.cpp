@@ -398,6 +398,20 @@ TEST(MathFunctions, TestPointToLineDistance3DSigned)
     EXPECT_NEAR(PointToLineDistance3DSigned(0.0, -5.0, 0.0, 0.0, 0.0, 10.0, 10.0, 0.0, 10.0), -11.1803, 1e-3);
 }
 
+TEST(MathFunctions, TestGetAngleInInterval2PI)
+{
+    EXPECT_NEAR(GetAngleInInterval2PI(0.0), 0.0, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(TwoPi), 0.0, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(TwoPi), 0.0, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(0.1), 0.1, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(3.14), 3.14, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(-0.1), TwoPi - 0.1, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(-3.14), TwoPi - 3.14, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(-TwoPi), 0.0, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(2 * TwoPi + 0.2), 0.2, 1e-5);
+    EXPECT_NEAR(GetAngleInInterval2PI(-2 * TwoPi - 0.2), TwoPi - 0.2, 1e-5);
+}
+
 static bool log_msg_received = false;
 
 static void log_callback(const std::string& msg)

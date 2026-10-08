@@ -815,7 +815,7 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
         {
             roadmanager::Position* pos      = position_->GetRMPos();
             double                 rel_dist = LARGE_NUMBER;
-            if (trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist) != 0)
+            if (trigObj->Distance(*pos, cs_, relDistType_, freespace_, rel_dist) != 0)
             {
                 rel_dist = LARGE_NUMBER;
             }
@@ -968,7 +968,7 @@ bool TrigByDistance::CheckCondition(double sim_time)
             continue;
         }
 
-        if (trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, dist_) != 0)
+        if (trigObj->Distance(*pos, cs_, relDistType_, freespace_, dist_) != 0)
         {
             dist_ = LARGE_NUMBER;
         }

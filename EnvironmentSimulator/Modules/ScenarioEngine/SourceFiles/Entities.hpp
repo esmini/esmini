@@ -430,7 +430,7 @@ namespace scenarioengine
         */
         double FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist);
 
-        int FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, roadmanager::CoordinateSystem cs);
+        int FreeSpaceDistancePointRoadLane(const roadmanager::Position& target, double* latDist, double* longDist, roadmanager::CoordinateSystem cs);
         int FreeSpaceDistanceObjectRoadLane(Object* target, roadmanager::PositionDiff* posDiff, roadmanager::CoordinateSystem cs);
 
         /**
@@ -450,17 +450,16 @@ namespace scenarioengine
                      double                            maxDist = LARGE_NUMBER);
 
         /**
-        Measure the distance to provided target world x, y position
-        @param x X coordinate of target world position
-        @param y Y coordinate of target world position
+        Measure the distance to provided target position, preserving its road coordinates
+        @param target The target position
+        Road/lane distances require resolved road coordinates in target; its world coordinates are not remapped.
         @param cs CoordinateSystem, see roadmanager::CoordinateSystem
         @param relDistType, see roadmanager::RelativeDistanceType
         @param freeSpace, measure free distance between bounding boxes or just refpoint to refpoint
         @param dist Distance (output parameter)
         @return 0 if position found and parameter values are valid, else -1
         */
-        int Distance(double                            x,
-                     double                            y,
+        int Distance(const roadmanager::Position&      target,
                      roadmanager::CoordinateSystem     cs,
                      roadmanager::RelativeDistanceType relDistType,
                      bool                              freeSpace,

@@ -352,30 +352,30 @@ const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
     {"TYPE_PARKING_HAZARD", Signal::TYPE_PARKING_HAZARD},
     {"TYPE_TRAFFIC_LIGHT_GREEN_ARROW", Signal::TYPE_TRAFFIC_LIGHT_GREEN_ARROW}};
 
-Signal::Signal(double      s,
-               double      t,
-               int         id,
-               std::string name,
-               bool        dynamic,
-               Orientation orientation,
-               double      z_offset,
-               std::string country,
-               int         osi_type,
-               std::string type,
-               std::string subtype,
-               std::string value_str,
-               std::string unit,
-               double      height,
-               double      width,
-               double      depth,
-               std::string text,
-               double      h_offset,
-               double      pitch,
-               double      roll,
-               double      x,
-               double      y,
-               double      z,
-               double      h)
+Signal::Signal(double             s,
+               double             t,
+               int                id,
+               const std::string& name,
+               bool               dynamic,
+               Orientation        orientation,
+               double             z_offset,
+               const std::string& country,
+               int                osi_type,
+               const std::string& type,
+               const std::string& subtype,
+               const std::string& value_str,
+               const std::string& unit,
+               double             height,
+               double             width,
+               double             depth,
+               const std::string& text,
+               double             h_offset,
+               double             pitch,
+               double             roll,
+               double             x,
+               double             y,
+               double             z,
+               double             h)
     : RoadObject(x, y, z, h),
       s_(s),
       t_(t),
@@ -402,30 +402,30 @@ Signal::Signal(double      s,
     value_ = strtod(value_str);
 }
 
-TrafficLight::TrafficLight(double      s,
-                           double      t,
-                           int         id,
-                           std::string name,
-                           bool        dynamic,
-                           Orientation orientation,
-                           double      z_offset,
-                           std::string country,
-                           int         osi_type,
-                           std::string type,
-                           std::string subtype,
-                           std::string value_str,
-                           std::string unit,
-                           double      height,
-                           double      width,
-                           double      depth,
-                           std::string text,
-                           double      h_offset,
-                           double      pitch,
-                           double      roll,
-                           double      x,
-                           double      y,
-                           double      z,
-                           double      h)
+TrafficLight::TrafficLight(double             s,
+                           double             t,
+                           int                id,
+                           const std::string& name,
+                           bool               dynamic,
+                           Orientation        orientation,
+                           double             z_offset,
+                           const std::string& country,
+                           int                osi_type,
+                           const std::string& type,
+                           const std::string& subtype,
+                           const std::string& value_str,
+                           const std::string& unit,
+                           double             height,
+                           double             width,
+                           double             depth,
+                           const std::string& text,
+                           double             h_offset,
+                           double             pitch,
+                           double             roll,
+                           double             x,
+                           double             y,
+                           double             z,
+                           double             h)
     : Signal(s,
              t,
              id,
@@ -486,7 +486,7 @@ void TrafficLight::SetTrafficLightInfo()
     }
 }
 
-void TrafficLight::UpdateState(const std::string state)
+void TrafficLight::UpdateState(const std::string& state)
 {
     state_ = state;
     state_vector_.clear();
@@ -639,7 +639,7 @@ Signal::OSIType Signal::GetOSITypeFromString(const std::string& type)
     return Signal::TYPE_UNKNOWN;
 }
 
-std::string Signal::GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value)
+std::string Signal::GetCombinedTypeSubtypeValueStr(const std::string& type, const std::string& subtype, const std::string& value)
 {
     std::string str;
 
@@ -1897,14 +1897,22 @@ idx_t Road::GetLaneSectionIdxByS(double s, Layer preferred_layer, idx_t start_at
 
     double target_s = regular_section->GetS();
 
-    // Look for a section with the same s-coordinate but preferred layer
-    for (idx_t i = 0; i < GetNumberOfLaneSections(); i++)
+    // Lane sections are sorted by layer and then s-coordinate.
+    auto preferred_section = std::upper_bound(lane_section_.begin(),
+                                              lane_section_.end(),
+                                              target_s - SMALL_NUMBER,
+                                              [preferred_layer](double s_limit, const LaneSection* section)
+                                              {
+                                                  if (section->GetLayer() != preferred_layer)
+                                                  {
+                                                      return preferred_layer < section->GetLayer();
+                                                  }
+                                                  return s_limit < section->GetS();
+                                              });
+    if (preferred_section != lane_section_.end() && (*preferred_section)->GetLayer() == preferred_layer &&
+        fabs((*preferred_section)->GetS() - target_s) < SMALL_NUMBER)
     {
-        LaneSection* lane_section = GetLaneSectionByIdx(i);
-        if (lane_section && fabs(lane_section->GetS() - target_s) < SMALL_NUMBER && lane_section->GetLayer() == preferred_layer)
-        {
-            return i;
-        }
+        return static_cast<idx_t>(preferred_section - lane_section_.begin());
     }
 
     // No preferred layer found, return the regular section
@@ -2694,8 +2702,7 @@ OSIPoints& LaneSection::GetRefLineOSIPoints()
 // Offset from closest left road mark to current position
 RoadMarkInfo Lane::GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) const
 {
-    Position*         pos  = new roadmanager::Position();
-    Road*             road = pos->GetRoadById(track_id);
+    Road*             road = Position::GetOpenDrive()->GetRoadById(track_id);
     LaneSection*      lsec;
     Lane*             lane;
     LaneRoadMark*     lane_roadMark;
@@ -2805,7 +2812,6 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) cons
             }
         }
     }
-    delete pos;
     return rm_info;
 }
 
@@ -3155,24 +3161,24 @@ void OutlineCornerLocal::GetPosLocal(double& x, double& y, double& z)
     z = heading_;
 }
 
-roadmanager::RMObject::RMObject(double      s,
-                                double      t,
-                                id_t        id,
-                                std::string name,
-                                Orientation orientation,
-                                double      z_offset,
-                                ObjectType  type,
-                                std::string subtype,
-                                double      length,
-                                double      height,
-                                double      width,
-                                double      heading,
-                                double      pitch,
-                                double      roll,
-                                double      x,
-                                double      y,
-                                double      z,
-                                double      h)
+roadmanager::RMObject::RMObject(double             s,
+                                double             t,
+                                id_t               id,
+                                const std::string& name,
+                                Orientation        orientation,
+                                double             z_offset,
+                                ObjectType         type,
+                                const std::string& subtype,
+                                double             length,
+                                double             height,
+                                double             width,
+                                double             heading,
+                                double             pitch,
+                                double             roll,
+                                double             x,
+                                double             y,
+                                double             z,
+                                double             h)
     : RoadObject(x, y, z, h),
       name_(name),
       type_(type),
@@ -3246,7 +3252,7 @@ std::string RMObject::Type2Str(RMObject::ObjectType type)
     return "";
 }
 
-RMObject::ObjectType RMObject::Str2Type(std::string type)
+RMObject::ObjectType RMObject::Str2Type(const std::string& type)
 {
     int n_types = static_cast<int>(sizeof(object_type_str) / sizeof(char*));
 
@@ -3263,7 +3269,7 @@ RMObject::ObjectType RMObject::Str2Type(std::string type)
     return RMObject::ObjectType::NONE;
 }
 
-void RMObject::SetColorFromHexString(std::string color)
+void RMObject::SetColorFromHexString(const std::string& color)
 {
     if (color.length() == 7 && color[0] == '#')
     {
@@ -4015,31 +4021,41 @@ bool Road::UpdateRollByS(double s, double* roadSuperElevationPrim, double* roll,
     return false;
 }
 
-Road* OpenDrive::GetRoadById(id_t id) const
+idx_t OpenDrive::FindRoadIdxById(id_t id) const
 {
-    for (size_t i = 0; i < road_.size(); i++)
+    if (roads_sorted_)
+    {
+        auto road_it = std::lower_bound(road_.begin(), road_.end(), id, [](const Road* road, id_t target_id) { return road->GetId() < target_id; });
+
+        if (road_it != road_.end() && (*road_it)->GetId() == id)
+        {
+            return static_cast<idx_t>(road_it - road_.begin());
+        }
+        return IDX_UNDEFINED;
+    }
+
+    for (idx_t i = 0; i < static_cast<idx_t>(road_.size()); i++)
     {
         if (road_[i]->GetId() == id)
         {
-            return road_[i];
+            return i;
         }
     }
-    return 0;
+    return IDX_UNDEFINED;
+}
+
+Road* OpenDrive::GetRoadById(id_t id) const
+{
+    idx_t road_idx = FindRoadIdxById(id);
+    return road_idx == IDX_UNDEFINED ? nullptr : road_[road_idx];
 }
 
 Road* OpenDrive::GetRoadByIdx(idx_t idx) const
 {
-    if (idx < road_.size())
-    {
-        return road_[idx];
-    }
-    else
-    {
-        return 0;
-    }
+    return idx < road_.size() ? road_[idx] : nullptr;
 }
 
-Road* roadmanager::OpenDrive::GetRoadByIdStr(std::string id_str) const
+Road* roadmanager::OpenDrive::GetRoadByIdStr(const std::string& id_str) const
 {
     std::vector<Road*>::const_iterator itr = std::find_if(road_.begin(), road_.end(), [&id_str](Road* r) { return r->GetIdStr() == id_str; });
     if (itr != road_.end())
@@ -4049,7 +4065,7 @@ Road* roadmanager::OpenDrive::GetRoadByIdStr(std::string id_str) const
     return nullptr;
 }
 
-Junction* roadmanager::OpenDrive::GetJunctionByIdStr(std::string id_str) const
+Junction* roadmanager::OpenDrive::GetJunctionByIdStr(const std::string& id_str) const
 {
     std::vector<Junction*>::const_iterator itr =
         std::find_if(junction_.begin(), junction_.end(), [&id_str](Junction* j) { return j->GetIdStr() == id_str; });
@@ -4129,7 +4145,7 @@ Controller* OpenDrive::GetControllerById(id_t id)
     return nullptr;
 }
 
-std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
+std::string ReadAttribute(pugi::xml_node node, const std::string& attribute_name, bool required)
 {
     if (!strcmp(attribute_name.c_str(), ""))
     {
@@ -4174,11 +4190,12 @@ void OpenDrive::Clear()
     junction_ids_.clear();
     dynamic_signals_.clear();
 
-    for (size_t i = 0; i < road_.size(); i++)
+    for (Road* road : road_)
     {
-        delete road_[i];
+        delete road;
     }
     road_.clear();
+    roads_sorted_ = true;
 
     for (size_t i = 0; i < junction_.size(); i++)
     {
@@ -5347,6 +5364,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
             }
         }
 
+        roads_sorted_ = false;
         road_.push_back(r);
 
         // Calculate proper lane section lengths now that all sections are added
@@ -6005,6 +6023,9 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
             r->AddLaneSection(lane_section);
         }
     }
+
+    std::sort(road_.begin(), road_.end(), [](const Road* lhs, const Road* rhs) { return lhs->GetId() < rhs->GetId(); });
+    roads_sorted_ = true;
 
     for (pugi::xml_node controller_node = node.child("controller"); controller_node; controller_node = controller_node.next_sibling("controller"))
     {
@@ -7048,15 +7069,12 @@ void OpenDrive::Reset()
 
 idx_t OpenDrive::GetTrackIdxById(id_t id) const
 {
-    for (unsigned int i = 0; i < road_.size(); i++)
+    idx_t road_idx = FindRoadIdxById(id);
+    if (road_idx == IDX_UNDEFINED)
     {
-        if (road_[i]->GetId() == id)
-        {
-            return i;
-        }
+        LOG_ERROR("OpenDrive::GetTrackIdxById Error: Road id {} not found", id);
     }
-    LOG_ERROR("OpenDrive::GetTrackIdxById Error: Road id {} not found", id);
-    return IDX_UNDEFINED;
+    return road_idx;
 }
 
 id_t OpenDrive::GetTrackIdByIdx(idx_t idx) const
@@ -7523,9 +7541,9 @@ int OpenDrive::CheckConnections()
 void OpenDrive::Print() const
 {
     LOG_INFO("Roads:");
-    for (size_t i = 0; i < road_.size(); i++)
+    for (Road* road : road_)
     {
-        road_[i]->Print();
+        road->Print();
     }
 
     LOG_INFO("junctions");
@@ -7535,7 +7553,7 @@ void OpenDrive::Print() const
     }
 }
 
-void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std::vector<std::pair<id_t, std::string>>& ids)
+void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, const std::string& name, std::vector<std::pair<id_t, std::string>>& ids)
 {
     // First loop through all roads to establish unique road ids
     id_t id_next    = 0;
@@ -7587,7 +7605,7 @@ void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std
     }
 }
 
-id_t OpenDrive::LookupIdFromStr(std::vector<std::pair<id_t, std::string>>& ids, std::string id_str)
+id_t OpenDrive::LookupIdFromStr(std::vector<std::pair<id_t, std::string>>& ids, const std::string& id_str)
 {
     std::vector<std::pair<id_t, std::string>>::iterator itr =
         std::find_if(ids.begin(), ids.end(), [&id_str](const std::pair<id_t, std::string>& id) { return id.second == id_str; });
@@ -7598,14 +7616,14 @@ id_t OpenDrive::LookupIdFromStr(std::vector<std::pair<id_t, std::string>>& ids, 
     return ID_UNDEFINED;
 }
 
-id_t OpenDrive::LookupRoadIdFromStr(std::string id_str)
+id_t OpenDrive::LookupRoadIdFromStr(const std::string& id_str)
 {
     id_t id = LookupIdFromStr(road_ids_, id_str);
 
     return id;
 }
 
-id_t OpenDrive::LookupJunctionIdFromStr(std::string id_str)
+id_t OpenDrive::LookupJunctionIdFromStr(const std::string& id_str)
 {
     if (id_str == "-1")
     {
@@ -8534,7 +8552,6 @@ void OpenDrive::SetLaneOSIPoints()
 {
     // Initialization
     Position                 pos_pivot, pos_tmp, pos_candidate, pos_last_ok;
-    Road*                    road;
     LaneSection*             lsec;
     Lane*                    lane;
     unsigned int             number_of_lanes;
@@ -8548,10 +8565,8 @@ void OpenDrive::SetLaneOSIPoints()
     pos_candidate.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL);
 
     // Looping through each road
-    for (unsigned int i = 0; i < road_.size(); i++)
+    for (Road* road : road_)
     {
-        road = road_[i];
-
         if (road->GetJunction() == ID_UNDEFINED)
         {
             osiintersection = ID_UNDEFINED;
@@ -8570,7 +8585,7 @@ void OpenDrive::SetLaneOSIPoints()
         }
 
         // Looping through each lane section
-        unsigned int number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+        unsigned int number_of_lane_sections = road->GetNumberOfLaneSections();
         for (unsigned int j = 0; j < number_of_lane_sections; j++)
         {
             // Get the ending position of the current lane section
@@ -8779,7 +8794,6 @@ void OpenDrive::SetLaneBoundaryPoints()
 {
     // Initialization
     Position                 pos_pivot, pos_tmp, pos_candidate, pos_last_ok;
-    Road*                    road;
     LaneSection*             lsec;
     Lane*                    lane;
     unsigned int             number_of_lanes;
@@ -8792,12 +8806,10 @@ void OpenDrive::SetLaneBoundaryPoints()
     pos_candidate.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL);
 
     // Looping through each road
-    for (unsigned int i = 0; i < road_.size(); i++)
+    for (Road* road : road_)
     {
-        road = road_[i];
-
         // Looping through each lane section
-        unsigned int number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+        unsigned int number_of_lane_sections = road->GetNumberOfLaneSections();
         for (unsigned int j = 0; j < number_of_lane_sections; j++)
         {
             // Get the ending position of the current lane section
@@ -8936,7 +8948,6 @@ void OpenDrive::SetRoadMarkOSIPoints()
 {
     // Initialization
     Position              pos_pivot, pos_tmp, pos_candidate, pos_last_ok;
-    Road*                 road;
     LaneSection*          lsec;
     Lane*                 lane;
     LaneRoadMark*         lane_roadMark;
@@ -8954,12 +8965,10 @@ void OpenDrive::SetRoadMarkOSIPoints()
     pos_candidate.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL);
 
     // Looping through each road
-    for (unsigned int i = 0; i < road_.size(); i++)
+    for (Road* road : road_)
     {
-        road = road_[i];
-
         // Looping through each lane section
-        unsigned int number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+        unsigned int number_of_lane_sections = road->GetNumberOfLaneSections();
         for (unsigned int j = 0; j < number_of_lane_sections; j++)
         {
             // Get the ending position of the current lane section
@@ -11198,6 +11207,8 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         return Position::ReturnCode::ERROR_GENERIC;
     }
 
+    Road* track_road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+
     double s_stop             = 0;
     double signed_dLaneOffset = dLaneOffset;
     bool   done               = false;
@@ -11205,17 +11216,18 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     // move from road to road until ds-value is within road length or maximum of connections has been crossed
     for (int i = 0; done == false && i < max_links; i++)
     {
-        if (s_ + ds_road > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
+        const double track_road_length = track_road->GetLength();
+        if (s_ + ds_road > track_road_length)
         {
             // beyond end of road, ensure last lane section
-            lane_section_idx_ = road->GetLaneSectionIdxByS(road->GetLength());
+            lane_section_idx_ = track_road->GetLaneSectionIdxByS(track_road_length);
 
             // Calculate remaining s-value once we moved to the connected road
-            ds_road = s_ + ds_road - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
-            link    = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
+            ds_road = s_ + ds_road - track_road_length;
+            link    = track_road->GetLink(SUCCESSOR);
 
             // register s-value at end of the road, to be used in case of bad connection
-            s_stop = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
+            s_stop = track_road_length;
         }
         else if (s_ + ds_road < 0)
         {
@@ -11224,7 +11236,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
 
             // Calculate remaining s-value once we moved to the connected road
             ds_road = s_ + ds_road;
-            link    = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
+            link    = track_road->GetLink(PREDECESSOR);
 
             // register s-value at end of the road, to be used in case of bad connection
             s_stop = 0;
@@ -11262,6 +11274,10 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
 
         // Update position to connected road
         road = GetOpenDrive()->GetRoadById(track_id_);
+        if (!done)
+        {
+            track_road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+        }
 
         Position   pos_save = *this;
         ReturnCode ret_val2 =
@@ -16246,7 +16262,7 @@ Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road) const
     return junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, incoming_road);
 }
 
-void Route::setName(std::string name)
+void Route::setName(const std::string& name)
 {
     this->name_ = name;
 }

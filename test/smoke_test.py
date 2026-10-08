@@ -328,7 +328,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^14.000, 15, swarm_10, 9.036, 409.992, -0.736, 1.540, 0.002, 0.000, 30.000, -0.001, 0.379', csv, re.MULTILINE))
             self.assertTrue(re.search('^14.000, 30, swarm_23, 13.871, 298.009, -0.524, 1.556, 0.002, 0.000, 30.000, -0.000, 4.185', csv, re.MULTILINE))
             self.assertTrue(re.search('^14.000, 31, swarm_23\\+, 13.806, 293.559, -0.516, 1.556, 0.002, 0.000, 30.000, 0.000, 4.185', csv, re.MULTILINE))
-            self.assertTrue(re.search('^14.000, 36, swarm_28, 0.095, 555.285, -0.843, 4.640, 0.000, 6.283, 30.000, 0.000, 2.402', csv, re.MULTILINE))
+            self.assertTrue(re.search('^14.000, 36, swarm_28, 0.095, 555.285, -0.843, 4.640, 0.000, 0.000, 30.000, 0.000, 2.402', csv, re.MULTILINE))
             self.assertTrue(re.search('^29.000, 0, Ego, 22.523, 589.548, -0.829, 1.487, 6.283, 0.000, 10.000, -0.001, 5.474', csv, re.MULTILINE))
             self.assertTrue(re.search('^29.000, 18, swarm_13, 54.756, 838.004, -1.009, 1.429, 6.278, 0.000, 30.000, -0.001, 0.291', csv, re.MULTILINE))
             self.assertTrue(re.search('^29.000, 20, swarm_15, 20.793, 567.964, -0.838, 1.494, 6.283, 0.000, 10.021, -0.001, 5.690', csv, re.MULTILINE))

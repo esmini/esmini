@@ -159,27 +159,90 @@ TEST(DistanceTest, CalcDistancePoint)
     double latDist  = 0.0;
     double longDist = 0.0;
 
-    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() + 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    Position pointPos = pos0;
+    pointPos.SetInertiaPos(pos0.GetX() + 20.0, pos0.GetY(), 0.0);
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pointPos, &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, 18.0, 1e-5);
 
-    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() - 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    pointPos.SetInertiaPos(pos0.GetX() - 20.0, pos0.GetY(), 0.0);
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pointPos, &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, -20.0, 1e-5);
 
     obj0.boundingbox_.dimensions_ = {2.0, 5.0, 2.0};
-    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() - 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pointPos, &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, -18.5, 1e-5);
 
     obj0.boundingbox_.center_ = {2.0, 4.0, 0.0};
-    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() - 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pointPos, &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, -19.5, 1e-5);
 
     obj0.boundingbox_.center_ = {2.0, 4.0, 0.0};
-    Position tmpPos(0, 600, obj0.pos_.GetT());
+    const Position tmpPos(0, 600, obj0.pos_.GetT());
     EXPECT_NEAR(tmpPos.GetX(), 585.438756, 1e-5);
     EXPECT_NEAR(tmpPos.GetY(), 45.140405, 1e-5);
-    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(tmpPos.GetX(), tmpPos.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(tmpPos, &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, 195.5, 1e-5);
     EXPECT_NEAR(latDist, -3.0, 1e-5);
+
+    double dist = 0.0;
+    ASSERT_EQ(obj0.Distance(tmpPos, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), 0);
+    EXPECT_NEAR(dist, longDist, 1e-5);
+    ASSERT_EQ(obj0.Distance(tmpPos, CoordinateSystem::CS_LANE, RelativeDistanceType::REL_DIST_LATERAL, true, dist), 0);
+    EXPECT_NEAR(dist, latDist, 1e-5);
+    ASSERT_EQ(obj0.Distance(tmpPos, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist), 0);
+    EXPECT_NEAR(dist, 200.0, 1e-5);
+    ASSERT_EQ(obj0.Distance(tmpPos, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, false, dist), 0);
+    EXPECT_NEAR(dist, 0.0, 1e-5);
+    EXPECT_EQ(obj0.Distance(tmpPos, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist, 100.0), -1);
+    EXPECT_EQ(tmpPos.GetTrackId(), 0);
+    EXPECT_DOUBLE_EQ(tmpPos.GetS(), 600.0);
+    EXPECT_DOUBLE_EQ(tmpPos.GetT(), obj0.pos_.GetT());
+}
+
+TEST(DistanceTest, CalcDistancePointPreservesRoadIdentity)
+{
+    ASSERT_TRUE(Position::LoadOpenDriveFromXMLString(R"(
+        <OpenDRIVE>
+            <header revMajor="1" revMinor="4"/>
+            <road name="first" length="100" id="1" junction="-1">
+                <planView><geometry s="0" x="0" y="0" hdg="0" length="100"><line/></geometry></planView>
+                <lanes><laneSection s="0">
+                    <center><lane id="0" type="none" level="false"/></center>
+                    <right><lane id="-1" type="driving" level="false">
+                        <width sOffset="0" a="4" b="0" c="0" d="0"/>
+                    </lane></right>
+                </laneSection></lanes>
+            </road>
+            <road name="second" length="100" id="2" junction="-1">
+                <planView><geometry s="0" x="0" y="0" hdg="0" length="100"><line/></geometry></planView>
+                <lanes><laneSection s="0">
+                    <center><lane id="0" type="none" level="false"/></center>
+                    <right><lane id="-1" type="driving" level="false">
+                        <width sOffset="0" a="4" b="0" c="0" d="0"/>
+                    </lane></right>
+                </laneSection></lanes>
+            </road>
+        </OpenDRIVE>)"));
+
+    Vehicle obj;
+    obj.pos_.SetLanePos(1, -1, 20.0, 0.0);
+    obj.boundingbox_.center_     = {1.0, 0.0, 0.0};
+    obj.boundingbox_.dimensions_ = {2.0, 2.0, 2.0};
+    const Position target(2, -1, 30.0, 0.0);
+
+    double latDist  = 0.0;
+    double longDist = 0.0;
+    double dist     = 0.0;
+    EXPECT_EQ(obj.FreeSpaceDistancePointRoadLane(target, &latDist, &longDist, CoordinateSystem::CS_ROAD), -1);
+    EXPECT_EQ(obj.Distance(target, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), -1);
+    EXPECT_EQ(obj.Distance(target, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist), -1);
+    ASSERT_EQ(obj.Distance(target, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), 0);
+    EXPECT_NEAR(dist, 8.0, 1e-5);
+    ASSERT_EQ(obj.Distance(target, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist), 0);
+    EXPECT_NEAR(dist, 10.0, 1e-5);
+    EXPECT_EQ(target.GetTrackId(), 2);
+    EXPECT_DOUBLE_EQ(target.GetS(), 30.0);
+    EXPECT_DOUBLE_EQ(target.GetT(), -2.0);
 }
 
 TEST(DistanceTest, CalcDistancePointAcrossIntersection)
@@ -205,7 +268,7 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
     double latDist  = 0.0;
     double longDist = 0.0;
 
-    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos1.GetX(), pos1.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos1, &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, -38.5861, 1e-3);
     EXPECT_NEAR(latDist, -0.2212, 1e-3);
 }
@@ -536,37 +599,55 @@ TEST(DistanceTest, DistanceWithTrailers)
     EXPECT_NEAR(distance, -1.0600, 1e-3);
 
     // Finally test point distance with and without trailers involved
-    truck1->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    const Position point1(468.8, 1.53, 0.0, 0.0, 0.0, 0.0);
+    const Position point2(597.83, 72.84, 0.0, 0.0, 0.0, 0.0);
+    truck1->Distance(point1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
     EXPECT_NEAR(distance, -2.1450, 1e-3);
-    truck1->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    truck1->Distance(point1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
     EXPECT_NEAR(distance, -2.7778, 1e-3);
-    truck2->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    truck2->Distance(point1, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
     EXPECT_NEAR(distance, 122.8735, 1e-3);
-    truck2->Distance(468.8, 1.53, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    truck2->Distance(point1, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
     EXPECT_NEAR(distance, 132.2590, 1e-3);
 
-    truck2->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    truck2->Distance(point2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
     EXPECT_NEAR(distance, -3.3915, 1e-3);
-    truck2_trailer2
-        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, true, distance);
+    truck2_trailer2->Distance(point2,
+                              roadmanager::CoordinateSystem::CS_ENTITY,
+                              roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
+                              true,
+                              distance);
     EXPECT_NEAR(distance, -3.3915, 1e-3);
 
-    truck2
-        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    truck2->Distance(point2, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
     EXPECT_NEAR(distance, -2.1645, 1e-3);
-    truck2_trailer2
-        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    truck2_trailer2->Distance(point2,
+                              roadmanager::CoordinateSystem::CS_ENTITY,
+                              roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                              true,
+                              distance);
     EXPECT_NEAR(distance, -2.1645, 1e-3);
 
-    truck2->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    truck2->Distance(point2, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
     EXPECT_NEAR(distance, -2.0509, 1e-3);
-    truck2_trailer2
-        ->Distance(597.83, 72.84, roadmanager::CoordinateSystem::CS_ROAD, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    truck2_trailer2->Distance(point2,
+                              roadmanager::CoordinateSystem::CS_ROAD,
+                              roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                              true,
+                              distance);
     EXPECT_NEAR(distance, -2.0509, 1e-3);
 
-    car1->Distance(300.0, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    car1->Distance(Position(300.0, 1.53, 0.0, 0.0, 0.0, 0.0),
+                   roadmanager::CoordinateSystem::CS_ENTITY,
+                   roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                   true,
+                   distance);
     EXPECT_NEAR(distance, 122.2849, 1e-3);
-    car1->Distance(420.0, 1.53, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, true, distance);
+    car1->Distance(Position(420.0, 1.53, 0.0, 0.0, 0.0, 0.0),
+                   roadmanager::CoordinateSystem::CS_ENTITY,
+                   roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                   true,
+                   distance);
     EXPECT_NEAR(distance, 2.2849, 1e-3);
 
     delete se;

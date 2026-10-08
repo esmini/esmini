@@ -686,7 +686,7 @@ namespace roadmanager
     class LaneRoadMarkType
     {
     public:
-        LaneRoadMarkType(std::string name, double width) : name_(name), width_(width)
+        LaneRoadMarkType(const std::string &name, double width) : name_(name), width_(width)
         {
         }
 
@@ -1833,30 +1833,30 @@ namespace roadmanager
             MODE_UNDEFINED = 6  // Keep last
         };
 
-        Signal(double      s,
-               double      t,
-               int         id,
-               std::string name,
-               bool        dynamic,
-               Orientation orientation,
-               double      z_offset,
-               std::string country,
-               int         osi_type,
-               std::string type,
-               std::string subtype,
-               std::string value_str,
-               std::string unit,
-               double      height,
-               double      width,
-               double      depth,  // i.e. length of the bounding box
-               std::string text,
-               double      h_offset,
-               double      pitch,
-               double      roll,
-               double      x,
-               double      y,
-               double      z,
-               double      h);
+        Signal(double             s,
+               double             t,
+               int                id,
+               const std::string &name,
+               bool               dynamic,
+               Orientation        orientation,
+               double             z_offset,
+               const std::string &country,
+               int                osi_type,
+               const std::string &type,
+               const std::string &subtype,
+               const std::string &value_str,
+               const std::string &unit,
+               double             height,
+               double             width,
+               double             depth,  // i.e. length of the bounding box
+               const std::string &text,
+               double             h_offset,
+               double             pitch,
+               double             roll,
+               double             x,
+               double             y,
+               double             z,
+               double             h);
 
         std::string GetName() const
         {
@@ -1902,7 +1902,7 @@ namespace roadmanager
         {
             return osi_type_;
         }
-        void SetTypeStr(std::string type)
+        void SetTypeStr(const std::string &type)
         {
             type_ = type;
         }
@@ -1964,7 +1964,7 @@ namespace roadmanager
         }
         void               SetAllValidLanes(Signal *sig, Road *r);
         static OSIType     GetOSITypeFromString(const std::string &type);
-        static std::string GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value);
+        static std::string GetCombinedTypeSubtypeValueStr(const std::string &type, const std::string &subtype, const std::string &value);
         void               SetGlobalId();
         std::string        GetModel3DFullPath() const
         {
@@ -1986,7 +1986,7 @@ namespace roadmanager
         {
             return combined_type_;
         }
-        void SetCombinedType(std::string combined_type)
+        void SetCombinedType(const std::string &combined_type)
         {
             combined_type_ = combined_type;
         }
@@ -2134,33 +2134,33 @@ namespace roadmanager
             LampMode  mode_;
         };
 
-        TrafficLight(double      s,
-                     double      t,
-                     int         id,
-                     std::string name,
-                     bool        dynamic,
-                     Orientation orientation,
-                     double      z_offset,
-                     std::string country,
-                     int         osi_type,
-                     std::string type,
-                     std::string subtype,
-                     std::string value_str,
-                     std::string unit,
-                     double      height,
-                     double      width,
-                     double      depth,  // i.e. length of the bounding box
-                     std::string text,
-                     double      h_offset,
-                     double      pitch,
-                     double      roll,
-                     double      x,
-                     double      y,
-                     double      z,
-                     double      h);
+        TrafficLight(double             s,
+                     double             t,
+                     int                id,
+                     const std::string &name,
+                     bool               dynamic,
+                     Orientation        orientation,
+                     double             z_offset,
+                     const std::string &country,
+                     int                osi_type,
+                     const std::string &type,
+                     const std::string &subtype,
+                     const std::string &value_str,
+                     const std::string &unit,
+                     double             height,
+                     double             width,
+                     double             depth,  // i.e. length of the bounding box
+                     const std::string &text,
+                     double             h_offset,
+                     double             pitch,
+                     double             roll,
+                     double             x,
+                     double             y,
+                     double             z,
+                     double             h);
 
         void SetTrafficLightInfo();
-        void UpdateState(const std::string state);
+        void UpdateState(const std::string &state);
         void CheckValidLampModes(const std::string &input) const;
 
         size_t GetNrLamps() const
@@ -2691,24 +2691,24 @@ namespace roadmanager
             TUNNEL_ROOF
         };
 
-        RMObject(double      s,
-                 double      t,
-                 id_t        id,
-                 std::string name,
-                 Orientation orientation,
-                 double      z_offset,
-                 ObjectType  type,
-                 std::string subtype,
-                 double      length,
-                 double      height,
-                 double      width,
-                 double      heading,
-                 double      pitch,
-                 double      roll,
-                 double      x,
-                 double      y,
-                 double      z,
-                 double      h);
+        RMObject(double             s,
+                 double             t,
+                 id_t               id,
+                 const std::string &name,
+                 Orientation        orientation,
+                 double             z_offset,
+                 ObjectType         type,
+                 const std::string &subtype,
+                 double             length,
+                 double             height,
+                 double             width,
+                 double             heading,
+                 double             pitch,
+                 double             roll,
+                 double             x,
+                 double             y,
+                 double             z,
+                 double             h);
 
         ~RMObject()
         {
@@ -2722,7 +2722,7 @@ namespace roadmanager
         }
 
         static std::string Type2Str(ObjectType type);
-        static ObjectType  Str2Type(std::string type);
+        static ObjectType  Str2Type(const std::string &type);
 
         std::string GetName() const
         {
@@ -2929,7 +2929,7 @@ namespace roadmanager
         {
             texture_scale_ = scale;
         }
-        void SetColorFromHexString(std::string color);
+        void SetColorFromHexString(const std::string &color);
         void SetColorFromRGB(const Rgb &rgb)
         {
             color_[0] = rgb.r;
@@ -3009,7 +3009,7 @@ namespace roadmanager
             LEFT_HAND_TRAFFIC,
         };
 
-        Road(id_t id, std::string id_str, std::string name, RoadRule rule = RoadRule::RIGHT_HAND_TRAFFIC)
+        Road(id_t id, const std::string &id_str, const std::string &name, RoadRule rule = RoadRule::RIGHT_HAND_TRAFFIC)
             : id_(id),
               id_str_(id_str),
               name_(name),
@@ -3023,10 +3023,6 @@ namespace roadmanager
         ~Road();
 
         void Print() const;
-        void SetId(id_t id)
-        {
-            id_ = id;
-        }
         id_t GetId() const
         {
             return id_;
@@ -3046,7 +3042,7 @@ namespace roadmanager
         {
             return rule_;
         }
-        void SetName(std::string name)
+        void SetName(const std::string &name)
         {
             name_ = name;
         }
@@ -3306,7 +3302,7 @@ namespace roadmanager
          */
         void CalculateLaneSectionLengths();
 
-        int GetIntIdByStringId(std::string string_id);
+        int GetIntIdByStringId(const std::string &string_id);
 
     protected:
         id_t        id_;
@@ -3437,7 +3433,7 @@ namespace roadmanager
         Controller() : id_(0), name_(""), sequence_(0)
         {
         }
-        Controller(id_t id, std::string name, int sequence = 0) : id_(id), name_(name), sequence_(sequence)
+        Controller(id_t id, const std::string &name, int sequence = 0) : id_(id), name_(name), sequence_(sequence)
         {
         }
 
@@ -3497,7 +3493,7 @@ namespace roadmanager
             SELECTOR_ANGLE,  // choose road which heading (relative incoming road) is closest to specified angle
         } JunctionStrategyType;
 
-        Junction(id_t id, std::string id_str, std::string name, JunctionType type) : id_(id), id_str_(id_str), name_(name), type_(type)
+        Junction(id_t id, const std::string &id_str, const std::string &name, JunctionType type) : id_(id), id_str_(id_str), name_(name), type_(type)
         {
             SetGlobalId();
         }
@@ -3722,8 +3718,8 @@ namespace roadmanager
                 @param idx index into the vector of roads
         */
         Road        *GetRoadByIdx(idx_t idx) const;
-        Road        *GetRoadByIdStr(std::string id_str) const;
-        Junction    *GetJunctionByIdStr(std::string id_str) const;
+        Road        *GetRoadByIdStr(const std::string &id_str) const;
+        Junction    *GetJunctionByIdStr(const std::string &id_str) const;
         Geometry    *GetGeometryByIdx(idx_t road_idx, idx_t geom_idx) const;
         idx_t        GetTrackIdxById(id_t id) const;
         id_t         GetTrackIdByIdx(idx_t idx) const;
@@ -3850,9 +3846,9 @@ namespace roadmanager
         };
 
         id_t GenerateRoadId();
-        void EstablishUniqueIds(pugi::xml_node &parent, std::string name, std::vector<std::pair<id_t, std::string>> &ids);
-        id_t LookupRoadIdFromStr(std::string id_str);
-        id_t LookupJunctionIdFromStr(std::string id_str);
+        void EstablishUniqueIds(pugi::xml_node &parent, const std::string &name, std::vector<std::pair<id_t, std::string>> &ids);
+        id_t LookupRoadIdFromStr(const std::string &id_str);
+        id_t LookupJunctionIdFromStr(const std::string &id_str);
 
         std::vector<Signal *> GetDynamicSignals()
         {
@@ -3895,7 +3891,9 @@ namespace roadmanager
         std::vector<std::pair<id_t, std::string>> road_ids_;
         std::vector<std::pair<id_t, std::string>> junction_ids_;
         std::vector<Signal *>                     dynamic_signals_;
-        id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
+        bool                                      roads_sorted_ = true;
+        idx_t                                     FindRoadIdxById(id_t id) const;
+        id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, const std::string &id_str);
         bool                                      ParseOpenDriveXML(const pugi::xml_document &doc);
     };
 
@@ -5279,9 +5277,9 @@ namespace roadmanager
 
         int ReplaceMinimalWaypoints(std::initializer_list<Position> wps);
 
-        void        setName(std::string name);
+        void        setName(const std::string &name);
         std::string getName() const;
-        void        setObjName(std::string obj_name)
+        void        setObjName(const std::string &obj_name)
         {
             obj_name_ = obj_name;
         }
