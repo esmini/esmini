@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
     <FileHeader description="car_walk, see https://esmini.github.io/#_using_openx_assets_library for more info" author="esmini team" revMajor="1" revMinor="2" date="2025-08-22T17:14:44.186816"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="LaneChangeDuration" parameterType="double" value="5.0"/>
+    </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
             <Directory path="/tmp/openx-assets/catalogs"/>
@@ -293,7 +296,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -332,7 +335,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -371,7 +374,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -410,7 +413,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -449,7 +452,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -488,7 +491,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -527,7 +530,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -566,7 +569,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -605,7 +608,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -644,7 +647,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -683,7 +686,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
@@ -722,7 +725,7 @@
                                 <PrivateAction>
                                     <LateralAction>
                                         <LaneChangeAction>
-                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="5.0" dynamicsDimension="time"/>
+                                            <LaneChangeActionDynamics dynamicsShape="cubic" value="$LaneChangeDuration" dynamicsDimension="time"/>
                                             <LaneChangeTarget>
                                                 <AbsoluteTargetLane value="-1"/>
                                             </LaneChangeTarget>
