@@ -2642,6 +2642,16 @@ int OSIReporter::UpdateOSIRoadLane()
                         class_type    = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_OTHER;
                         subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OTHER;
                     }
+                    else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BUS)
+                    {
+                        class_type    = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+                        subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_RESTRICTED;
+                    }
+                    else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_HOV)
+                    {
+                        class_type    = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+                        subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_RESTRICTED;
+                    }
                     else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_NONE)
                     {
                         class_type    = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN;
