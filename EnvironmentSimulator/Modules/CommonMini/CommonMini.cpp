@@ -395,18 +395,28 @@ double GetAngleSum(double angle1, double angle2)
 
 double GetAngleInInterval2PI(double angle)
 {
-    double angle2 = fmod(angle, 2 * M_PI);
-
-    if (angle2 < 0)
+    // Fast path: value is already in [0, 2π)
+    if (angle >= 0.0 && angle < TwoPi)
     {
-        angle2 += 2 * M_PI;
-    }
-    else if (std::signbit(angle2))
-    {
-        angle2 = 0;
+        return angle;
     }
 
-    return angle2;
+    // std::fmod wraps angle into (-2π, 2π)
+    double result = std::fmod(angle, TwoPi);
+
+    // If negative, bring into [0, 2π)
+    if (result < 0.0)
+    {
+        result += TwoPi;
+    }
+
+    // Guard against precision edge-cases where result rounds to 2π or retains -0.0
+    if (result >= TwoPi || result == 0.0)
+    {
+        return 0.0;  // Clears the sign bit and ensures strict half-open interval [0, 2π)
+    }
+
+    return result;
 }
 
 double GetAngleInIntervalMinusPIPlusPI(double angle)
@@ -1649,7 +1659,7 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
     // Create a rotation matrix Z0 * Y * Z1
     double m[3][3] = {{cx * cy * cz - sx * sz, -cx * cy * sz - sx * cz, cx * sy},
                       {sx * cy * cz + cx * sz, cx * cz - sx * cy * sz, sx * sy},
-                      {-sy * cz, sy * sz, cy}};
+                      {(-sy + 0.0) * cz, sy * sz, cy}};  // + 0.0 to avoid -0.0
 
     // Avoid gimbal lock
     if (fabs(m[0][0]) < SMALL_NUMBER)
@@ -1677,7 +1687,7 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 
     const double R0[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
                              {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                             {-sy, cy * sz, cy * cz}};
+                             {-sy + 0.0, cy * sz, cy * cz}};  // + 0.0 to avoid -0.0
 
     cx = cos(h1);
     cy = cos(p1);
@@ -1688,7 +1698,7 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 
     const double R1[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
                              {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                             {-sy, cy * sz, cy * cz}};
+                             {-sy + 0.0, cy * sz, cy * cz}};  // + 0.0 to avoid -0.0
 
     // Multiply
     for (int i = 0; i < 3; i++)
@@ -1714,7 +1724,7 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
     }
 
     h = GetAngleInInterval2PI(atan2(m[1][0], m[0][0]));
-    p = GetAngleInInterval2PI(atan2(-m[2][0], sqrt(m[2][1] * m[2][1] + m[2][2] * m[2][2])));
+    p = GetAngleInInterval2PI(atan2(-m[2][0] + 0.0, sqrt(m[2][1] * m[2][1] + m[2][2] * m[2][2])));
     r = GetAngleInInterval2PI(atan2(m[2][1], m[2][2]));
 }
 
@@ -1754,7 +1764,7 @@ void CreateRotationMatrix3d(double roll, double pitch, double yaw, double R[3][3
     R[1][2] = sy * sp * cr - cy * sr;
 
     // Third Row
-    R[2][0] = -sp;
+    R[2][0] = -sp + 0.0;  // + 0.0 to avoid -0.0
     R[2][1] = cp * sr;
     R[2][2] = cp * cr;
 
@@ -1845,7 +1855,7 @@ void CalcRelAnglesFromRoadAndAbsAngles(double  h_road,
 
     double R[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
                       {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                      {-sy, cy * sz, cy * cz}};
+                      {-sy + 0.0, cy * sz, cy * cz}};  // + 0.0 to avoid -0.0
 
     InvertMatrix3(R, R_inv);
 
@@ -1858,7 +1868,7 @@ void CalcRelAnglesFromRoadAndAbsAngles(double  h_road,
 
     const double R1[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
                              {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                             {-sy, cy * sz, cy * cz}};
+                             {-sy + 0.0, cy * sz, cy * cz}};  // + 0.0 to avoid -0.0
 
     // Multiply
     double R2[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
@@ -1874,7 +1884,7 @@ void CalcRelAnglesFromRoadAndAbsAngles(double  h_road,
         R2[2][2] = SIGN(R2[2][2]) * SMALL_NUMBER;
 
     h_rel = GetAngleInInterval2PI(atan2(R2[1][0], R2[0][0]));
-    p_rel = GetAngleInInterval2PI(atan2(-R2[2][0], sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));
+    p_rel = GetAngleInInterval2PI(atan2(-R2[2][0] + 0.0, sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));  // + 0.0 to avoid -0.0
     r_rel = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
 }
 
@@ -1923,7 +1933,7 @@ void RotateVec3d(const double h0,
 
     double R[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
                       {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                      {-sy, cy * sz, cy * cz}};
+                      {-sy + 0.0, cy * sz, cy * cz}};  // + 0.0 to avoid -0.0
 
     // Avoid gimbal lock
     if (fabs(R[0][0]) < SMALL_NUMBER)
@@ -1950,7 +1960,7 @@ void InverseRotateVec3d(double h, double p, double r, double x, double y, double
     double sr = sin(r);
 
     // Transposed matrix multiplication
-    x_out = x * (ch * cp) + y * (sh * cp) + z * (-sp);
+    x_out = x * (ch * cp) + y * (sh * cp) + z * (-sp + 0.0);  // + 0.0 to avoid -0.0
     y_out = x * (ch * sp * sr - sh * cr) + y * (sh * sp * sr + ch * cr) + z * (cp * sr);
     z_out = x * (ch * sp * cr + sh * sr) + y * (sh * sp * cr - ch * sr) + z * (cp * cr);
 }

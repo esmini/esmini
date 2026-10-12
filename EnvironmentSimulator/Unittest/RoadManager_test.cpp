@@ -4171,7 +4171,7 @@ TEST(PositionModeTest, TestPositionTypes)
     EXPECT_NEAR(pos1.GetZ(), 10.0, 1e-3);
     EXPECT_NEAR(pos1.GetH(), 6.142, 1e-3);
     EXPECT_NEAR(pos1.GetP(), 0.291, 1e-3);
-    EXPECT_NEAR(pos1.GetR(), 6.283, 1e-3);
+    EXPECT_NEAR(pos1.GetR(), 0.0, 1e-3);
 
     odr->Clear();
 }
