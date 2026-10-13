@@ -178,17 +178,9 @@ OSIReporter::~OSIReporter()
     SE_Env::Inst().ResetOSITimeStamp();
 }
 
-SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr)
-{
-    udp_client_    = new UDPClient(static_cast<unsigned short>(DEFAULT_OSI_OUT_PORT), ipaddr);
-    udp_data_size_ = DEFAULT_OSI_UDP_DATA_SIZE;
-
-    return udp_client_->GetStatus();
-}
-
 SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr, unsigned int port, unsigned int max_data_size)
 {
-    // Checks maximum datagram lenght, according to platform (i.e., commonly 65507, normally 9216 for Darwin)
+    // Checks maximum datagram length, according to platform (i.e., commonly 65507, normally 9216 for Darwin)
     const unsigned int platform_max_udp_data_size = UDPClient::GetMaxUDPDatagramSize() - osi_udp_buf_header_size;
     if (max_data_size > platform_max_udp_data_size)
     {
@@ -208,6 +200,10 @@ SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr, unsigned int port, unsigne
                  MAXIMUM_OSI_OUT_PORT,
                  DEFAULT_OSI_OUT_PORT);
         port = DEFAULT_OSI_OUT_PORT;
+    }
+    if (nullptr != udp_client_)
+    {
+        delete udp_client_;
     }
     udp_client_    = new UDPClient(static_cast<unsigned short>(port), ipaddr);
     udp_data_size_ = max_data_size;

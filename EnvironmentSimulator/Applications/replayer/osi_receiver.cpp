@@ -45,7 +45,7 @@ typedef int SE_SOCKET;
 #define OSI_OUT_PORT          48198
 #define ES_SERV_TIMEOUT       500
 #define MAX_MSG_SIZE          1024000
-#define OSI_MAX_UDP_DATA_SIZE 65536
+#define OSI_MAX_UDP_DATA_SIZE 65507
 
 void CloseGracefully(SE_SOCKET socket)
 {
@@ -91,6 +91,9 @@ int main(int argc, char* argv[])
 
     quit = false;
 
+    // Disable stdout buffering so prints are flushed immediately when redirected to file or pipe
+    setvbuf(stdout, nullptr, _IONBF, 0);
+
     // Setup signal handler to catch Ctrl-C
     signal(SIGINT, signal_handler);
 
@@ -119,7 +122,7 @@ int main(int argc, char* argv[])
     struct timeval tv;
     tv.tv_sec  = ES_SERV_TIMEOUT / 1000;
     tv.tv_usec = (ES_SERV_TIMEOUT % 1000) * 1000;
-    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0)
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) != 0)
 #endif
     {
         printf("socket SO_RCVTIMEO (receive timeout) not supported on this platform\n");
@@ -143,10 +146,10 @@ int main(int argc, char* argv[])
     while (!quit)
     {
         // Fetch and parse OSI message
-        buf.counter = 1;
-        int retval;
+        buf.counter           = 1;
+        int retval            = 0;
         int receivedDataBytes = 0;
-        while (buf.counter > 0)
+        while (!quit && buf.counter > 0)
         {
             retval = static_cast<int>(
                 recvfrom(sock, reinterpret_cast<char*>(&buf), sizeof(buf), 0, reinterpret_cast<struct sockaddr*>(&sender_addr), &sender_addr_size));
@@ -157,12 +160,23 @@ int main(int argc, char* argv[])
                     // New message
                     receivedDataBytes = 0;
                 }
-                memcpy(&large_buf[receivedDataBytes], buf.data, buf.datasize);
-                receivedDataBytes += static_cast<int>(buf.datasize);
+                if (buf.datasize <= sizeof(buf.data) && receivedDataBytes + static_cast<int>(buf.datasize) <= MAX_MSG_SIZE)
+                {
+                    memcpy(&large_buf[receivedDataBytes], buf.data, buf.datasize);
+                    receivedDataBytes += static_cast<int>(buf.datasize);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
             }
         }
 
-        if (retval > 0)
+        if (retval > 0 && buf.counter < 0)
         {
             gt.ParseFromArray(large_buf, receivedDataBytes);
 
