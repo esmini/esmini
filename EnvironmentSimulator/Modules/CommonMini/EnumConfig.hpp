@@ -120,8 +120,8 @@ namespace esmini_options
         DISABLE_SHADOWS,                 // 108
         SAVE_XOSC_RESOLVED,              // 109
         WHEEL_ANGLE_FILTER,              // 110
-        OSI_RECEIVER_PORT,               // 109
-        OSI_RECEIVER_UDP_DATA_SIZE,      // 110
+        OSI_RECEIVER_PORT,               // 111
+        OSI_RECEIVER_UDP_DATA_SIZE,      // 112
         CONFIGS_COUNT                    // this must be the last enum value
     };
 

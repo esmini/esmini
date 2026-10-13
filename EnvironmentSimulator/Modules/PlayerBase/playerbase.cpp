@@ -1580,7 +1580,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
     opt.AddOption("osi_receiver_port", "Port where to send OSI UDP packages (1025 .. 65535)", "port", std::to_string(DEFAULT_OSI_OUT_PORT));
     opt.AddOption("osi_receiver_udp_data_size",
-                  "Maximum bytes for OSI data to send as UDP packets, before fragmentation (1024 .. 65499)",
+                  "Maximum bytes for OSI data to send as UDP packets, before fragmentation (1024 .. 65507)",
                   "size",
                   std::to_string(DEFAULT_OSI_UDP_DATA_SIZE));
 #endif

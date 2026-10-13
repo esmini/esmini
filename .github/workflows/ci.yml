@@ -212,13 +212,13 @@ jobs:
 
       - name: Run Tests - Linux
         if: runner.os == 'Linux'
-        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -u
 
       - name: Run Tests - macOS
         if: runner.os == 'macOS'
         env:
           DEBUG_FLAG: ${{ matrix.configuration == 'Debug' && '--skip_smoke_test' || '' }}
-        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p $DEBUG_FLAG
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -u $DEBUG_FLAG
 
       - uses: ./.github/actions/setup_mesa
         with:
@@ -231,7 +231,7 @@ jobs:
           MESA_GL_VERSION_OVERRIDE: 4.5
           DEBUG_FLAG: ${{ matrix.configuration == 'Debug' && '--skip_smoke_test' || '' }}
         shell: bash
-        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w $DEBUG_FLAG
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w -u $DEBUG_FLAG
 
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'

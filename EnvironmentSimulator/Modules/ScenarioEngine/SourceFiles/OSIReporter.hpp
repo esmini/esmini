@@ -37,13 +37,15 @@
 
 #define DEFAULT_OSI_OUT_PORT 48198
 #define MINIMUM_OSI_OUT_PORT 1024
-#define MAXIMUM_OSI_OUT_PORT 65536
+#define MAXIMUM_OSI_OUT_PORT 65535
 
 #define DEFAULT_OSI_UDP_DATA_SIZE 8192
-// Note: maximum size is datagram payload size (65507)
+// Note: maximum size is datagram payload size:
+// 64kb - 1 - IPv4 header size - UDP header -> 65536 - 1 - 20 - 8 = 65507 (OpenSocket clamps further to 65499)
 #define MAXIMUM_OSI_UDP_DATA_SIZE 65507
 // Note: minimum size is less than common MTU (1500). It makes no sense to set it lower.
-#define MINIMUM_OSI_UDP_DATA_SIZE 1400
+// 1500 - IPv4 header size - UDP header - osi header = 1500 - 20 - 8 - 8 = 1464
+#define MINIMUM_OSI_UDP_DATA_SIZE 1464
 
 using namespace scenarioengine;
 
@@ -231,12 +233,11 @@ public:
     bool              IsCentralOSILane(int lane_idx);
     idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
     osi3::Lane*       GetOSILaneFromGlobalId(id_t g_id);
-    SE_SOCKET         OpenSocket(std::string ipaddr);
-    SE_SOCKET         OpenSocket(std::string ipaddr, unsigned int port, unsigned int max_data_size);
-    void              SerializeDynamicData();
-    void              SerializeDynamicAndStaticData();
-    void              AddTrafficLightToGt(osi3::GroundTruth* gt, roadmanager::Signal* signal);
-    int               GetUDPClientStatus()
+    SE_SOCKET OpenSocket(std::string ipaddr, unsigned int port = DEFAULT_OSI_OUT_PORT, unsigned int max_data_size = DEFAULT_OSI_UDP_DATA_SIZE);
+    void      SerializeDynamicData();
+    void      SerializeDynamicAndStaticData();
+    void      AddTrafficLightToGt(osi3::GroundTruth* gt, roadmanager::Signal* signal);
+    int       GetUDPClientStatus()
     {
         return (udp_client_ ? udp_client_->GetStatus() : -1);
     }

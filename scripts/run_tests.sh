@@ -3,6 +3,7 @@
 build_type=Release
 add_performance_test=false
 add_wrapper_test=false
+add_udp_osi_test=false
 skip_smoke_test=false
 timeout=40
 
@@ -12,6 +13,7 @@ help_and_exit () {
     echo "   -h, --help  this help"
     echo "   -b, --build_type <Release|Debug> (default: "$build_type")"
     echo "   -p, --add_performance_test (requires Release build type)"
+    echo "   -u, --add_udp_osi_test (requires Release build type)"
     echo "   -s, --skip_smoke_test"
     echo "   -t, --timeout <SECONDS> (default: "$timeout")"
     echo "   -w, --add_wrapper_test"
@@ -23,6 +25,7 @@ while [[ "$#" -gt 0 ]]; do
         -h|--help) help_and_exit ;;
         -b|--build_type) build_type="$2"; shift ;;
         -p|--add_performance_test) add_performance_test=true ;;
+        -u|--add_udp_osi_test) add_udp_osi_test=true ;;
         -w|--add_wrapper_test) add_wrapper_test=true ;;
         -s|--skip_smoke_test) skip_smoke_test=true ;;
         -t|--timeout) timeout="$2"; shift ;;
@@ -31,7 +34,7 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-echo "build_type: $build_type, timeout: $timeout, add_performance_test: $add_performance_test", "add_wrapper_test: $add_wrapper_test", "skip_smoke_test: $skip_smoke_test"
+echo "build_type: $build_type, timeout: $timeout, add_performance_test: $add_performance_test", "add_wrapper_test: $add_wrapper_test", "add_udp_osi_test: $add_udp_osi_test", "skip_smoke_test: $skip_smoke_test"
 
 # Run from esmini root ddirectory: ./scripts/run_unittests.sh
 
@@ -149,9 +152,11 @@ if [[ "$skip_smoke_test" == false ]]; then
         exit_with_msg "ncap_suite test failed"
     fi
 
-    echo $'\n'Run OSI UDP test suite:
+fi
 
-    if ! ${PYTHON} osi_udp_test.py -t $timeout; then
+if  [[ "$add_udp_osi_test" == true ]] && [[ "$build_type" == "Release" ]]; then
+    echo $'\n'Run OSI UDP test suite:
+    if ! ${PYTHON} osi_udp_test.py "-t $timeout"; then
         exit_with_msg "osi_udp_test failed"
     fi
 fi
