@@ -1,5 +1,39 @@
 ## esmini release notes
 
+### 2026-10-14 Version 3.10.0
+
+New features:
+- Add OpenDRIVE 1.9 temporary lane layer support ([PR #815](https://github.com/esmini/esmini/pull/815))
+  - useful for roadworks
+  - brief info in [User guide - Roadworks](https://esmini.github.io/scenario-features.html#_roadworks)
+- Add support for object-level friction patches
+  - overrides any lane material friction values
+  - brief info in [User guide - Friction](https://esmini.github.io/scenario-features.html#_friction)
+
+Improvements and fixes:
+- Add support for OpenDRIVE `bus` and `HOV` lane types
+- Resolve slowdown in XYZ2TrackPos on large road networks ([PR #845](https://github.com/esmini/esmini/pull/845))
+- Restore save generated model at correct global location
+  - fix model wrongly re-located to origin
+  - bug introduced by commit 682cedb39 in v3.6.0
+- Add support for road condition wetness ([PR #827](https://github.com/esmini/esmini/pull/827))
+  - output as OSI road condition water_film_height
+- Update esminiJS to use ScenarioPlayer
+  - improves code re-use
+  - fixes NaturalDriverController broken in WASM ([PR #828](https://github.com/esmini/esmini/pull/828))
+  - add compile check to CI
+- Add option `wheel_angle_filter` for wheel angle smoothing
+- Delete obsolete OpenDRIVE file (issue [#849](https://github.com/esmini/esmini/issues/849))
+- Some roadmanager optimizations enabling larger files
+
+New documentation:
+- Add info on known deviations from OpenX standards
+  - see [User guide - Known deviations from standards](https://esmini.github.io/known-deviations.html)
+
+Build and CI updates:
+- Add [osc-validation](https://github.com/PMSFIT/osc-validation) framework to esmini [CI](https://github.com/esmini/esmini/actions)
+- Add profiling job to [CI](https://github.com/esmini/esmini/actions)
+
 ### 2026-10-06 Version 3.9.0
 
 New behaviors:
