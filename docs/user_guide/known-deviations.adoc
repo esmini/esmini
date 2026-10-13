@@ -25,13 +25,27 @@ esmini intentionally lets `TeleportAction` operate on both the lateral and longi
 
 *Standard reference:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/12_annexes/12_01_action_table.html[OpenSCENARIO XML v1.4.0 / Annex A (normative): Action tables]. The `TeleportAction` row specifies "No" for both "Assigns longitudinal control strategy" and "Assigns lateral control strategy".
 
-==== Trajectory elevation
+==== Omitted position attributes
 
-When `z` value is omitted, i.e. elevation is not specified, esmini will project the `z` points to the road surface.
+When position attributes like `z` (elevation), `pitch`, or `roll` are omitted, esmini automatically aligns that component of the entity pose to the road surface. While standard OpenSCENARIO interpretations treat omitted coordinates as zero (0), esmini defaults to road alignment to streamline scenario creation for common use cases.
 
-See link:positioning.html#_trajectory_interpolation_and_alignment[Positioning / Trajectory interpolation and alignment] for details, including how omitted elevation affects orientation alignment.
+If a value of zero (0) is explicitly required, it must be specified directly in the OpenSCENARIO XML.
 
-*Standard reference:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/WorldPosition.html[OpenSCENARIO XML v1.4.0 / WorldPosition].
+See link:See link:positioning.html[Positioning] for details and examples.
+
+*Standard reference, example:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/WorldPosition.html[OpenSCENARIO XML v1.4.0 / WorldPosition].
+
+==== Trajectory interpolation and alignment
+
+For convenience, esmini can derive orientation from the trajectory or road surface and smooth polyline corners. The motivation is to reduce the need to specify every angle and to help avoid discontinuities (in heading angle at polyline corners).
+
+The polyline corner interpolation is a clear deviation from the standard OpenSCENARIO interpretation, and it can be disabled via option `pline_interpolation`.
+
+The automatic calculation of omitted orientation from the trajectory or road surface is another deviation from the standard OpenSCENARIO interpretation. Note that any specified orientation values is interpreted as given, complying with the standard.
+
+See link:positioning.html#_trajectory_interpolation_and_alignment[Positioning / Trajectory interpolation and alignment] for details and examples.
+
+*Standard reference:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/06_general_concepts/06_09_trajectories.html[OpenSCENARIO XML v1.4.0 / Trajectories].
 
 ==== Initial acceleration in SpeedProfileAction
 
@@ -40,6 +54,20 @@ To preserve acceleration continuity, esmini uses the entity's current accelerati
 See link:scenario-features.html#_initial_acceleration_taken_into_account[Scenario features / Speed profile / Initial acceleration taken into account].
 
 *Standard reference:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/SpeedProfileAction.html[OpenSCENARIO XML v1.4.0 / SpeedProfileAction].
+
+==== Heading behavior in Road vs Lane Position
+
+When heading is omitted, `RoadPosition` aligns an entity with the road direction (the s-axis), while `LanePosition` aligns it with the lane's driving direction. A relative heading is applied from the corresponding default direction. The same behavior applies to `RelativeRoadPosition` and `RelativeLanePosition`.
+
+This distinction supports both lane-aligned placement and cases where lane direction should not determine heading, such as an overtake starting in a neighboring lane. See the link:support-qa.html#_heading_behavior_in_road_vs_lane_position[visual examples] and issues https://github.com/esmini/esmini/issues/385[#385] and https://github.com/esmini/esmini/issues/228[#228] for more background.
+
+Absolute heading is not affected by the default direction and will be applied as specified for both `RoadPosition` and `LanePosition`.
+
+See more info in link:support-qa.html#_heading_behavior_in_road_vs_lane_position[Heading behavior in Road vs Lane Position].
+
+The specified behavior in the standard is not super clear, but to our understanding relative heading should be applied from the direction of the road s-axis, for both `RoadPosition` and `LanePosition`.
+
+*Standard reference:* OpenSCENARIO XML v1.4.0 https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/LanePosition.html[LanePosition] and https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/RoadPosition.html[RoadPosition].
 
 [#deviations-opendrive]
 === OpenDRIVE
@@ -53,9 +81,11 @@ esmini-specific `userData` extensions, such as marking lateral offset, object co
 
 ==== Static-content reporting
 
-By default, esmini reports and logs static objects only once rather than repeating them in every frame. Objects created during initialization appear in the first frame; static MiscObjects added later appear in the frame in which they are created. This is to increase simulation performance and reduce osi logfile size.
+By default, esmini reports and logs static objects only once rather than repeating them in every frame. Objects created during initialization appear in the first frame; static MiscObjects added later appear in the frame in which they are created.
 
-See link:esmini-lib-programming.html#_osi_settings[esmini lib programming / OSI settings] and link:esmini-lib-programming.html#_osi_data_via_api_call[OSI data via API call] for details.
+The motivation behind this approach is to increase simulation performance and reduce osi logfile size.
+
+See link:esmini-lib-programming.html#_osi_settings[esmini lib programming / OSI settings] and link:esmini-lib-programming.html#_osi_data_via_api_call[OSI data via API call] details, e.g. how to disable this optimization.
 
 *Standard reference:* https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/interface/architecture/ground_truth.html[OpenSimulationInterface v3.5.0 / Ground truth].
 

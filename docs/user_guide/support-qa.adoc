@@ -234,7 +234,7 @@ Corresponding behavior applies also to `RelativeRoadPosition` and `RelativeLaneP
 
 In some (maybe most) use cases it's preferred that vehicles align to the driving direction of the lane. But in other cases not, example: In an overtake maneuver, the overtaking car may start in the neighbor lane. The driving direction of the lane should not affect the heading of the car.
 
-So the different strategies for `RoadPosition` and `LanePosition` was decided upon to support as many use cases as possible. For more background, see issues https://github.com/esmini/esmini/issues/385[#385] and https://github.com/esmini/esmini/issues/228[#228].
+The different strategies for `RoadPosition` and `LanePosition` was decided upon to support as many use cases as possible. For more background, see issues https://github.com/esmini/esmini/issues/385[#385] and https://github.com/esmini/esmini/issues/228[#228].
 
 ==== OSI for Python on Windows
 
