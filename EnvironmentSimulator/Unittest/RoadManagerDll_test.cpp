@@ -11,7 +11,7 @@ TEST(TestSetMethods, SetRoadId)
 
     int pos_handle = RM_CreatePosition();
 
-    EXPECT_EQ(pos_handle, 0);
+    EXPECT_GE(pos_handle, 0);
 
     RM_SetLanePosition(pos_handle, 0, 1, 0.0, 10, true);
     RM_PositionData pos_data;
@@ -46,7 +46,7 @@ TEST(TestSetMethods, SetWorldPosition)
 
     int pos_handle = RM_CreatePosition();
 
-    EXPECT_EQ(pos_handle, 0);
+    EXPECT_GE(pos_handle, 0);
 
     RM_SetWorldXYHPosition(pos_handle, 6.6, -7.23, 5.0);
     RM_PositionData pos_data;
@@ -127,8 +127,8 @@ TEST(TestRelativeChecks, SubtractPositionsIntersection)
     int             pB = RM_CreatePosition();
     RM_PositionData pos_data;
 
-    EXPECT_EQ(pA, 0);
-    EXPECT_EQ(pB, 1);
+    EXPECT_GE(pA, 0);
+    EXPECT_GT(pB, pA);
 
     RM_SetWorldXYHPosition(pA, 33.0, -27.0, 1.57);
     RM_GetPositionData(pA, &pos_data);
@@ -178,8 +178,8 @@ TEST(TestRelativeChecks, SubtractPositionsHW)
     int             pB = RM_CreatePosition();
     RM_PositionData pos_data;
 
-    EXPECT_EQ(pA, 0);
-    EXPECT_EQ(pB, 1);
+    EXPECT_GE(pA, 0);
+    EXPECT_GT(pB, pA);
 
     // A at right side of road in middle lane at s=50
     RM_SetLanePosition(pA, 1, -3, 0.0, 50.0, true);
@@ -253,7 +253,7 @@ TEST(TestProbe, TestSimpleProbe)
 
     int pos_handle = RM_CreatePosition();
 
-    EXPECT_EQ(pos_handle, 0);
+    EXPECT_GE(pos_handle, 0);
 
     RM_SetLanePosition(pos_handle, 1, -1, 0.0, 10, true);
     RM_PositionData pos_data;
@@ -266,7 +266,7 @@ TEST(TestProbe, TestSimpleProbe)
     EXPECT_NEAR(pos_data.s, 10.0, 1E-5);
 
     RM_RoadProbeInfo info;
-    RM_GetProbeInfo(0, 30, &info, 0, true);
+    RM_GetProbeInfo(pos_handle, 30, &info, 0, true);
     EXPECT_EQ(info.road_lane_info.roadId, 1);
     EXPECT_NEAR(info.road_lane_info.heading, 0.0, 1E-5);
     EXPECT_NEAR(info.road_lane_info.pos.x, 40.0, 1E-5);
@@ -276,7 +276,7 @@ TEST(TestProbe, TestSimpleProbe)
     EXPECT_NEAR(info.road_lane_info.s, 40.0, 1E-5);
 
     RM_SetLanePosition(pos_handle, 1, 1, 0.0, 100, true);
-    RM_GetProbeInfo(0, 30, &info, 0, true);
+    RM_GetProbeInfo(pos_handle, 30, &info, 0, true);
     EXPECT_EQ(info.road_lane_info.roadId, 1);
     EXPECT_NEAR(info.road_lane_info.heading, 0.0, 1E-5);
     EXPECT_NEAR(info.road_lane_info.pos.x, 70.0, 1E-5);
@@ -305,7 +305,7 @@ TEST(TestProbe, TestSimpleRoadTypes)
 
     int pos_handle = RM_CreatePosition();
 
-    EXPECT_EQ(pos_handle, 0);
+    EXPECT_GE(pos_handle, 0);
 
     RM_SetLanePosition(pos_handle, 1, -1, 0.0, 0.0, false);
     RM_RoadProbeInfo info;
@@ -355,7 +355,7 @@ TEST(TestProbe, TestProbeReturnCodes)
 
     int pos_handle = RM_CreatePosition();
 
-    EXPECT_EQ(pos_handle, 0);
+    EXPECT_GE(pos_handle, 0);
 
     RM_SetLanePosition(pos_handle, 7, 1, 0.0, 10, true);
     RM_PositionData pos_data;
@@ -370,7 +370,7 @@ TEST(TestProbe, TestProbeReturnCodes)
     RM_RoadProbeInfo info;
 
     // look into next road
-    EXPECT_EQ(RM_GetProbeInfo(0, 20, &info, 0, true), 1);  // entered new road
+    EXPECT_EQ(RM_GetProbeInfo(pos_handle, 20, &info, 0, true), 1);  // entered new road
     EXPECT_EQ(info.road_lane_info.roadId, 1);
     EXPECT_NEAR(info.road_lane_info.pos.x, 340.1930, 1E-3);
     EXPECT_NEAR(info.road_lane_info.pos.y, 39.7547, 1E-3);
@@ -380,7 +380,7 @@ TEST(TestProbe, TestProbeReturnCodes)
     EXPECT_NEAR(info.road_lane_info.s, 104.9035, 1E-3);
 
     // look into next lane section
-    EXPECT_EQ(RM_GetProbeInfo(0, 120, &info, 0, true), 1);  // entered new road
+    EXPECT_EQ(RM_GetProbeInfo(pos_handle, 120, &info, 0, true), 1);  // entered new road
     EXPECT_EQ(info.road_lane_info.roadId, 1);
     EXPECT_NEAR(info.road_lane_info.pos.x, 249.2472, 1E-3);
     EXPECT_NEAR(info.road_lane_info.pos.y, -0.1154, 1E-3);
@@ -390,7 +390,7 @@ TEST(TestProbe, TestProbeReturnCodes)
     EXPECT_NEAR(info.road_lane_info.s, 4.4211, 1E-3);
 
     // look into next next road
-    EXPECT_EQ(RM_GetProbeInfo(0, 140, &info, 0, true), 2);  // made junction choice
+    EXPECT_EQ(RM_GetProbeInfo(pos_handle, 140, &info, 0, true), 2);  // made junction choice
     EXPECT_EQ(info.road_lane_info.roadId, 3);
     EXPECT_NEAR(info.road_lane_info.pos.x, 230.1083, 1E-3);
     EXPECT_NEAR(info.road_lane_info.pos.y, -6.0273, 1E-3);
@@ -401,7 +401,7 @@ TEST(TestProbe, TestProbeReturnCodes)
 
     // look into same road but from a closer point at preceeding road
     RM_SetLanePosition(pos_handle, 1, 2, 0.0, 5, true);
-    EXPECT_EQ(RM_GetProbeInfo(0, 10, &info, 0, true), 2);  // made junction choice
+    EXPECT_EQ(RM_GetProbeInfo(pos_handle, 10, &info, 0, true), 2);  // made junction choice
     EXPECT_EQ(info.road_lane_info.roadId, 3);
     EXPECT_NEAR(info.road_lane_info.pos.x, 240.2527, 1E-3);
     EXPECT_NEAR(info.road_lane_info.pos.y, -2.92806, 1E-3);
@@ -412,7 +412,7 @@ TEST(TestProbe, TestProbeReturnCodes)
 
     // look further, beyond end of road
     RM_SetLanePosition(pos_handle, 1, 2, 0.0, 5, true);
-    EXPECT_EQ(RM_GetProbeInfo(0, 300, &info, 0, true), -2);  // beyond end of road
+    EXPECT_EQ(RM_GetProbeInfo(pos_handle, 300, &info, 0, true), -2);  // beyond end of road
     EXPECT_EQ(info.road_lane_info.roadId, 0);
     EXPECT_NEAR(info.road_lane_info.pos.x, 0.0, 1E-3);
     EXPECT_NEAR(info.road_lane_info.pos.y, 4.5, 1E-3);
@@ -432,7 +432,7 @@ TEST(TestLaneType, TestDetailedLaneType)
 
     int pos_handle = RM_CreatePosition();
 
-    EXPECT_EQ(pos_handle, 0);
+    EXPECT_GE(pos_handle, 0);
 
     RM_SetSnapLaneTypes(pos_handle, -1);
     RM_SetLanePosition(pos_handle, 1, -3, 0.0, 100.0, false);
@@ -482,7 +482,7 @@ TEST(TestLaneDirection, TestLaneDirectionByRule)
         int             pos_handle = RM_CreatePosition();
         RM_PositionData r_data;
 
-        EXPECT_EQ(pos_handle, 0);
+        EXPECT_GE(pos_handle, 0);
 
         // going along road s-axis
         RM_SetLanePosition(pos_handle, 0, -3, 0.0, 100.0, true);
@@ -1213,6 +1213,118 @@ s 9.0 t -6.3 -> pos: lid -3 offset -4.8 x  9.0 y -6.3 | lookhead_mode 2 -> laneI
     RM_Close();
 
     EXPECT_EQ(expected_std_out, log);
+}
+
+TEST(PositionHandle, TestPermanentHandle)
+{
+    const char*     odr_file = "../../../resources/xodr/fabriksgatan.xodr";
+    RM_PositionData pos_data;
+
+    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 16);
+
+    int pos1_handle = RM_CreatePosition();
+    int pos2_handle = RM_CreatePosition();
+    int pos3_handle = RM_CreatePosition();
+
+    ASSERT_GE(pos1_handle, 0);
+    ASSERT_GT(pos2_handle, pos1_handle);
+    ASSERT_GT(pos3_handle, pos2_handle);
+    EXPECT_EQ(RM_GetNrOfPositions(), 3);
+    EXPECT_EQ(RM_GetPositionHandle(0), pos1_handle);
+    EXPECT_EQ(RM_GetPositionHandle(1), pos2_handle);
+    EXPECT_EQ(RM_GetPositionHandle(2), pos3_handle);
+    EXPECT_EQ(RM_GetPositionHandle(-1), -1);
+    EXPECT_EQ(RM_GetPositionHandle(3), -1);
+
+    EXPECT_EQ(RM_SetLanePosition(pos1_handle, 2, -1, 0.0, 20, true), 0);
+    EXPECT_EQ(RM_GetPositionData(pos1_handle, &pos_data), 0);
+    EXPECT_EQ(pos_data.roadId, 2);
+    EXPECT_EQ(pos_data.junctionId, -1);
+
+    EXPECT_EQ(RM_SetLanePosition(pos2_handle, 9, -1, 0.0, 3, true), 0);
+    EXPECT_EQ(RM_GetPositionData(pos2_handle, &pos_data), 0);
+    EXPECT_EQ(pos_data.roadId, 9);
+    EXPECT_EQ(pos_data.junctionId, 4);
+
+    EXPECT_EQ(RM_SetLanePosition(pos3_handle, 3, 1, 0.0, 10, true), 0);
+    EXPECT_EQ(RM_GetPositionData(pos3_handle, &pos_data), 0);
+    EXPECT_EQ(pos_data.roadId, 3);
+    EXPECT_EQ(pos_data.junctionId, -1);
+
+    EXPECT_EQ(RM_DeletePosition(pos2_handle), 0);
+    EXPECT_EQ(RM_GetNrOfPositions(), 2);
+    EXPECT_EQ(RM_GetPositionHandle(0), pos1_handle);
+    EXPECT_EQ(RM_GetPositionHandle(1), pos3_handle);
+    EXPECT_EQ(RM_GetPositionHandle(2), -1);
+
+    EXPECT_EQ(RM_GetPositionData(pos3_handle, &pos_data), 0);
+    EXPECT_EQ(pos_data.roadId, 3);
+    EXPECT_EQ(RM_GetPositionData(pos2_handle, &pos_data), -1);
+
+    EXPECT_EQ(RM_DeletePosition(pos2_handle), -1);
+    EXPECT_EQ(RM_CopyPosition(pos2_handle), -1);
+    EXPECT_EQ(RM_SetS(pos2_handle, 5.0), -1);
+    EXPECT_EQ(RM_GetSpeedLimit(pos2_handle), -1);
+    EXPECT_EQ(RM_GetPositionData(-1, &pos_data), -1);
+    EXPECT_EQ(RM_CopyPosition(-1), -1);
+
+    int copy_handle = RM_CopyPosition(pos3_handle);
+    ASSERT_GT(copy_handle, pos3_handle);
+    EXPECT_EQ(RM_GetPositionHandle(2), copy_handle);
+    EXPECT_EQ(RM_GetPositionData(copy_handle, &pos_data), 0);
+    EXPECT_EQ(pos_data.roadId, 3);
+    EXPECT_EQ(pos_data.s, 10.0);
+    EXPECT_EQ(RM_SetS(copy_handle, 5.0), 0);
+    EXPECT_EQ(RM_GetPositionData(pos3_handle, &pos_data), 0);
+    EXPECT_EQ(pos_data.s, 10.0);
+
+    RM_PositionDiff pos_diff;
+    EXPECT_EQ(RM_SubtractAFromB(pos3_handle, copy_handle, &pos_diff), 0);
+    EXPECT_EQ(RM_SubtractAFromB(pos2_handle, copy_handle, &pos_diff), -1);
+    EXPECT_EQ(RM_SubtractAFromB(copy_handle, -1, &pos_diff), -1);
+
+    RM_RoadLaneInfo  lane_info;
+    RM_RoadProbeInfo probe_info;
+    EXPECT_GE(RM_GetLaneInfo(copy_handle, 0.0, &lane_info, 0, false), 0);
+    EXPECT_GE(RM_GetProbeInfo(copy_handle, 0.0, &probe_info, 0, false), 0);
+    EXPECT_EQ(RM_GetLaneInfo(pos2_handle, 0.0, &lane_info, 0, false), -1);
+    EXPECT_EQ(RM_GetProbeInfo(pos2_handle, 0.0, &probe_info, 0, false), -1);
+
+    double width = 0.0;
+    EXPECT_EQ(RM_GetLaneWidth(copy_handle, 1, &width), 0);
+    EXPECT_EQ(RM_GetLaneWidth(pos2_handle, 1, &width), -1);
+    EXPECT_EQ(RM_GetLaneType(copy_handle, 1), RM_GetLaneType(pos3_handle, 1));
+    EXPECT_EQ(RM_GetLaneType(pos2_handle, 1), -1);
+
+    for (int count = 0; count < 64; ++count)
+    {
+        ASSERT_GT(RM_CreatePosition(), copy_handle);
+    }
+    EXPECT_EQ(RM_GetNrOfPositions(), 3 + 64);
+
+    EXPECT_EQ(RM_GetPositionData(copy_handle, &pos_data), 0);
+    EXPECT_EQ(pos_data.roadId, 3);
+    EXPECT_EQ(pos_data.s, 5.0);
+
+    EXPECT_EQ(RM_DeletePosition(-1), 0);
+    EXPECT_EQ(RM_GetNrOfPositions(), 0);
+    EXPECT_EQ(RM_GetPositionHandle(0), -1);
+    EXPECT_EQ(RM_GetPositionData(copy_handle, &pos_data), -1);
+    int fresh_handle = RM_CreatePosition();
+    ASSERT_GT(fresh_handle, copy_handle);
+    EXPECT_EQ(RM_GetPositionHandle(0), fresh_handle);
+
+    EXPECT_EQ(RM_Close(), 0);
+    EXPECT_EQ(RM_GetPositionHandle(0), -1);
+    ASSERT_EQ(RM_Init(odr_file), 0);
+    int reopened_handle = RM_CreatePosition();
+    ASSERT_GT(reopened_handle, fresh_handle);
+    EXPECT_EQ(RM_GetPositionHandle(0), reopened_handle);
+    EXPECT_EQ(RM_GetPositionData(fresh_handle, &pos_data), -1);
+    EXPECT_EQ(RM_DeletePosition(fresh_handle), -1);
+
+    RM_Close();
 }
 
 int main(int argc, char** argv)

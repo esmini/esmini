@@ -189,7 +189,16 @@ extern "C"
     RM_DLL_API void RM_SetLogFilePath(const char* logFilePath);
 
     /**
+    Get handle (position id) from index
+    Indices may change after deletion; handles of remaining positions do not.
+    @param index Current zero-based index of the position object
+    @return Handle >= 0 to the position object to use for operations or -1 on error
+    */
+    RM_DLL_API int RM_GetPositionHandle(int index);
+
+    /**
     Create a position object
+    Handles are not reused during the library lifetime, including after RM_Close().
     @return Handle >= 0 to the position object to use for operations or -1 on error
     */
     RM_DLL_API int RM_CreatePosition();
@@ -210,7 +219,7 @@ extern "C"
     /**
     Copy a position object
     @param handle Handle to the original position object.
-    @return handle to new position object. -1 if unsuccessful.
+    @return New unique handle to the copied position object. -1 if unsuccessful.
     */
     RM_DLL_API int RM_CopyPosition(int handle);
 
@@ -479,7 +488,7 @@ extern "C"
     RM_DLL_API int RM_PositionMoveForward(int handle, double dist, double junctionSelectorAngle);
 
     /**
-    Get the fields of the position of specified index
+    Get the fields of the position of specified handle
     @param handle Handle to the position object
     @param data Struct to fill in the values
     @return >=0 if successful, <0 if not. For detailed status see Position::ReturnCode.

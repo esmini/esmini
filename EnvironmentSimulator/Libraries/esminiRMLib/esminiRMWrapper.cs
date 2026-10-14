@@ -234,7 +234,15 @@ namespace OpenDRIVE
         public static extern void SetLogFilePath(string logFilePath);
 
         /// <summary>
-        /// * Create a position object /
+        /// * Get handle (position id) from index Indices may change after deletion; handles of remaining positions do not. /
+        /// </summary>
+        /// <param name="index">Current zero-based index of the position object</param>
+        /// <returns>Handle >= 0 to the position object to use for operations or -1 on error</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetPositionHandle")]
+        public static extern int GetPositionHandle(int index);
+
+        /// <summary>
+        /// * Create a position object Handles are not reused during the library lifetime, including after RM_Close(). /
         /// </summary>
         /// <returns>Handle >= 0 to the position object to use for operations or -1 on error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_CreatePosition")]
@@ -259,7 +267,7 @@ namespace OpenDRIVE
         /// * Copy a position object /
         /// </summary>
         /// <param name="handle">Handle to the original position object.</param>
-        /// <returns>handle to new position object. -1 if unsuccessful.</returns>
+        /// <returns>New unique handle to the copied position object. -1 if unsuccessful.</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_CopyPosition")]
         public static extern int CopyPosition(int handle);
 
@@ -546,7 +554,7 @@ namespace OpenDRIVE
         public static extern int PositionMoveForward(int handle, double dist, double junctionSelectorAngle);
 
         /// <summary>
-        /// * Get the fields of the position of specified index /
+        /// * Get the fields of the position of specified handle /
         /// </summary>
         /// <param name="handle">Handle to the position object</param>
         /// <param name="data">Struct to fill in the values</param>

@@ -4,6 +4,8 @@ Generates a C# wrapper for esminiRMLib based on its ANSI C header.
 
 ## Simple build for local use
 
+From this folder, in a Visual Studio aware terminal, e.g. "Developer Command Prompt for VS":
+
 `dotnet build -c Release`
 
 The executable ends up in:
@@ -62,6 +64,10 @@ dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:SelfContained=
 Both versions work the same way:
 ```
 Cpp2CSWrapperCreator.exe <input.h> <output.cs>
+```
+For example:
+```
+.\bin\Release\net8.0\win-x64\Cpp2CSWrapperCreator.exe ..\esminiRMLib.hpp ..\esminiRMWrapper.cs
 ```
 
 ## Additional Notes
