@@ -1,0 +1,73 @@
+name: Publish esmini WASM app
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/publish_esmini_wasm.yml
+      - EnvironmentSimulator/Applications/esmini-wasm/**
+      - EnvironmentSimulator/Libraries/esminiJS/**
+      - EnvironmentSimulator/Modules/**
+      - externals/**
+      - scripts/patches/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish-esmini-wasm
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check out esmini
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bzip2 cmake ninja-build
+
+      - name: Install Emscripten
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git "$RUNNER_TEMP/emsdk"
+          "$RUNNER_TEMP/emsdk/emsdk" install 6.0.10
+          "$RUNNER_TEMP/emsdk/emsdk" activate 6.0.10
+
+      - name: Build esminiJS
+        working-directory: EnvironmentSimulator/Libraries/esminiJS
+        run: |
+          source "$RUNNER_TEMP/emsdk/emsdk_env.sh"
+          ./build.sh
+          test -s ../../Applications/esmini-wasm/esmini.js
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: EnvironmentSimulator/Applications/esmini-wasm
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
