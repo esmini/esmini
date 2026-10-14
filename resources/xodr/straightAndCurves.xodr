@@ -1,0 +1,145 @@
+<?xml version="1.0" standalone="yes"?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="4" name="" version="1.00" date="Sun Nov 15 13:45:19 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00">
+    </header>
+    <road name="unknown" length="1.2543994752564138e+03" id="1" junction="-1">
+        <link>
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="0.0000000000000000e+00" y="0.0000000000000000e+00" hdg="0.0000000000000000e+00" length="15.0000000000000000e+01">
+                <line/>
+            </geometry>
+            <geometry s="15.0000000000000000e+01" x="15.0000000000000000e+01" y="0.0000000000000000e+00" hdg="1.2414513861358500e-12" length="5.0000000000000000e+01">
+                <spiral curvStart="0.0000000000000000e+00" curvEnd="7.0000000000000001e-03"/>
+            </geometry>
+            <geometry s="2.0000000000000000e+02" x="1.99847088389870123e+02" y="2.9102939992549182e+00" hdg="1.7500000000124150e-01" length="2.2439947525641381e+02">
+                <arc curvature="7.0000000000000001e-03"/>
+            </geometry>
+            <geometry s="4.2439947525641378e+02" x="3.1564971938253680e+02" y="1.6845810429685304e+02" hdg="1.7457963267961383e+00" length="3.2941176470588232e+01">
+                 <spiral curvStart="7.0000000000000001e-03" curvEnd="0.0000000000000000e+00"/>
+            </geometry>
+            <geometry s="4.5734065172700201e+02" x="3.0744521416786662e+02" y="2.0034110375320867e+02" hdg="1.8610904444407144e+00" length="4.7058823529411768e+01">
+                <spiral curvStart="-0.0000000000000000e+00" curvEnd="-1.0000000000000000e-02"/>
+            </geometry>
+            <geometry s="5.0439947525641378e+02" x="2.9757226071531352e+02" y="2.4623426729377783e+02" hdg="1.6257963267936555e+00" length="2.5000000000000000e+02">
+                <arc curvature="-1.0000000000000000e-02"/>
+            </geometry>
+            <geometry s="7.5439947525641378e+02" x="4.7412433096630843e+02" y="3.1589227473333710e+02" hdg="-8.7420367320634473e-01" length="6.6666666666666671e+01">
+                 <spiral curvStart="-1.0000000000000000e-02" curvEnd="-0.0000000000000000e+00"/>
+            </geometry>
+            <geometry s="8.2106614192308041e+02" x="5.0441993057186517e+02" y="2.5687609042194282e+02" hdg="-1.2075370065371951e+00" length="3.3333333333333329e+01">
+                <spiral curvStart="0.0000000000000000e+00" curvEnd="5.0000000000000001e-03"/>
+            </geometry>
+            <geometry s="8.5439947525641378e+02" x="5.1712086160078650e+02" y="2.2606844848059080e+02" hdg="-1.1242036732038621e+00" length="1.0000000000000000e+02">
+                <arc curvature="5.0000000000000001e-03"/>
+            </geometry>
+            <geometry s="9.5439947525641378e+02" x="5.8061539618499944e+02" y="1.5016166738714307e+02" hdg="-6.2420367320386205e-01" length="1.6666666666666668e+01">
+                 <spiral curvStart="5.0000000000000001e-03" curvEnd="0.0000000000000000e+00"/>
+            </geometry>
+            <geometry s="9.7106614192308041e+02" x="5.9440348193838781e+02" y="1.4080089724390760e+02" hdg="-5.8253700653967810e-01" length="3.3333333333333329e+01">
+                <spiral curvStart="-0.0000000000000000e+00" curvEnd="-1.0000000000000000e-02"/>
+            </geometry>
+            <geometry s="1.00439947525641378e+03" x="6.2114515184258346e+02" y="1.2097026385011969e+02" hdg="-7.4920367320634473e-01" length="2.0000000000000000e+02">
+                <arc curvature="-1.0000000000000000e-02"/>
+            </geometry>
+            <geometry s="1.2043994752564138e+03" x="5.9127925189534091e+02" y="-4.4652691051706071e+01" hdg="-2.7492036732100691e+00" length="4.9999999999999986e+01">
+                <line/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneSection s="0.0000000000000000e+00">
+                <left>
+                    <lane id="3" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="6.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="5.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_std2grass" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0699999999999998e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+                        <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="1.2000000000000000e-01" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="4.0000000000000000e+00" space="8.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0699999999999998e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+                        <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="1.2000000000000000e-01" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="5.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_std2grass" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="6.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+</OpenDRIVE>
