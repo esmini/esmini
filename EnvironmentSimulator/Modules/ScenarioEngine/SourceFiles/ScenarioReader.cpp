@@ -5793,7 +5793,7 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                 {
                     if (const auto &val = parameters.ReadAttribute(envChild, "atmosphericPressure"); !val.empty())
                     {
-                        env.SetAtmosphericPressure(std::stod(val));
+                        env.SetAtmosphericPressure(strtod(val));
                     }
                 }
                 else if (weatherAttrName == "cloudState")
@@ -5820,7 +5820,7 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                 {
                     if (const auto &val = parameters.ReadAttribute(envChild, "temperature"); !val.empty())
                     {
-                        env.SetTemperature(std::stod(val));
+                        env.SetTemperature(strtod(val));
                     }
                 }
                 else
@@ -5850,7 +5850,7 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                         {
                             LOG_WARN("In Sun, intensity is deprecated in v1.1. Use illuminance instead, Accepting it anyway.");
                         }
-                        env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(intensityStr)});
+                        env.SetSun(Sun{strtod(azimuth), strtod(elevation), strtod(intensityStr)});
                     }
                     else if (!illuminanceStr.empty())
                     {
@@ -5858,11 +5858,11 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                         {
                             LOG_WARN("In Sun, illuminance is introduced in v1.2. Use intensity for earlier versions, Accepting it anyway.");
                         }
-                        env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(illuminanceStr)});
+                        env.SetSun(Sun{strtod(azimuth), strtod(elevation), strtod(illuminanceStr)});
                     }
                     else
                     {
-                        env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::nullopt});
+                        env.SetSun(Sun{strtod(azimuth), strtod(elevation), std::nullopt});
                     }
                 }
                 else if (weatherChildName == "Fog")
@@ -5877,11 +5877,11 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                     {
                         OSCBoundingBox bb;
                         ParseOSCBoundingBox(bb, weatherChild);
-                        env.SetFog(Fog{std::stod(visualRange), bb});
+                        env.SetFog(Fog{strtod(visualRange), bb});
                     }
                     else
                     {
-                        env.SetFog(std::stod(visualRange));
+                        env.SetFog(strtod(visualRange));
                     }
                 }
                 else if (weatherChildName == "Precipitation")
@@ -5912,11 +5912,11 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                         {
                             LOG_WARN("In Precipitation, intensity is deprecated in v1.1. Use precipitationIntensity instead, Accepting it anyway.");
                         }
-                        env.SetPrecipitation(Precipitation{std::stod(intensity), precipType});
+                        env.SetPrecipitation(Precipitation{strtod(intensity), precipType});
                     }
                     else if (const auto &val = parameters.ReadAttribute(weatherChild, "precipitationIntensity"); !val.empty())
                     {
-                        env.SetPrecipitation(Precipitation{std::stod(val), precipType});
+                        env.SetPrecipitation(Precipitation{strtod(val), precipType});
                     }
                     else
                     {
@@ -5932,7 +5932,7 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                         LOG_WARN("Ignorning Wind in wheather, mandatory attribute direction or speed missing");
                         continue;
                     }
-                    env.SetWind(Wind{std::stod(direction), std::stod(speed)});
+                    env.SetWind(Wind{strtod(direction), strtod(speed)});
                 }
                 else
                 {
@@ -5943,7 +5943,6 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
         else if (envChildName == "RoadCondition")
         {
             double friction = 1.0;  // default value if frictionScaleFactor is not provided
-
             if (envChild.attribute("frictionScaleFactor").empty())
             {
                 LOG_WARN("Missing mandatory attribute frictionScaleFactor in Environment {}", envChildName);
@@ -5955,7 +5954,10 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
             }
             else
             {
-                friction = std::stod(envChild.attribute("frictionScaleFactor").value());
+                if (const auto &friction_str = parameters.ReadAttribute(envChild, "frictionScaleFactor"); !friction_str.empty())
+                {
+                    friction = strtod(friction_str);
+                }
             }
 
             std::optional<scenarioengine::WetnessType> wetness;
