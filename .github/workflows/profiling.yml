@@ -88,7 +88,7 @@ jobs:
 
     - name: Checkout samply
       if: steps.changes.outputs.commit_count != '0'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: ${{ env.samply_repo }}
         ref: ${{ env.samply_branch }}
