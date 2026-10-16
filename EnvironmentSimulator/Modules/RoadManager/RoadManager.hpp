@@ -2160,6 +2160,7 @@ namespace roadmanager
                      double             h);
 
         void SetTrafficLightInfo();
+        void ResetState();
         void UpdateState(const std::string &state);
         void CheckValidLampModes(const std::string &input) const;
 
@@ -3616,13 +3617,13 @@ namespace roadmanager
         }
         OpenDrive(const char *filename);
         ~OpenDrive();
-        void Reset();
+        void Reset(bool reuse_odr = false);
         void Init();
 
         /**
                 Clear all allocated data and reset counters
         */
-        void Clear();
+        void Clear(bool reuse_odr = false);
 
         /**
                 Load a road network, specified in an OpenDRIVE XML file
@@ -3854,6 +3855,16 @@ namespace roadmanager
         {
             return dynamic_signals_;
         }
+        void ResetDynamicSignals();
+
+        /**
+                Get the global ID counter value right after the road network was parsed,
+                i.e. the first global ID available for entities etc. when reusing the road network
+        */
+        id_t GetGlobalIdCounterAfterLoad() const
+        {
+            return global_id_counter_after_load_;
+        }
 
         Outline *CreateContinuousRepeatOutline(Road  *r,
                                                id_t   ids,
@@ -3883,6 +3894,7 @@ namespace roadmanager
         void                                     *geo_to_cartesian_ = nullptr;
         void                                     *cartesian_to_geo_ = nullptr;
         std::string                               odr_filename_;
+        id_t                                      global_id_counter_after_load_ = 0;
         std::map<std::string, std::string>        signals_types_;
         SpeedUnit                                 speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
         int                                       versionMajor_;

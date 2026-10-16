@@ -41,6 +41,8 @@ namespace esmini::common
         std::vector<std::pair<std::string, std::string>>& loadedConfigFiles_;
         // parsing status
         bool faulty_ = false;
+
+        size_t loadedFilesCount_ = 0;
         // error message
         std::string parsingErrorMsg_;
     };

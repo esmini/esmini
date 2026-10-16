@@ -15,8 +15,7 @@ namespace fs = std::experimental::filesystem;
 #error "Missing <filesystem> header"
 #endif
 
-static size_t loadedFilesCount   = 0;
-const size_t  LOADED_FILES_LIMIT = 100;
+const size_t LOADED_FILES_LIMIT = 100;
 
 namespace esmini::common
 {
@@ -124,7 +123,7 @@ namespace esmini::common
             parsingErrorMsg_ = fmt::format("Given path {} is a directory, config file path is expected instead.", filename);
             return;
         }
-        if (++loadedFilesCount > LOADED_FILES_LIMIT)
+        if (++loadedFilesCount_ > LOADED_FILES_LIMIT)
         {
             faulty_          = true;
             parsingErrorMsg_ = fmt::format("Too many config files loaded (100). Possible circular dependency.");

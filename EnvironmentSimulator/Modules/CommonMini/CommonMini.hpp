@@ -415,6 +415,12 @@ id_t GetNewGlobalId();
 */
 void ResetGlobalIdCounter();
 
+/**
+    Get/set the global ID counter, i.e. the next ID to be returned by GetNewGlobalId()
+*/
+id_t GetGlobalIdCounter();
+void SetGlobalIdCounter(id_t value);
+
 // Displays OSG options on the command prompt
 void PrintOSGUsage();
 

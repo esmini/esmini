@@ -143,6 +143,16 @@ void ResetGlobalIdCounter()
     global_id = 0;
 }
 
+id_t GetGlobalIdCounter()
+{
+    return global_id;
+}
+
+void SetGlobalIdCounter(id_t value)
+{
+    global_id = value;
+}
+
 std::map<int, std::string> ParseModelIds()
 {
     std::map<int, std::string> entity_model_map_;

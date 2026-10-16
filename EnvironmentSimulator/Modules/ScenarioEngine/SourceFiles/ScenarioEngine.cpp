@@ -487,53 +487,63 @@ int ScenarioEngine::parseScenario()
     // Init road manager
     scenarioReader->parseRoadNetwork(roadNetwork);
 
-    // Clear any previously loaded OpenDRIVE data
-    roadmanager::Position::GetOpenDrive()->Reset();
+    odrManager = roadmanager::Position::GetOpenDrive();
 
-    if (getOdrFilename().empty())
+    bool        found = false;
+    std::string file_path;
+    if (!getOdrFilename().empty())
+    {
+        file_path = LocateFile(getOdrFilename(),
+                               {DirNameOf(scenarioReader->getScenarioFilename()), DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/xodr"},
+                               "OpenDRIVE file",
+                               found);
+    }
+
+    // Keep the road network between parameter distribution permutations, as long as the same OpenDRIVE file is referred
+    OSCParameterDistribution& dist  = OSCParameterDistribution::Inst();
+    bool                      reuse = found && dist.GetNumPermutations() > 0 && dist.GetIndex() > 0 && odrManager->GetNumOfRoads() > 0 &&
+                 odrManager->GetOpenDriveFilename() == file_path;
+
+    // Clear any previously loaded OpenDRIVE data, unless reused
+    odrManager->Reset(reuse);
+
+    if (reuse)
+    {
+        // Already loaded, nothing more to do
+        LOG_INFO("Reusing OpenDRIVE: {}", file_path);
+    }
+    else if (getOdrFilename().empty())
     {
         LOG_WARN("No OpenDRIVE file specified, continue without");
     }
+    else if (!found)
+    {
+        LOG_ERROR_AND_QUIT("Failed to locate OpenDRIVE file {}", getOdrFilename());
+    }
+    else if (roadmanager::Position::LoadOpenDrive(file_path.c_str()))
+    {
+        LOG_INFO("Loaded OpenDRIVE: {}", file_path);
+    }
     else
     {
-        bool        found = false;
-        std::string file_path =
-            LocateFile(getOdrFilename(),
-                       {DirNameOf(scenarioReader->getScenarioFilename()), DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/xodr"},
-                       "OpenDRIVE file",
-                       found);
-
-        if (found)
-        {
-            // Load OpenDRIVE file, add scenario file directory as additional search path
-            if (roadmanager::Position::LoadOpenDrive(file_path.c_str()) == true)
-            {
-                // update file reference to actual resolved path
-                roadNetwork.logicFile.filepath = file_path;
-                LOG_INFO("Loaded OpenDRIVE: {}", getOdrFilename());
-            }
-            else
-            {
-                LOG_ERROR_AND_QUIT("Failed to load OpenDRIVE file {}", file_path);
-            }
-        }
-        else
-        {
-            LOG_ERROR_AND_QUIT("Failed to locate OpenDRIVE file {}", getOdrFilename());
-        }
+        LOG_ERROR_AND_QUIT("Failed to load OpenDRIVE file {}", file_path);
     }
 
-    odrManager = roadmanager::Position::GetOpenDrive();
+    if (found)
+    {
+        // update file reference to actual resolved path
+        roadNetwork.logicFile.filepath = file_path;
+    }
 
     // locate scene graph file
     if (!roadNetwork.sceneGraphFile.filepath.empty())
     {
-        bool found = false;
+        bool scenegraphFound = false;
         roadNetwork.sceneGraphFile.filepath =
             LocateFile(roadNetwork.sceneGraphFile.filepath,
                        {DirNameOf(scenarioReader->getScenarioFilename()), DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models"},
                        "scene graph file",
-                       found);
+                       scenegraphFound);
     }
 
     scenarioReader->parseCatalogs();

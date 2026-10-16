@@ -486,6 +486,17 @@ void TrafficLight::SetTrafficLightInfo()
     }
 }
 
+void TrafficLight::ResetState()
+{
+    state_.clear();
+    state_vector_.clear();
+    for (auto& lamp : lamps_)
+    {
+        lamp.SetMode(LampMode::MODE_OFF);
+        lamp.SetIsBroken(false);
+    }
+}
+
 void TrafficLight::UpdateState(const std::string& state)
 {
     state_ = state;
@@ -4173,8 +4184,14 @@ std::string ReadAttribute(pugi::xml_node node, const std::string& attribute_name
     return "";
 }
 
-void OpenDrive::Clear()
+void OpenDrive::Clear(bool reuse_odr)
 {
+    if (reuse_odr)
+    {
+        ResetDynamicSignals();
+        SetGlobalIdCounter(GetGlobalIdCounterAfterLoad());
+        return;
+    }
 #ifdef _USE_PROJ
     proj_destroy(static_cast<PJ*>(geo_to_cartesian_));
     proj_destroy(static_cast<PJ*>(cartesian_to_geo_));
@@ -4185,6 +4202,7 @@ void OpenDrive::Clear()
     proj_context_     = nullptr;
 
     ResetGlobalIdCounter();
+    global_id_counter_after_load_ = 0;
 
     road_ids_.clear();
     junction_ids_.clear();
@@ -6150,6 +6168,8 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
         LOG_ERROR("Failed to create OSI points for OpenDrive road!");
     }
 
+    global_id_counter_after_load_ = GetGlobalIdCounter();
+
     return true;
 }
 
@@ -7061,10 +7081,13 @@ void OpenDrive::Init()
     speed_unit_ = SpeedUnit::UNDEFINED;
 }
 
-void OpenDrive::Reset()
+void OpenDrive::Reset(bool reuse_odr)
 {
-    Clear();
-    Init();
+    Clear(reuse_odr);
+    if (!reuse_odr)
+    {
+        Init();
+    }
 }
 
 idx_t OpenDrive::GetTrackIdxById(id_t id) const
@@ -10799,6 +10822,18 @@ std::string OpenDrive::LinkType2Str(LinkType linkType)
     else
     {
         return std::string("Unknown link type: " + linkType);
+    }
+}
+
+void OpenDrive::ResetDynamicSignals()
+{
+    for (auto* signal : dynamic_signals_)
+    {
+        signal->SetHasOSCAction(false);
+        if (auto* traffic_light = dynamic_cast<roadmanager::TrafficLight*>(signal))
+        {
+            traffic_light->ResetState();
+        }
     }
 }
 

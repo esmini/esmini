@@ -2995,6 +2995,144 @@ TEST(DistributionTest, TestDeterministicDistribution)
     dist.Reset();
 }
 
+class DistributionOpenDriveTest : public testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        auto& dist = OSCParameterDistribution::Inst();
+        dist.Reset();
+        ASSERT_EQ(dist.Load("../../../resources/xosc/cut-in_parameter_set.xosc"), 0);
+        ASSERT_EQ(dist.SetIndex(0), 0);
+        Position::GetOpenDrive()->Reset();
+    }
+
+    void TearDown() override
+    {
+        OSCParameterDistribution::Inst().Reset();
+        Position::GetOpenDrive()->Reset();
+    }
+
+    void LoadScenario(const char* odr_filename)
+    {
+        pugi::xml_document doc;
+        ASSERT_TRUE(doc.load_string(R"(
+            <OpenSCENARIO>
+                <FileHeader revMajor="1" revMinor="4"/>
+                <ParameterDeclarations/>
+                <CatalogLocations/>
+                <RoadNetwork/>
+                <Entities/>
+                <Storyboard><Init><Actions/></Init><StopTrigger/></Storyboard>
+            </OpenSCENARIO>)"));
+        if (odr_filename != nullptr)
+        {
+            doc.child("OpenSCENARIO").child("RoadNetwork").append_child("LogicFile").append_attribute("filepath") = odr_filename;
+        }
+        ScenarioEngine engine(doc);
+        ASSERT_EQ(engine.GetInitStatus(), 0);
+    }
+};
+
+TEST_F(DistributionOpenDriveTest, ReuseSameOpenDrive)
+{
+    const char* filename = "../../../resources/xodr/straight_500m.xodr";
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    auto* odr  = Position::GetOpenDrive();
+    auto* road = odr->GetRoadByIdx(0);
+    // Deliberatly set marker to the wrong value, later test to make sure next permutation doesn't overwrite the speed value
+    const auto marker = odr->GetSpeedUnit() == SpeedUnit::MPH ? SpeedUnit::MS : SpeedUnit::MPH;
+    odr->SetSpeedUnit(marker);
+    const id_t id_counter_after_load = odr->GetGlobalIdCounterAfterLoad();
+    EXPECT_GT(id_counter_after_load, 0);
+    // Consume some IDs, as entities would, to verify the counter is restored on reuse
+    GetNewGlobalId();
+    GetNewGlobalId();
+
+    ASSERT_EQ(OSCParameterDistribution::Inst().SetIndex(1), 0);
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    EXPECT_EQ(odr->GetRoadByIdx(0), road);
+    EXPECT_EQ(odr->GetSpeedUnit(), marker);
+    EXPECT_EQ(odr->GetOpenDriveFilename(), filename);
+    EXPECT_EQ(GetGlobalIdCounter(), id_counter_after_load);
+}
+
+TEST_F(DistributionOpenDriveTest, ReloadChangedOpenDrive)
+{
+    ASSERT_NO_FATAL_FAILURE(LoadScenario("../../../resources/xodr/straight_500m.xodr"));
+    ASSERT_EQ(OSCParameterDistribution::Inst().SetIndex(1), 0);
+    const char* filename = "../../../resources/xodr/curve_r100.xodr";
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    EXPECT_EQ(Position::GetOpenDrive()->GetOpenDriveFilename(), filename);
+    EXPECT_GT(Position::GetOpenDrive()->GetNumOfRoads(), 0);
+}
+
+TEST_F(DistributionOpenDriveTest, ClearMissingOpenDriveAndReload)
+{
+    const char* filename = "../../../resources/xodr/straight_500m.xodr";
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    ASSERT_EQ(OSCParameterDistribution::Inst().SetIndex(1), 0);
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(nullptr));
+    EXPECT_EQ(Position::GetOpenDrive()->GetNumOfRoads(), 0);
+
+    ASSERT_EQ(OSCParameterDistribution::Inst().SetIndex(2), 0);
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    EXPECT_GT(Position::GetOpenDrive()->GetNumOfRoads(), 0);
+}
+
+TEST_F(DistributionOpenDriveTest, ReloadFirstPermutationAndStandaloneScenario)
+{
+    const char* filename = "../../../resources/xodr/straight_500m.xodr";
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    auto*      odr           = Position::GetOpenDrive();
+    const auto original_unit = odr->GetSpeedUnit();
+    const auto marker        = original_unit == SpeedUnit::MPH ? SpeedUnit::MS : SpeedUnit::MPH;
+    odr->SetSpeedUnit(marker);
+
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    EXPECT_EQ(odr->GetSpeedUnit(), original_unit);
+
+    OSCParameterDistribution::Inst().Reset();
+    odr->SetSpeedUnit(marker);
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    EXPECT_EQ(odr->GetSpeedUnit(), original_unit);
+}
+
+TEST_F(DistributionOpenDriveTest, ResetTrafficLightsBetweenPermutations)
+{
+    const char* filename = "../../../EnvironmentSimulator/Unittest/xodr/straight_500m_signs_lht.xodr";
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    auto signals = Position::GetOpenDrive()->GetDynamicSignals();
+    ASSERT_FALSE(signals.empty());
+    auto* light = dynamic_cast<TrafficLight*>(signals.front());
+    ASSERT_NE(light, nullptr);
+    ASSERT_GT(light->GetNrLamps(), 0);
+    const auto  lamp_id = light->GetLamp(0)->GetId();
+    std::string state   = "broken";
+    for (size_t i = 1; i < light->GetNrLamps(); i++)
+    {
+        state += ";on";
+    }
+    light->UpdateState(state);
+    light->SetHasOSCAction(true);
+
+    ASSERT_EQ(OSCParameterDistribution::Inst().SetIndex(1), 0);
+    ASSERT_NO_FATAL_FAILURE(LoadScenario(filename));
+    signals = Position::GetOpenDrive()->GetDynamicSignals();
+    ASSERT_FALSE(signals.empty());
+    light = dynamic_cast<TrafficLight*>(signals.front());
+    ASSERT_NE(light, nullptr);
+    EXPECT_EQ(light->GetLamp(0)->GetId(), lamp_id);
+    EXPECT_FALSE(light->GetHasOSCAction());
+    EXPECT_TRUE(light->GetStateString().empty());
+    EXPECT_TRUE(light->GetStateVector().empty());
+    for (size_t i = 0; i < light->GetNrLamps(); i++)
+    {
+        EXPECT_EQ(light->GetLamp(i)->GetMode(), roadmanager::Signal::LampMode::MODE_OFF);
+        EXPECT_FALSE(light->GetLamp(i)->IsBroken());
+    }
+}
+
 TEST_F(StraightRoadTest, TestObjectOverlap)
 {
     Object ego(Object::Type::VEHICLE);
