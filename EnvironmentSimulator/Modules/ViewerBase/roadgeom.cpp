@@ -1394,7 +1394,7 @@ namespace roadgeom
         std::string opt_groundplane = SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::GROUND_PLANE);
         if ((opt_groundplane == "auto" && (!generate_road_surface && environment == nullptr)) || opt_groundplane == "on")
         {
-            AddGroundSurface();
+            AddGroundSurface(environment_ != nullptr);
         }
 
         LOG_DEBUG("Created road geometry, internal offset: {:.3f}, {:.3f}, {:.3f}", origin_[0], origin_[1], origin_[2]);
@@ -3338,7 +3338,7 @@ namespace roadgeom
         group->addChild(geode);
     }
 
-    int RoadGeom::AddGroundSurface()
+    int RoadGeom::AddGroundSurface(const bool offset_z)
     {
         const double margin = 1E4;
         // const osg::BoundingSphere bs = environment_->getBound();
@@ -3356,7 +3356,7 @@ namespace roadgeom
         {
             bb.set(osg::Vec3d(0.0, 0.0, 0.0), osg::Vec3d(1e4, 1e4, 1e4));
         }
-        ground_plane_z_                    = bb.zMin() + ground_plane_default_z_offset_;
+        ground_plane_z_                    = (offset_z) ? bb.zMin() + ground_plane_default_z_offset_ : bb.zMin();
         osg::ref_ptr<osg::Geode>    ground = new osg::Geode;
         osg::ref_ptr<osg::Geometry> geom   = osg::createTexturedQuadGeometry(
             osg::Vec3(bb.xMin() - static_cast<float>(margin), bb.yMin() - static_cast<float>(margin), static_cast<float>(ground_plane_z_)),

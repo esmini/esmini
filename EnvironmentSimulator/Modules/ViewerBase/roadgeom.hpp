@@ -151,7 +151,7 @@ namespace roadgeom
                                           const osg::Vec3d&              origin,
                                           osg::Group*                    group,
                                           bool                           closed = false);
-        int  AddGroundSurface();
+        int  AddGroundSurface(const bool offset_z);
         void SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
 
         /**
