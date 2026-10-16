@@ -11,6 +11,62 @@ using namespace scenarioengine;
 
 #ifdef _USE_OSG
 
+#include <osg/TriangleFunctor>
+
+TEST(RoadGeomTest, LaneHeightBoundaryBeforeRejectedCandidate)
+{
+    ASSERT_TRUE(Position::LoadOpenDriveFromXMLString(R"(
+        <OpenDRIVE>
+            <header revMajor="1" revMinor="4"/>
+            <road id="267" length="56" junction="-1">
+                <planView>
+                    <geometry s="0" x="0" y="0" hdg="0" length="46"><line/></geometry>
+                    <geometry s="46" x="46" y="0" hdg="0" length="10"><arc curvature="0.013513513513513514"/></geometry>
+                </planView>
+                <lanes>
+                    <laneSection s="0">
+                        <center><lane id="0" type="driving" level="false"/></center>
+                        <right>
+                            <lane id="-1" type="sidewalk" level="false">
+                                <width sOffset="0" a="1.5" b="0" c="0" d="0"/>
+                                <height sOffset="0" inner="0.02" outer="0.12"/>
+                                <height sOffset="2" inner="0.02" outer="0.12"/>
+                            </lane>
+                        </right>
+                    </laneSection>
+                </lanes>
+            </road>
+        </OpenDRIVE>)"));
+
+    roadgeom::RoadGeom mesh(Position::GetOpenDrive(), nullptr, osg::Vec3d(), true, false, "");
+    osg::Group*        roads = mesh.root_->getChild(1)->asGroup();
+    ASSERT_NE(roads, nullptr);
+    ASSERT_EQ(roads->getNumChildren(), 1u);
+    osg::Geode* geode = roads->getChild(0)->asGeode();
+    ASSERT_NE(geode, nullptr);
+    osg::Geometry* geometry = geode->getDrawable(0)->asGeometry();
+    ASSERT_NE(geometry, nullptr);
+    const auto* vertices = dynamic_cast<const osg::Vec3Array*>(geometry->getVertexArray());
+    ASSERT_NE(vertices, nullptr);
+
+    ASSERT_EQ(geometry->getNumPrimitiveSets(), 1u);
+    const osg::PrimitiveSet* strip = geometry->getPrimitiveSet(0);
+    ASSERT_GE(strip->getNumIndices(), 4u);
+    EXPECT_NEAR((*vertices)[strip->index(2)].x(), 2.0, 1e-4);
+    struct CheckTriangles
+    {
+        unsigned int count = 0;
+        void         operator()(const osg::Vec3& a, const osg::Vec3& b, const osg::Vec3& c)
+        {
+            EXPECT_GT(((b - a) ^ (c - a)).z(), 0.0f);
+            count++;
+        }
+    };
+    osg::TriangleFunctor<CheckTriangles> triangles;
+    geometry->accept(triangles);
+    EXPECT_GT(triangles.count, 0u);
+}
+
 TEST(CustomCameraTest, TestCustomCameraVariants)
 {
     const char* args[] =

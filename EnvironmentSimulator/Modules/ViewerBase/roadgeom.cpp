@@ -966,17 +966,15 @@ namespace roadgeom
                                     }
                                     else
                                     {
-                                        // break occured, error too large, stop searching
+                                        // Error too large; keep the last accepted point, or the first candidate to ensure progress.
                                         if (k == 0)
                                         {
                                             // can't skip first point
                                             section_current_s = s_list_sorted[k];
                                         }
-                                        break;
                                     }
 
-                                    // we have s-value of a OSI point, check if there is a new friction value before that
-                                    // also check for maximum length
+                                    // Apply friction/height boundaries and maximum length before stopping, even after an error.
                                     double s_next_friction     = (friction_s_list_index > -1 && friction_s_list_index < friction_s_list.size())
                                                                      ? friction_s_list[friction_s_list_index]
                                                                      : lsec->GetS() + lsec->GetLength();
@@ -1006,6 +1004,11 @@ namespace roadgeom
                                                 section_current_s = *(it - 1);
                                             }
                                         }
+                                        break;
+                                    }
+
+                                    if (l < lane_ids.size())
+                                    {
                                         break;
                                     }
                                 }
