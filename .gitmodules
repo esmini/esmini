@@ -6,8 +6,7 @@
 	url = https://github.com/modelica/fmi-standard.git
 [submodule "test/OSC-NCAP-scenarios"]
 	path = test/OSC-NCAP-scenarios
-	url = https://github.com/eknabevcc/OSC-NCAP-scenarios
-	branch = minor_modifications
+	url = https://github.com/vectorgrp/OSC-NCAP-scenarios
 [submodule "externals/fmt"]
 	path = externals/fmt
 	url = https://github.com/fmtlib/fmt.git

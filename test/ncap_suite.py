@@ -101,18 +101,18 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_C2C_CCFtap_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.24.200.* Synchronize masterTimeToDest \\(0.002\\) reached within this timestep \\(0.050\\)', log)  is not None)
-        self.assertTrue(re.search('\n.24.300.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
-        self.assertTrue(re.search('\n.27.350.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('\n.17.550.* Synchronize masterTimeToDest \\(0.047\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n.17.700.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.20.750.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n24.250, 0, Ego, 157.264, -0.920, 0.000, 0.375, 0.000, 0.000, 2.778, 0.287, 3.965', csv))
-        self.assertTrue(re.search('\n24.250, 1, Target, 163.965, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 4.844', csv))
-        self.assertTrue(re.search('\n24.300, 0, Ego, 157.392, -0.868, 0.000, 0.390, 0.000, 0.000, 2.778, 0.287, 4.362', csv))
-        self.assertTrue(re.search('\n24.300, 1, Target, 163.548, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 6.034', csv))
-        self.assertTrue(re.search('\n27.350, 0, Ego, 162.721, 5.309, 0.000, 1.321, 0.000, 0.000, 2.778, 0.262, 3.435', csv))
-        self.assertTrue(re.search('\n27.350, 1, Target, 138.131, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 3.255', csv))
+        self.assertTrue(re.search('\n17.650, 0, Ego, 257.270, -0.938, 0.000, 0.372, 0.000, 0.000, 2.778, 0.274, 1.849', csv))
+        self.assertTrue(re.search('\n17.650, 1, Target, 263.852, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 3.844', csv))
+        self.assertTrue(re.search('\n17.700, 0, Ego, 257.396, -0.881, 0.000, 0.388, 0.000, 0.000, 2.778, 0.288, 2.246', csv))
+        self.assertTrue(re.search('\n17.700, 1, Target, 263.435, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 5.034', csv))
+        self.assertTrue(re.search('\n20.750, 0, Ego, 262.726, 5.293, 0.000, 1.318, 0.000, 0.000, 2.778, 0.249, 1.320', csv))
+        self.assertTrue(re.search('\n20.750, 1, Target, 238.018, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 2.255', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBFA_2023(self):
 
@@ -128,14 +128,14 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n6.700, 0, Ego, 155.833, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.444', csv))
-        self.assertTrue(re.search('\n6.700, 1, VRU, 159.750, -1.043, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 5.438', csv))
-        self.assertTrue(re.search('\n6.700, 3, ObstructionLarge, 157.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n6.700, 2, ObstructionSmall, 157.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n6.750, 0, Ego, 156.250, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.635', csv))
-        self.assertTrue(re.search('\n6.750, 1, VRU, 159.750, -1.320, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 6.231', csv))
-        self.assertTrue(re.search('\n6.750, 3, ObstructionLarge, 157.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n6.750, 2, ObstructionSmall, 157.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.700, 0, Ego, 255.833, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.444', csv))
+        self.assertTrue(re.search('\n6.700, 1, VRU, 259.750, -1.043, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 5.438', csv))
+        self.assertTrue(re.search('\n6.700, 3, ObstructionLarge, 257.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.700, 2, ObstructionSmall, 257.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.750, 0, Ego, 256.250, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.635', csv))
+        self.assertTrue(re.search('\n6.750, 1, VRU, 259.750, -1.320, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 6.231', csv))
+        self.assertTrue(re.search('\n6.750, 3, ObstructionLarge, 257.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.750, 2, ObstructionSmall, 257.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBLA_2023(self):
@@ -176,14 +176,14 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n9.400, 0, Ego, 159.444, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.488', csv))
-        self.assertTrue(re.search('\n9.400, 1, VRU, 163.250, -2.397, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 5.875', csv))
-        self.assertTrue(re.search('\n9.400, 3, ObstructionLarge, 157.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n9.400, 2, ObstructionSmall, 157.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n9.450, 0, Ego, 159.583, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.885', csv))
-        self.assertTrue(re.search('\n9.450, 1, VRU, 163.250, -2.258, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 6.272', csv))
-        self.assertTrue(re.search('\n9.450, 3, ObstructionLarge, 157.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n9.450, 2, ObstructionSmall, 157.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.400, 0, Ego, 259.444, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.488', csv))
+        self.assertTrue(re.search('\n9.400, 1, VRU, 263.250, -2.397, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 5.875', csv))
+        self.assertTrue(re.search('\n9.400, 3, ObstructionLarge, 257.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.400, 2, ObstructionSmall, 257.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.450, 0, Ego, 259.583, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.885', csv))
+        self.assertTrue(re.search('\n9.450, 1, VRU, 263.250, -2.258, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 6.272', csv))
+        self.assertTrue(re.search('\n9.450, 3, ObstructionLarge, 257.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.450, 2, ObstructionSmall, 257.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBNA_2023(self):
 
@@ -199,14 +199,14 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n6.950, 0, Ego, 157.917, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.113', csv))
-        self.assertTrue(re.search('\n6.950, 1, VRU, 161.910, -2.478, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 3.661', csv))
-        self.assertTrue(re.search('\n6.950, 3, ObstructionLarge, 159.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n6.950, 2, ObstructionSmall, 159.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n7.000, 0, Ego, 158.333, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.304', csv))
-        self.assertTrue(re.search('\n7.000, 1, VRU, 161.910, -2.269, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 4.256', csv))
-        self.assertTrue(re.search('\n7.000, 3, ObstructionLarge, 159.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n7.000, 2, ObstructionSmall, 159.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.950, 0, Ego, 257.917, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.113', csv))
+        self.assertTrue(re.search('\n6.950, 1, VRU, 261.910, -2.478, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 3.661', csv))
+        self.assertTrue(re.search('\n6.950, 3, ObstructionLarge, 259.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.950, 2, ObstructionSmall, 259.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.000, 0, Ego, 258.333, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.304', csv))
+        self.assertTrue(re.search('\n7.000, 1, VRU, 261.910, -2.269, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 4.256', csv))
+        self.assertTrue(re.search('\n7.000, 3, ObstructionLarge, 259.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.000, 2, ObstructionSmall, 259.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPNA_2023(self):
 
@@ -258,16 +258,16 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPTA_2023', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n.21.400.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
-        self.assertTrue(re.search('\n.27.500.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
-        self.assertTrue(re.search('\n.27.500.* Synchronization_CollisionDetection runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('\n.8.500.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
+        self.assertTrue(re.search('\n.13.950.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.13.950.* Synchronization_CollisionDetection runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n27.450, 0, Ego, 162.780, 5.580, 0.000, 1.345, 0.000, 0.000, 2.778, 0.219, 4.229', csv))
-        self.assertTrue(re.search('\n27.450, 1, VRU, 163.241, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n27.500, 0, Ego, 162.808, 5.716, 0.000, 1.356, 0.000, 0.000, 2.778, 0.219, 4.626', csv))
-        self.assertTrue(re.search('\n27.500, 1, VRU, 163.310, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n13.900, 0, Ego, 262.823, 5.698, 0.000, 1.355, 0.000, 0.000, 2.778, 0.230, 3.503', csv))
+        self.assertTrue(re.search('\n13.900, 1, VRU, 263.611, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n13.950, 0, Ego, 262.854, 5.833, 0.000, 1.367, 0.000, 0.000, 2.778, 0.230, 3.900', csv))
+        self.assertTrue(re.search('\n13.950, 1, VRU, 263.680, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPRA_Cm_2023(self):
 
@@ -310,6 +310,171 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n8.050, 0, Ego, 91.056, 0.000, 0.000, 0.000, 0.000, 0.000, -1.111, 0.000, -0.423', csv))
         self.assertTrue(re.search('\n8.050, 1, VRU, 90.000, 0.000, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
+    def test_CA_FC_2026_CBFA(self):
+
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CBFA.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading .*CBFA', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.6.750.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.7.800.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n6.700, 0, Ego, 255.833, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.444', csv))
+        self.assertTrue(re.search('\n6.700, 1, VRU, 259.750, -1.043, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 5.438', csv))
+        self.assertTrue(re.search('\n6.700, 2, ObstructionSmall, 257.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.700, 3, ObstructionLarge, 257.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.750, 0, Ego, 256.250, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.635', csv))
+        self.assertTrue(re.search('\n6.750, 1, VRU, 259.750, -1.320, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 6.231', csv))
+        self.assertTrue(re.search('\n6.750, 2, ObstructionSmall, 257.575, 16.442, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.750, 3, ObstructionLarge, 257.590, 21.060, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+
+    def test_CA_FC_2026_CBLA(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CBLA.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.13.600.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.14.650.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n13.550, 0, Ego, 144.097, -14.000, 0.000, 0.000, 0.000, 0.000, 6.944, 0.000, 4.955', csv))
+        self.assertTrue(re.search('\n13.550, 1, Target, 148.013, -14.000, 0.000, 0.000, 0.000, 0.000, 4.167, 0.000, 2.642', csv))
+        self.assertTrue(re.search('\n13.600, 0, Ego, 144.444, -14.000, 0.000, 0.000, 0.000, 0.000, 6.944, 0.000, 5.947', csv))
+        self.assertTrue(re.search('\n13.600, 1, Target, 148.222, -14.000, 0.000, 0.000, 0.000, 0.000, 4.167, 0.000, 3.238', csv))
+
+    def test_CA_FC_2026_CBNA(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CBNA.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.7.000.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.8.050.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n6.950, 0, Ego, 257.917, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 2.113', csv))
+        self.assertTrue(re.search('\n6.950, 1, VRU, 261.910, -2.478, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 3.661', csv))
+        self.assertTrue(re.search('\n6.950, 2, ObstructionSmall, 259.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n6.950, 3, ObstructionLarge, 259.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.000, 0, Ego, 258.333, -1.750, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 3.304', csv))
+        self.assertTrue(re.search('\n7.000, 1, VRU, 261.910, -2.269, 0.000, 1.571, 0.000, 0.000, 4.167, 0.000, 4.256', csv))
+        self.assertTrue(re.search('\n7.000, 2, ObstructionSmall, 259.765, -24.178, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.000, 3, ObstructionLarge, 259.750, -19.560, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+
+    def test_CA_FC_2026_CBNAO(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CBNAO.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.9.450.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.10.500.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n9.400, 0, Ego, 259.444, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.488', csv))
+        self.assertTrue(re.search('\n9.400, 1, VRU, 263.250, -2.397, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 5.875', csv))
+        self.assertTrue(re.search('\n9.400, 2, ObstructionSmall, 257.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.400, 3, ObstructionLarge, 257.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.450, 0, Ego, 259.583, -1.750, 0.000, 0.000, 0.000, 0.000, 2.778, 0.000, 5.885', csv))
+        self.assertTrue(re.search('\n9.450, 1, VRU, 263.250, -2.258, 0.000, 1.571, 0.000, 0.000, 2.778, 0.000, 6.272', csv))
+        self.assertTrue(re.search('\n9.450, 2, ObstructionSmall, 257.305, -10.728, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n9.450, 3, ObstructionLarge, 257.290, -6.110, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+
+    def test_CA_FC_2026_CCCscp(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CCCscp.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.8.000.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.11.050.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n7.950, 0, Ego, 255.088, -1.750, 0.000, 0.000, 0.000, 0.000, 5.556, 0.000, 0.527', csv))
+        self.assertTrue(re.search('\n7.950, 1, Target, 259.750, 0.862, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 1.056', csv))
+        self.assertTrue(re.search('\n7.950, 2, ObstructionVehicle_Large, 235.142, 4.660, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.950, 3, ObstructionVehicle_Small, 229.806, 4.645, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n7.950, 4, ObstructionVehicle_Small2, 224.490, 4.645, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n8.000, 0, Ego, 255.366, -1.750, 0.000, 0.000, 0.000, 0.000, 5.556, 0.000, 1.320', csv))
+        self.assertTrue(re.search('\n8.000, 1, Target, 259.750, 0.584, 0.000, 4.712, 0.000, 0.000, 5.556, 0.000, 1.850', csv))
+        self.assertTrue(re.search('\n8.000, 2, ObstructionVehicle_Large, 235.142, 4.660, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n8.000, 3, ObstructionVehicle_Small, 229.806, 4.645, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n8.000, 4, ObstructionVehicle_Small2, 224.490, 4.645, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+
+    def test_CA_FC_2026_CCFhos(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CCFhos.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.7.800.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.8.850.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n7.750, 0, Ego, 157.639, -1.750, 0.000, 0.000, 0.000, 0.000, 13.889, 0.000, 5.947', csv))
+        self.assertTrue(re.search('\n7.750, 1, Target, 164.583, -1.750, 0.000, 3.142, 0.000, 0.000, 13.889, 0.000, 5.947', csv))
+        self.assertTrue(re.search('\n7.800, 0, Ego, 158.333, -1.750, 0.000, 0.000, 0.000, 0.000, 13.889, 0.000, 1.648', csv))
+        self.assertTrue(re.search('\n7.800, 1, Target, 163.889, -1.750, 0.000, 3.142, 0.000, 0.000, 13.889, 0.000, 1.648', csv))
+
+    def test_CA_FC_2026_CCFtap(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CCFtap.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.17.700.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.20.750.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n17.650, 0, Ego, 257.270, -0.938, 0.000, 0.372, 0.000, 0.000, 2.778, 0.274, 1.849', csv))
+        self.assertTrue(re.search('\n17.650, 1, Target, 263.852, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 0.207', csv))
+        self.assertTrue(re.search('\n17.700, 0, Ego, 257.396, -0.881, 0.000, 0.388, 0.000, 0.000, 2.778, 0.288, 2.246', csv))
+        self.assertTrue(re.search('\n17.700, 1, Target, 263.435, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 1.398', csv))
+
+    def test_CA_FC_2026_CCRs(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CCRs.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.4.250.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.5.300.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n4.200, 0, Ego, 73.333, -14.000, 0.000, 0.000, 0.000, 0.000, 5.556, 0.000, 3.835', csv))
+        self.assertTrue(re.search('\n4.200, 1, Target, 77.778, -14.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n4.250, 0, Ego, 73.611, -14.000, 0.000, 0.000, 0.000, 0.000, 5.556, 0.000, 4.628', csv))
+        self.assertTrue(re.search('\n4.250, 1, Target, 77.778, -14.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+
+    def test_CA_FC_2026_CPNA(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CPNA.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.5.550.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.6.600.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n5.500, 0, Ego, 145.833, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 5.289', csv))
+        self.assertTrue(re.search('\n5.500, 1, VRU, 150.000, -14.074, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.550, 0, Ego, 146.250, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 0.196', csv))
+        self.assertTrue(re.search('\n5.550, 1, VRU, 150.000, -14.004, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+
+    def test_CA_FC_2026_CPNCO(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'CA-FC_2026/CPNCO.xosc'), COMMON_ARGS)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.5.600.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.6.650.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n5.550, 0, Ego, 146.250, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 0.196', csv))
+        self.assertTrue(re.search('\n5.550, 1, VRU, 150.000, -14.041, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.550, 2, ObstructionSmall, 145.325, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.550, 3, ObstructionLarge, 139.927, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.600, 0, Ego, 146.667, -14.000, 0.000, 0.000, 0.000, 0.000, 8.333, 0.000, 1.386', csv))
+        self.assertTrue(re.search('\n5.600, 1, VRU, 150.000, -13.972, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.600, 2, ObstructionSmall, 145.325, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n5.600, 3, ObstructionLarge, 139.927, -16.817, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
 if __name__ == "__main__":
     # execute only if run as a script
