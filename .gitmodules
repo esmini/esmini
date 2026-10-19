@@ -10,3 +10,7 @@
 [submodule "externals/fmt"]
 	path = externals/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "test/ASAM-OSC-XML-scenarios"]
+	path = test/ASAM-OSC-XML-scenarios
+	url = https://github.com/esmini/OpenSCENARIO_XML_examples.git
+	branch = v1.4.0_1

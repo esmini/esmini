@@ -7,13 +7,25 @@ include::nav.adoc_[]
 ifndef::monolith[]
 toc::[]
 endif::monolith[]
-With some limitations (see details https://github.com/esmini/esmini/blob/master/osc_coverage.txt[here]) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.1 release bundle.
+With some limitations (see details below and in https://github.com/esmini/esmini/blob/master/osc_coverage.txt[osc_coverage]) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.4 release bundle.
 
 * If you don't have esmini already, download latest demo package for your platform from https://github.com/esmini/esmini/releases/latest[here].
-* Download the standard from ASAM https://www.asam.net/standards/detail/openscenario[here] (register and download is free of charge).
+* For v1.4.0, the example package can be found https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/index.html[online] under top right Deliverables menu.
 * Extract to any folder.
 * Run the examples from command line in esmini root folder, for example:  +
-``./bin/esmini --window 60 60 800 400 --osc ../../openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc`` +
+``./bin/esmini --window 60 60 800 400 --osc ../../ASAM_OpenSCENARIO_v1.4.0_Examples/DoubleLaneChanger.xosc`` +
   or with absolute path:  +
-``./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc``
+``./bin/esmini --window 60 60 800 400 --osc c:/stuff/ASAM_OpenSCENARIO_v1.4.0_Examples/DoubleLaneChanger.xosc``
+
+**Note**: The scenarios with prefix `Example_` are just snippets, not valid and complete scenario files for execution.
+
+=== Continuous integration
+From esmini v3.10.2, the ASAM OpenSCENARIO v1.4.0 examples are run as https://github.com/esmini/esmini/blob/master/test/asam_osc_examples_suite.py[part] of esmini's CI. The test suite executes a https://github.com/esmini/OpenSCENARIO_XML_examples/tree/v1.4.0_1[subset] of the ASAM OpenSCENARIO examples.
+
+=== Limitations
+Three of the examples are not covered by the CI suite, or need special handling:
+
+. *EndOfTrafficJam* requires the esmini option `--disable_controllers` to run as intended.
+. *SlowPrecedingVehicleStochasticParameterSet* does not work since `StochasticParameterSet` is not supported by esmini.
+. *Signalized_T_Intersection* cannot be run since it refers to an `ExternalObjectReference` that is missing. Even if that is resolved, the scenario contains two features not yet supported by esmini: `VariableConstraints` and `TrafficSignalController` action.
 

@@ -137,16 +137,24 @@ if [[ "$skip_smoke_test" == false ]]; then
         exit_with_msg "smoke test failed"
     fi
 
-    echo $'\n'Run ALKS test suite:
-
-    if ! ${PYTHON} alks_suite.py -t $timeout; then
-        exit_with_msg "alks_suite test failed"
-    fi
-
     echo $'\n'Run NCAP test suite:
 
     if ! ${PYTHON} ncap_suite.py -t $timeout; then
         exit_with_msg "ncap_suite test failed"
+    fi
+
+    if [[ "$build_type" == "Release" ]]; then
+        echo $'\n'Run ALKS test suite:
+
+        if ! ${PYTHON} alks_suite.py -t $timeout; then
+            exit_with_msg "alks_suite test failed"
+        fi
+
+        echo $'\n'Run ASAM OSC example suite:
+
+        if ! ${PYTHON} asam_osc_examples_suite.py -t $timeout; then
+            exit_with_msg "asam_osc_examples_suite test failed"
+        fi
     fi
 fi
 

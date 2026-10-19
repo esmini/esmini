@@ -74,3 +74,7 @@ https://github.com/OSGeo/PROJ
 sqlite
 https://www.sqlite.org/index.html
 LICENSE: Public Domain (see https://www.sqlite.org/copyright.html)
+
+ASAM
+https://www.asam.net/
+LICENSE: https://www.asam.net/license/
