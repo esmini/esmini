@@ -3,7 +3,9 @@ include_guard()
 # ############################### Setting osi libraries ##############################################################
 
 macro(set_osi_libs)
-    if(OSI_VERSION STREQUAL "3.5.0")
+    string(REGEX REPLACE "_.*$" "" _osi_base_version "${OSI_VERSION}")
+
+    if(_osi_base_version STREQUAL "3.5.0")
         if(APPLE)
             if(DYN_PROTOBUF)
                 set(OSI_LIBRARIES
@@ -77,7 +79,7 @@ macro(set_osi_libs)
                     ${EXTERNALS_OSI_LIBRARY_PATH}/debug/zlibstaticd.lib)
             endif()
         endif()
-    elseif(OSI_VERSION STREQUAL "3.8.0")
+    elseif(_osi_base_version STREQUAL "3.8.0")
         if(APPLE)
             if(DYN_PROTOBUF)
                 set(OSI_LIBRARIES

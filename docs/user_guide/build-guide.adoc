@@ -121,6 +121,7 @@ Current supported versions:
 |===
 | CMake flag | OSI version | Google Protobuf version | Abseil version
 | `-D OSI_VERSION=3.5.0` (default) | v3.5.0 | v3.15.2 | N/A
+| `-D OSI_VERSION=3.5.0_3` | v3.5.0 | v3.20.2 | N/A
 | `-D OSI_VERSION=3.8.0` | v3.8.0 | v5.29.3 | 20240722.1
 |===
 

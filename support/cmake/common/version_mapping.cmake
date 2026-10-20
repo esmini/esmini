@@ -1,7 +1,7 @@
 macro(set_default_dependency_libs_versions)
-    set(DEFAULT_OSI_VERSION "3.5.0")
-    set(DEFAULT_IMPLOT_VERSION "0.16")
-    set(DEFAULT_PROJ_VERSION "9.8.1")
+    set(DEFAULT_OSI_VERSION "3.5.0_2")
+    set(DEFAULT_IMPLOT_VERSION "0.16_1")
+    set(DEFAULT_PROJ_VERSION "9.8.1_1")
 
     set(OSI_VERSION
         "${DEFAULT_OSI_VERSION}"
@@ -20,13 +20,17 @@ macro(set_default_dependency_libs_versions)
 endmacro()
 
 function(set_tags_from_version)
+    string(REGEX REPLACE "_.*$" "" _default_osi_base_version "${DEFAULT_OSI_VERSION}")
+    string(REGEX REPLACE "_.*$" "" _default_implot_base_version "${DEFAULT_IMPLOT_VERSION}")
+    string(REGEX REPLACE "_.*$" "" _default_proj_base_version "${DEFAULT_PROJ_VERSION}")
+
     _map_version_to_release_tag(
         "osi"
         "${OSI_VERSION}"
         OSI_RELEASE_TAG
         OSI_TAG_URL
-        "${DEFAULT_OSI_VERSION}"
-        "v3.5.0_2"
+        "${_default_osi_base_version}"
+        "v${DEFAULT_OSI_VERSION}"
         "3.8.0"
         "v3.8.0_1")
 
@@ -35,16 +39,16 @@ function(set_tags_from_version)
         "${IMPLOT_VERSION}"
         IMPLOT_RELEASE_TAG
         IMPLOT_TAG_URL
-        "${DEFAULT_IMPLOT_VERSION}"
-        "v0.16_1")
+        "${_default_implot_base_version}"
+        "v${DEFAULT_IMPLOT_VERSION}")
 
     _map_version_to_release_tag(
         "proj"
         "${PROJ_VERSION}"
         PROJ_RELEASE_TAG
         PROJ_TAG_URL
-        "${DEFAULT_PROJ_VERSION}"
-        "v9.8.1_1")
+        "${_default_proj_base_version}"
+        "v${DEFAULT_PROJ_VERSION}")
 
     # Propigate normal variables up to the parent scope
     set(OSI_RELEASE_TAG "${OSI_RELEASE_TAG}" PARENT_SCOPE)
@@ -54,8 +58,8 @@ function(set_tags_from_version)
     set(PROJ_TAG_URL "${PROJ_TAG_URL}" PARENT_SCOPE)
 
     # Set if tests should run or not based on version and external lib usage flags
-    _calculate_test_flag_default(_run_osi_tests USE_OSI "${DEFAULT_OSI_VERSION}" "${OSI_VERSION}")
-    _calculate_test_flag_default(_run_implot_tests USE_IMPLOT "${DEFAULT_IMPLOT_VERSION}" "${IMPLOT_VERSION}")
+    _calculate_test_flag_default(_run_osi_tests USE_OSI "v${DEFAULT_OSI_VERSION}" "${OSI_RELEASE_TAG}")
+    _calculate_test_flag_default(_run_implot_tests USE_IMPLOT "v${DEFAULT_IMPLOT_VERSION}" "${IMPLOT_RELEASE_TAG}")
 
     # Force set these to make sure cache is aligned
     set(RUN_OSI_TESTS ${_run_osi_tests} CACHE BOOL "Run OSI tests." FORCE)
@@ -84,6 +88,7 @@ function(_map_version_to_release_tag _lib_name _requested_version _out_release_t
 
     set(_supported_versions)
     unset(_resolved_release_tag)
+    set(_requested_version_supported FALSE)
 
     math(EXPR _last_idx "${_mapping_len} - 1")
     foreach(_idx RANGE 0 ${_last_idx} 2)
@@ -95,12 +100,23 @@ function(_map_version_to_release_tag _lib_name _requested_version _out_release_t
 
         if("${_requested_version}" STREQUAL "${_candidate_version}")
             set(_resolved_release_tag "${_candidate_release_tag}")
+            set(_requested_version_supported TRUE)
+        else()
+            string(FIND "${_requested_version}" "${_candidate_version}_" _version_prefix_idx)
+            if(_version_prefix_idx EQUAL 0)
+                string(LENGTH "${_candidate_version}_" _version_prefix_len)
+                string(SUBSTRING "${_requested_version}" ${_version_prefix_len} -1 _tag_suffix)
+                if(_tag_suffix MATCHES "^[A-Za-z0-9.-]+$")
+                    set(_resolved_release_tag "v${_requested_version}")
+                    set(_requested_version_supported TRUE)
+                endif()
+            endif()
         endif()
     endforeach()
 
-    if(NOT _requested_version IN_LIST _supported_versions)
+    if(NOT _requested_version_supported)
         string(JOIN ", " _versions_print_str ${_supported_versions})
-        message(FATAL_ERROR "Invalid ${_lib_name} version '${_requested_version}', supported versions: ${_versions_print_str}")
+        message(FATAL_ERROR "Invalid ${_lib_name} version '${_requested_version}', supported versions: ${_versions_print_str} (or a tag suffix, e.g. ${_default_version}_2)")
     endif()
 
     set(${_out_release_tag}

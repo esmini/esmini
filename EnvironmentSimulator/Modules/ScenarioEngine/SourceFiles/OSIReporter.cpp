@@ -1365,15 +1365,16 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
         static_cast<uint64_t>(obj.GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG)));
 
     // Set OSI Moving Object Boundingbox
-    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x(-obj.boundingbox_.center_.x_);
-    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y(-obj.boundingbox_.center_.y_);
+    // + 0.0 to avoid -0.0
+    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x(-obj.boundingbox_.center_.x_ + 0.0);
+    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y(-obj.boundingbox_.center_.y_ + 0.0);
     obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z(obj.rear_axle_.positionZ -
-                                                                                           static_cast<double>(obj.boundingbox_.center_.z_));
+                                                                                           static_cast<double>(obj.boundingbox_.center_.z_) + 0.0);
     obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_x(obj.front_axle_.positionX -
-                                                                                            static_cast<double>(obj.boundingbox_.center_.x_));
-    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_y(-obj.boundingbox_.center_.y_);
+                                                                                            static_cast<double>(obj.boundingbox_.center_.x_) + 0.0);
+    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_y(-obj.boundingbox_.center_.y_ + 0.0);
     obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_z(obj.front_axle_.positionZ -
-                                                                                            static_cast<double>(obj.boundingbox_.center_.z_));
+                                                                                            static_cast<double>(obj.boundingbox_.center_.z_) + 0.0);
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_height(obj.boundingbox_.dimensions_.height_);
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_width(obj.boundingbox_.dimensions_.width_);
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(obj.boundingbox_.dimensions_.length_);
