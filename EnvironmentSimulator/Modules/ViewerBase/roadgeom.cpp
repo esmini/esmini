@@ -1230,7 +1230,6 @@ namespace roadgeom
                                 geom->getOrCreateStateSet()->setAttributeAndModes(
                                     new osg::PolygonOffset(-POLYGON_OFFSET_GRASS, -SIGN(POLYGON_OFFSET_GRASS)));
                             }
-                            geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
                             // See if the material type has a texture associated with it, if so, apply it
                             auto texture_it = texture_map_.find(material_t);
