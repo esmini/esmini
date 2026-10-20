@@ -1393,7 +1393,8 @@ namespace roadgeom
         std::string opt_groundplane = SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::GROUND_PLANE);
         if ((opt_groundplane == "auto" && (!generate_road_surface && environment == nullptr)) || opt_groundplane == "on")
         {
-            AddGroundSurface(environment_ != nullptr);
+            // Move ground plane down under road network if loaded (osgb) or created and non empty
+            AddGroundSurface((environment_ != nullptr) || (root_ && root_->getNumChildren() > 0));
         }
 
         LOG_DEBUG("Created road geometry, internal offset: {:.3f}, {:.3f}, {:.3f}", origin_[0], origin_[1], origin_[2]);
