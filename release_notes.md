@@ -1,5 +1,24 @@
 ## esmini release notes
 
+### 2026-10-20 Version 3.10.1
+
+Improvements and fixes:
+
+- Reuse OpenDRIVE, if same, between parameter permutation runs
+  - greatly improves performance in those cases
+- Bump and extend test cases based on [Vector NCAP scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios)
+  - bump version and point to official repo (instead of temporary fork)
+  - add CA-FC_2026 scenarios to [ncap test suite](https://github.com/esmini/esmini/blob/dev/test/ncap_suite.py)
+- Ensure permanent position object handle in esminiRMLib
+  - internal mapping to actual vector index
+  - add RM_GetPositionHandle(int index) for index based loops
+- Improve and extend TTC calculations ([PR #831](https://github.com/esmini/esmini/pull/831))
+  - taking coordinate system and distance type into consideration
+  - supporting more use cases, e.g. crossing paths
+- Fix RoadCondition frictionScaleFactor not resolving parameter
+- Fix road triangulation bug causing overlapping faces (introduced in v3.6.0)
+- Place ground_plane under any loaded or created road network, else at z=0
+
 ### 2026-10-14 Version 3.10.0
 
 New features:
