@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../resources/schema/OpenSCENARIOv1.4-esmini.xsd">
+   <FileHeader description="demonstrate use of catalog parameters" author="esmini team" revMajor="1" revMinor="4" date="2026-09-11T10:00:00" />
+   <ParameterDeclarations>
+      <ParameterDeclaration name="y_offset" parameterType="double" value="4" />
+      <ParameterDeclaration name="gap" parameterType="double" value="0.25" />
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles" />
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/mw_100m.xodr" />
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="CarWhite">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white">
+            <ParameterAssignments>
+               <ParameterAssignment parameterRef="Width" value="3" />
+               <ParameterAssignment parameterRef="ScaleMode" value="ModelToBB" />
+            </ParameterAssignments>
+         </CatalogReference>
+      </ScenarioObject>
+      <ScenarioObject name="CarBlue">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue" />
+      </ScenarioObject>
+      <ScenarioObject name="CarRed">
+         <Vehicle name="car_red" vehicleCategory="car" model3d="../models/car_red.osgb">
+            <ParameterDeclarations>
+               <ParameterDeclaration name="Width" parameterType="double" value="2.8" />
+               <ParameterDeclaration name="ScaleMode" parameterType="string" value="ModelToBB" />
+            </ParameterDeclarations>
+            <BoundingBox>
+               <Center x="1.3" y="0.0" z="1.1" />
+               <Dimensions width="$Width" length="5.0" height="2.2" />
+            </BoundingBox>
+            <Performance maxSpeed="100" maxDeceleration="10" maxAcceleration="10" />
+            <Axles>
+               <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4" />
+               <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4" />
+            </Axles>
+            <Properties>
+               <!-- Scale modes: None, BBToModel, ModelToBB -->
+               <Property name="scaleMode" value="$ScaleMode" />
+               <Property name="refpoint_x_offset" value="0.0" />
+               <Property name="color" value="#073E99" />
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="CarWhite">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="10.0" y="${-($y_offset + $CarWhite::Width / 2)}" h="0.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="CarBlue">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="10.0" y="${-($y_offset + $CarWhite::Width + $gap + $CarBlue::Width / 2)}" h="0.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="CarRed">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="10.0" y="${-($y_offset + $CarWhite::Width + $gap + $CarBlue::Width + $gap + $CarRed::Width / 2)}" h="0.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="Quit" delay="0.0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="15.0" rule="greaterOrEqual" />
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

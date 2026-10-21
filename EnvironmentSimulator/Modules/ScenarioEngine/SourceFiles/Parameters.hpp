@@ -17,6 +17,7 @@
 #include "OSCParameterDeclarations.hpp"
 #include <vector>
 #include <stack>
+#include <map>
 
 namespace scenarioengine
 {
@@ -37,11 +38,15 @@ namespace scenarioengine
         void        parseParameterDeclarations(pugi::xml_node declarationsNode, OSCParameterDeclarations* pd);
         std::string getParameter(std::string name);
 
-        OSCParameterDeclarations::ParameterStruct* getParameterEntry(std::string name);
-        int                                        setParameter(std::string name, std::string value);
-        void                                       addParameterDeclarations(pugi::xml_node xml_node);
-        void                                       CreateRestorePoint();
-        void                                       RestoreParameterDeclarations();  // To what it was before addParameterDeclarations
+        // Mutable access deliberately excludes read-only instance snapshots.
+        OSCParameterDeclarations::ParameterStruct*       getParameterEntry(std::string name);
+        const OSCParameterDeclarations::ParameterStruct* getParameterEntryReadOnly(std::string name) const;
+        OSCParameterDeclarations                         CaptureParameterDeclarations(pugi::xml_node declarations) const;
+        void RegisterInstanceParameters(const std::string& name, const OSCParameterDeclarations& declarations);
+        int  setParameter(std::string name, std::string value);
+        void addParameterDeclarations(pugi::xml_node xml_node);
+        void CreateRestorePoint();
+        void RestoreParameterDeclarations();  // To what it was before addParameterDeclarations
 
         int         GetNumberOfParameters();
         const char* GetParameterName(int index, OSCParameterDeclarations::ParameterType* type);
@@ -51,12 +56,12 @@ namespace scenarioengine
         int         setParameterValue(std::string name, double value);
         int         setParameterValue(std::string name, const char* value);
         int         setParameterValue(std::string name, bool value);
-        int         getParameterValue(std::string name, void* value);
-        int         getParameterValueInt(std::string name, int& value);
-        int         getParameterValueDouble(std::string name, double& value);
-        int         getParameterValueString(std::string name, const char*& value);
-        int         getParameterValueBool(std::string name, bool& value);
-        std::string getParameterValueAsString(std::string name);
+        int         getParameterValue(std::string name, void* value) const;
+        int         getParameterValueInt(std::string name, int& value) const;
+        int         getParameterValueDouble(std::string name, double& value) const;
+        int         getParameterValueString(std::string name, const char*& value) const;
+        int         getParameterValueBool(std::string name, bool& value) const;
+        std::string getParameterValueAsString(std::string name) const;
 
         std::string ResolveParametersInString(std::string str);
 
@@ -70,5 +75,8 @@ namespace scenarioengine
 
         // Log current set of parameter names and values
         void Print(std::string typestr);
+
+    private:
+        std::map<std::string, OSCParameterDeclarations> instance_parameters_;
     };
 }  // namespace scenarioengine

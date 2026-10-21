@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2026-10-21T00:00:00" description="Instance parameter test catalog" author="esmini team"/>
+   <Catalog name="InstanceParameterCatalog">
+      <Vehicle name="car" vehicleCategory="car">
+         <ParameterDeclarations>
+            <ParameterDeclaration name="Width" parameterType="double" value="2.0"/>
+            <ParameterDeclaration name="HalfWidth" parameterType="double" value="${$Width / 2}"/>
+            <ParameterDeclaration name="Count" parameterType="integer" value="4"/>
+            <ParameterDeclaration name="Enabled" parameterType="boolean" value="true"/>
+            <ParameterDeclaration name="Label" parameterType="string" value="test car"/>
+         </ParameterDeclarations>
+         <BoundingBox>
+            <Center x="0" y="0" z="0.75"/>
+            <Dimensions width="$Width" length="5" height="1.5"/>
+         </BoundingBox>
+         <Performance maxSpeed="50" maxDeceleration="10" maxAcceleration="5"/>
+         <Axles>
+            <FrontAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.6" positionX="3" positionZ="0.4"/>
+            <RearAxle maxSteering="0.5" wheelDiameter="0.8" trackWidth="1.6" positionX="0" positionZ="0.4"/>
+         </Axles>
+         <Properties/>
+      </Vehicle>
+   </Catalog>
+</OpenSCENARIO>

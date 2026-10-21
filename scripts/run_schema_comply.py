@@ -13,8 +13,10 @@ import xmlschema
 from lxml import etree
 import argparse
 import os
-import sys
 from pathlib import Path
+from itertools import islice
+from urllib.parse import urlsplit
+from urllib.request import url2pathname
 
 SCHEMA_MAPPINGS = {
     "xosc": {
@@ -36,7 +38,9 @@ SCHEMA_MAPPINGS = {
 
 
 class XmlValidation:
-    def __init__(self):
+    def __init__(self, silent=False, fail_fast=False):
+        self.silent = silent
+        self.fail_fast = fail_fast
         self.xml_file_names = []
         # default location of schema files is under the resources folder, next to the script folder
         self.xsd_files_path = os.path.join(os.path.dirname(__file__), "../resources/schema")
@@ -111,30 +115,66 @@ class XmlValidation:
             self.log_error(error_msg, file)
             return None
 
+    def get_referenced_schema(self, xml_file):
+        location = self.root.get(
+            "{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation"
+        )
+        if location is None:
+            return None
+        location = location.strip()
+        if not location:
+            self.log_error(f"{xml_file}: Empty noNamespaceSchemaLocation", xml_file)
+            return None
+        uri = urlsplit(location)
+        if uri.scheme.lower() == "file":
+            if uri.netloc not in ("", "localhost") or uri.query or uri.fragment:
+                self.log_error(f"{xml_file}: Unsupported schema URI {location}", xml_file)
+                return None
+            schema = Path(url2pathname(uri.path))
+        elif uri.scheme and not Path(location).is_absolute():
+            self.log_error(
+                f"{xml_file}: Only local schema paths and file URIs are supported: {location}",
+                xml_file,
+            )
+            return None
+        else:
+            schema = Path(location)
+        if not schema.is_absolute():
+            schema = Path(xml_file).resolve().parent / schema
+        if not schema.is_file():
+            if not self.silent:
+                print(
+                    f"[WARNING] {xml_file}: Referenced schema not found: {schema}. "
+                    "Falling back to the version-based schema.",
+                    flush=True,
+                )
+            return None
+        return str(schema.resolve())
+
     def get_scheme(self, xml_file, schema_file):
         if schema_file is not None:
             try:
                 tmp_tree = etree.parse(schema_file)
-            except etree.ParseError as e:
+            except (etree.ParseError, OSError) as e:
                 error_msg = "{}: Schema {} parsing error: {}".format(
-                    xml_file, os.path.basename(schema_file), e.msg
+                    xml_file, os.path.basename(schema_file), str(e)
                 )
                 self.log_error(error_msg, xml_file)
                 return None
 
             try:
                 root = tmp_tree.getroot()
-                schema_xml_version = tmp_tree.docinfo.xml_version
                 schema_min_version = root.attrib.get(
                     "{http://www.w3.org/2007/XMLSchema-versioning}minVersion"
                 )
 
-                if schema_xml_version == "1.1" or schema_min_version == "1.1":
+                # Legacy OpenDRIVE 1.8 schemas signal XSD 1.1 through the XML declaration.
+                if schema_min_version == "1.1" or tmp_tree.docinfo.xml_version == "1.1":
                     my_schema = xmlschema.XMLSchema11(schema_file)
                 else:
                     my_schema = xmlschema.XMLSchema(schema_file)
             except xmlschema.validators.exceptions.XMLSchemaParseError as e:
-                error_msg = "{}: Schema error {}. Update xml version to 1.1?".format(
+                error_msg = "{}: Schema error {}".format(
                     xml_file, e.message
                 )
                 self.log_error(error_msg, xml_file)
@@ -146,7 +186,8 @@ class XmlValidation:
         if my_schema is not None:
             parser = etree.XMLParser(recover=False)
             document_tree = etree.parse(xml_file, parser)
-            errors = list(my_schema.iter_errors(document_tree))
+            validation_errors = my_schema.iter_errors(document_tree)
+            errors = list(islice(validation_errors, 1) if self.fail_fast else validation_errors)
 
             if not len(errors) == 0:
                 print(f"[NOT OK] {xml_file}", flush=True)
@@ -217,7 +258,19 @@ class XmlValidation:
         self.validate_argument(paths)
         self.set_xml_files_to_validate(paths)
         for file in self.get_xml_files_to_validate():
+            if self.fail_fast and self.count_of_files_failed > 0:
+                break
             if self.open_file(file):
+                failures_before = self.count_of_files_failed
+                if self.root.get(
+                    "{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation"
+                ) is not None:
+                    schema = self.get_referenced_schema(file)
+                    if schema is not None:
+                        self.validate(file, schema)
+                        continue
+                    if self.count_of_files_failed != failures_before:
+                        continue
                 revMinor = self.get_xml_header_minor_revision(file)
                 if revMinor is not None:
                     self.validate(file, self.get_xsd_to_validate(revMinor, file))
@@ -225,14 +278,21 @@ class XmlValidation:
 
 if __name__ == "__main__":
 
-    if len(sys.argv) < 2:
-        print(
-            "Usage: python run_schema_comply.py <path1> [path2] [path3] ...\n\n   path can be file or directory"
-        )
-        exit(-1)
-
-    validator = XmlValidation()
-    validator.main(sys.argv[1:])
+    parser = argparse.ArgumentParser(description="Validate OpenSCENARIO and OpenDRIVE XML")
+    parser.add_argument(
+        "--silent",
+        action="store_true",
+        help="suppress missing-schema fallback warnings; validation results and errors remain visible",
+    )
+    parser.add_argument("paths", nargs="+", help="files or directories to validate")
+    parser.add_argument(
+        "--fail-fast",
+        action="store_true",
+        help="stop at the first validation error, without checking remaining files",
+    )
+    args = parser.parse_args()
+    validator = XmlValidation(silent=args.silent, fail_fast=args.fail_fast)
+    validator.main(args.paths)
     validator.print_errors()
 
     if (

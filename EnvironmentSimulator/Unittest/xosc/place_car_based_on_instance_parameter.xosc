@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../resources/schema/OpenSCENARIOv1.4-esmini.xsd">
+   <FileHeader description="demonstrate use of catalog parameters" author="esmini team" revMajor="1" revMinor="4" date="2026-09-11T14:00:00" />
+   <ParameterDeclarations>
+      <ParameterDeclaration name="gap" parameterType="double" value="0.5" />
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles" />
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/single_wide_lane.xodr" />
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="CarBlue">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue" />
+      </ScenarioObject>
+      <ScenarioObject name="CarWhite">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="CarBlue">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="10.0" y="${-($gap + $CarBlue::Width / 2)}" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="CarWhite">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="10.0" y="${-($gap + $CarBlue::Width + $gap + $CarWhite::Width / 2)}" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="Quit" delay="0.0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="15.0" rule="greaterOrEqual" />
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

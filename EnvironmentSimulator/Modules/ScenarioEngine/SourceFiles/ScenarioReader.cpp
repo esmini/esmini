@@ -560,7 +560,7 @@ void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_
     }
 }
 
-Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
+Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, OSCParameterDeclarations *declarations)
 {
     if (vehicleNode == 0)
     {
@@ -574,6 +574,11 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 
     parameters.CreateRestorePoint();
     parameters.addParameterDeclarations(paramDecl);
+
+    if (declarations != nullptr)
+    {
+        *declarations = parameters.CaptureParameterDeclarations(paramDecl);
+    }
 
     vehicle->typeName_ = parameters.ReadAttribute(vehicleNode, "name");
     ParseOSCProperties(vehicle->properties_, vehicleNode);
@@ -918,7 +923,7 @@ int ScenarioReader::Parse2DShapeOutline(Object *obj)
     return 0;
 }
 
-Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
+Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode, OSCParameterDeclarations *declarations)
 {
     Pedestrian *pedestrian = new Pedestrian();
 
@@ -932,6 +937,11 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 
     parameters.CreateRestorePoint();
     parameters.addParameterDeclarations(paramDecl);
+
+    if (declarations != nullptr)
+    {
+        *declarations = parameters.CaptureParameterDeclarations(paramDecl);
+    }
 
     pedestrian->typeName_ = parameters.ReadAttribute(pedestrianNode, "name");
     pedestrian->SetCategory(parameters.ReadAttribute(pedestrianNode, "pedestrianCategory"));
@@ -1031,7 +1041,7 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     return pedestrian;
 }
 
-MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
+MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode, OSCParameterDeclarations *declarations)
 {
     MiscObject *miscObject = new MiscObject();
 
@@ -1045,6 +1055,11 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 
     parameters.CreateRestorePoint();
     parameters.addParameterDeclarations(paramDecl);
+
+    if (declarations != nullptr)
+    {
+        *declarations = parameters.CaptureParameterDeclarations(paramDecl);
+    }
 
     miscObject->typeName_ = parameters.ReadAttribute(miscObjectNode, "name");
     miscObject->SetCategory(parameters.ReadAttribute(miscObjectNode, "miscObjectCategory"));
@@ -1125,7 +1140,7 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     return miscObject;
 }
 
-Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
+Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode, const std::string &instance_name)
 {
     std::string   name       = parameters.ReadAttribute(controllerNode, "name");
     Controller   *controller = 0;
@@ -1136,6 +1151,8 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 
     parameters.CreateRestorePoint();
     parameters.addParameterDeclarations(paramDecl);
+
+    const auto instance_parameters = parameters.CaptureParameterDeclarations(paramDecl);
 
     // Then read any properties
     ParseOSCProperties(properties, controllerNode);
@@ -1193,6 +1210,11 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
     }
 
     parameters.RestoreParameterDeclarations();
+
+    if (!instance_name.empty())
+    {
+        parameters.RegisterInstanceParameters(instance_name, instance_parameters);
+    }
 
     return controller;
 }
@@ -1553,6 +1575,10 @@ Entry *ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
         {
             param.name = param_n.attribute("parameterRef").value();
         }
+        if (param.name.find("::") != std::string::npos)
+        {
+            LOG_ERROR_AND_QUIT("Cannot assign read-only instance parameter {}", param.name);
+        }
         param.value._string = parameters.ReadAttribute(param_n, "value");
         parameters.catalog_param_assignments.push_back(param);
     }
@@ -1606,8 +1632,9 @@ int ScenarioReader::parseEntities()
         std::string entitiesChildName(entitiesChild.name());
         if (entitiesChildName == "ScenarioObject")
         {
-            Object     *obj  = 0;
-            Controller *ctrl = 0;
+            Object                  *obj  = 0;
+            Controller              *ctrl = 0;
+            OSCParameterDeclarations instance_parameters;
 
             // First read the object
             pugi::xml_node objectChild;
@@ -1629,19 +1656,19 @@ int ScenarioReader::parseEntities()
                     if (entry->type_ == CatalogType::CATALOG_VEHICLE)
                     {
                         // Make a new instance from catalog entry
-                        Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
+                        Vehicle *vehicle = parseOSCVehicle(entry->GetNode(), &instance_parameters);
                         obj              = vehicle;
                     }
                     else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
                     {
                         // Make a new instance from catalog entry
-                        Pedestrian *pedestrian = parseOSCPedestrian(entry->GetNode());
+                        Pedestrian *pedestrian = parseOSCPedestrian(entry->GetNode(), &instance_parameters);
                         obj                    = pedestrian;
                     }
                     else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
                     {
                         // Make a new instance from catalog entry
-                        MiscObject *miscobj = parseOSCMiscObject(entry->GetNode());
+                        MiscObject *miscobj = parseOSCMiscObject(entry->GetNode(), &instance_parameters);
                         obj                 = miscobj;
                     }
                     else
@@ -1654,17 +1681,17 @@ int ScenarioReader::parseEntities()
             }
             else if (!(objectChild = entitiesChild.child("Vehicle")).empty())
             {
-                Vehicle *vehicle = parseOSCVehicle(objectChild);
+                Vehicle *vehicle = parseOSCVehicle(objectChild, &instance_parameters);
                 obj              = vehicle;
             }
             else if (!(objectChild = entitiesChild.child("Pedestrian")).empty())
             {
-                Pedestrian *pedestrian = parseOSCPedestrian(objectChild);
+                Pedestrian *pedestrian = parseOSCPedestrian(objectChild, &instance_parameters);
                 obj                    = pedestrian;
             }
             else if (!(objectChild = entitiesChild.child("MiscObject")).empty())
             {
-                MiscObject *miscObject = parseOSCMiscObject(objectChild);
+                MiscObject *miscObject = parseOSCMiscObject(objectChild, &instance_parameters);
                 obj                    = miscObject;
             }
             else if (!(objectChild = entitiesChild.child("ExternalObjectReference")).empty())
@@ -1690,8 +1717,9 @@ int ScenarioReader::parseEntities()
                 if (!disable_controllers_)
                 {
                     // get the sub child under ObjectController (should only be one)
-                    pugi::xml_node ctrlChild = ctrlNode.first_child();
-                    std::string    ctrlChildName(ctrlChild.name());
+                    pugi::xml_node    ctrlChild = ctrlNode.first_child();
+                    std::string       ctrlChildName(ctrlChild.name());
+                    const std::string instance_name = parameters.ReadAttribute(ctrlNode, "name");
                     if (ctrlChildName == "CatalogReference")
                     {
                         Entry *entry = ResolveCatalogReference(ctrlChild);
@@ -1704,7 +1732,7 @@ int ScenarioReader::parseEntities()
                         {
                             if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
                             {
-                                ctrl = parseOSCObjectController(entry->GetNode());
+                                ctrl = parseOSCObjectController(entry->GetNode(), instance_name);
                             }
                             else
                             {
@@ -1714,7 +1742,7 @@ int ScenarioReader::parseEntities()
                     }
                     else
                     {
-                        ctrl = parseOSCObjectController(ctrlChild);
+                        ctrl = parseOSCObjectController(ctrlChild, instance_name);
                     }
 
                     if (ctrl)
@@ -1758,6 +1786,7 @@ int ScenarioReader::parseEntities()
                     obj->name_ = parameters.ReadAttribute(entitiesChild, "name");
                 }
                 entities_->addObject(obj, false);
+                parameters.RegisterInstanceParameters(obj->name_, instance_parameters);
             }
         }
         else if (entitiesChildName == "EntitySelection")
@@ -2444,6 +2473,16 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
     {
         if (actionChild.name() == std::string("ParameterAction"))
         {
+            const std::string raw_parameter_ref = actionChild.attribute("parameterRef").value();
+            if (raw_parameter_ref.find("::") != std::string::npos)
+            {
+                LOG_ERROR_AND_QUIT("Cannot modify read-only instance parameter {}", raw_parameter_ref);
+            }
+            const std::string parameter_ref = parameters.ReadAttribute(actionChild, "parameterRef");
+            if (parameter_ref.find("::") != std::string::npos)
+            {
+                LOG_ERROR_AND_QUIT("Cannot modify read-only instance parameter {}", parameter_ref);
+            }
             for (pugi::xml_node paramChild = actionChild.first_child(); paramChild; paramChild = paramChild.next_sibling())
             {
                 if (paramChild.name() == std::string("SetAction"))
@@ -2453,7 +2492,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     // give user a message about deprecated action.. use variable instead...
                     LOG_WARN("Parameter SetAction deprecated from OSC 1.2. Please use Variable SetAction instead. Accepting for this time.");
 
-                    paramSetAction->name_       = parameters.ReadAttribute(actionChild, "parameterRef");
+                    paramSetAction->name_       = parameter_ref;
                     paramSetAction->value_      = parameters.ReadAttribute(paramChild, "value");
                     paramSetAction->parameters_ = &parameters;
 
@@ -3774,7 +3813,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 Controller *controller = 0;
                 if (controllerDefNode.name() == std::string("Controller"))
                 {
-                    controller = parseOSCObjectController(controllerDefNode);
+                    controller = parseOSCObjectController(controllerDefNode, ctrl_name);
                 }
                 else if (controllerDefNode.name() == std::string("CatalogReference"))
                 {
@@ -3788,7 +3827,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
                         {
-                            controller = parseOSCObjectController(entry->GetNode());
+                            controller = parseOSCObjectController(entry->GetNode(), ctrl_name);
                         }
                         else
                         {

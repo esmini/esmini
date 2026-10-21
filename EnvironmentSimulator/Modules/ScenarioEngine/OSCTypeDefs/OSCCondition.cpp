@@ -605,7 +605,7 @@ bool TrigByParameter::CheckCondition(double sim_time)
     (void)sim_time;
     bool result = false;
 
-    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(parameterRef_);
+    const auto* pe = parameters_->getParameterEntryReadOnly(parameterRef_);
     if (pe == 0)
     {
         if (state_ < ConditionState::EVALUATED)  // print only once
@@ -641,7 +641,7 @@ bool TrigByParameter::CheckCondition(double sim_time)
 
 std::string TrigByParameter::GetAdditionalLogInfo()
 {
-    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(parameterRef_);
+    const auto* pe = parameters_->getParameterEntryReadOnly(parameterRef_);
     return fmt::format("{} {} {} {}, edge: {}", parameterRef_, pe ? pe->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 

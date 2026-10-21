@@ -100,12 +100,12 @@ namespace scenarioengine
         roadmanager::CoordinateSystem     ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue) const;
         roadmanager::RelativeDistanceType ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue) const;
         void                              ParseOSCBoundingBox(OSCBoundingBox& boundingbox, pugi::xml_node& xml_node);
-        Vehicle*                          parseOSCVehicle(pugi::xml_node vehicleNode);
+        Vehicle*                          parseOSCVehicle(pugi::xml_node vehicleNode, OSCParameterDeclarations* declarations = nullptr);
         int                               Parse2DShapeOutline(Object* obj);
-        Pedestrian*                       parseOSCPedestrian(pugi::xml_node pedestrianNode);
-        MiscObject*                       parseOSCMiscObject(pugi::xml_node miscObjectNode);
+        Pedestrian*                       parseOSCPedestrian(pugi::xml_node pedestrianNode, OSCParameterDeclarations* declarations = nullptr);
+        MiscObject*                       parseOSCMiscObject(pugi::xml_node miscObjectNode, OSCParameterDeclarations* declarations = nullptr);
         Vehicle*                          createRandomOSCVehicle(std::string name);
-        Controller*                       parseOSCObjectController(pugi::xml_node controllerNode);
+        Controller*                       parseOSCObjectController(pugi::xml_node controllerNode, const std::string& instance_name = "");
         void                              parseGlobalParameterDeclarations()
         {
             parameters.parseGlobalParameterDeclarations(osc_root_.child("ParameterDeclarations"));

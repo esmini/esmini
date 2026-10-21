@@ -198,6 +198,36 @@ Run the XML validation tests:
 
 where path can be an XML file or a directory. Any directory subfolders will be included recursively.
 
+The script honors `xsi:noNamespaceSchemaLocation`, resolving relative schema paths
+against the XML file's directory, not the working directory. Absolute local paths
+and local `file:` URIs are also supported. Remote schema URLs are not downloaded.
+A missing referenced schema produces a warning and falls back to the official
+schema selected by file version. Invalid existing schemas remain errors.
+Use `--silent` to suppress these fallback warnings. Validation results, errors
+and the final summary remain visible:
+
+`python3 scripts/run_schema_comply.py --silent resources EnvironmentSimulator`
+
+By default, validation reports all errors and continues through all files.
+Use `--fail-fast` to stop at the first error, including XML parsing, schema
+selection or schema loading errors. Remaining files are not checked; the error
+and summary are still printed and the exit code is nonzero. Warnings do not
+stop validation. This option can be combined with `--silent`:
+
+`python3 scripts/run_schema_comply.py --fail-fast --silent resources EnvironmentSimulator`
+
+Without a schema-location hint, official schemas are selected by version.
+Scenarios using the experimental esmini instance-parameter extension must
+reference `resources/schema/OpenSCENARIOv1.4-esmini.xsd` through
+`xsi:noNamespaceSchemaLocation`, with a path relative to the scenario file.
+See link:scenario-features.html#_opt_in_xml_schema_validation[Opt-in XML schema validation]
+for the extension grammar and test command. The extension uses an XSD 1.1
+`xsd:override` wrapper; the script selects `xmlschema.XMLSchema11` automatically.
+The official schema remains XSD 1.0.
+For compatibility with the bundled OpenDRIVE 1.8 schemas, an XML 1.1 declaration
+on a schema also selects `XMLSchema11`. This is a legacy convention, not an
+equivalence between XML and XSD version numbers.
+
 Example 1, check single file:
 
 `python3 scripts/run_schema_comply.py resources/xosc/cut-in.xosc`
@@ -349,4 +379,3 @@ Two tips to get the text:
 2. Press `H` (`shift-h`) key in the application window to output the same help info to console
 
 By adding the option to the .txt files, the option will automatically be added in next generation of link:command-reference.html#_command_reference[Command reference] as well.
-

@@ -20,6 +20,9 @@
         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
+                <ParameterDeclaration name="Width" parameterType="double" value="2.0"/>
+                <ParameterDeclaration name="Length" parameterType="double" value="5.04"/>
+                <ParameterDeclaration name="Height" parameterType="double" value="1.5"/>
                 <ParameterDeclaration name="ScaleMode" parameterType="string" value="None"/>
                 <ParameterDeclaration name="RefPointXOffset" parameterType="double" value="0.0"/>
                 <ParameterDeclaration name="Outline" parameterType="string" value=""/>
@@ -30,7 +33,7 @@
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.4" y="0.0" z="0.75"/>
-                <Dimensions width="2.0" length="5.04" height="1.5"/>
+                <Dimensions width="$Width" length="$Length" height="$Height"/>
             </BoundingBox>
             <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>
@@ -56,6 +59,9 @@
         <Vehicle name="car_white_with_outline" vehicleCategory="car" model3d="../models/car_white.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
+                <ParameterDeclaration name="Width" parameterType="double" value="2.0"/>
+                <ParameterDeclaration name="Length" parameterType="double" value="5.04"/>
+                <ParameterDeclaration name="Height" parameterType="double" value="1.5"/>
                 <ParameterDeclaration name="ScaleMode" parameterType="string" value="None"/>
                 <ParameterDeclaration name="RefPointXOffset" parameterType="double" value="0.0"/>
                 <ParameterDeclaration name="Outline" parameterType="string" value="3.42,-0.97;3.75,-0.65;3.87,-0.32;3.92,0;3.87,0.32;3.75,0.65;3.42,0.97;2.71,1.02;1.99,0.97;1.28,0.96;0.56,0.97;-0.15,1.02;-0.87,0.97;-1.02,0.65;-1.1,0.32;-1.12,0;-1.1,-0.32;-1.02,-0.65;-0.87,-0.97;-0.15,-1.02;0.56,-0.97;1.28,-0.96;1.99,-0.97;2.71,-1.02"/>
@@ -67,7 +73,7 @@
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.4" y="0.0" z="0.75"/>
-                <Dimensions width="2.0" length="5.04" height="1.5"/>
+                <Dimensions width="$Width" length="$Length" height="$Height"/>
             </BoundingBox>
             <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>
@@ -93,9 +99,9 @@
         <Vehicle name="car_blue" vehicleCategory="car" model3d="../models/car_blue.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
-                <ParameterDeclaration name="DimX" parameterType="double" value="4.5"/>
-                <ParameterDeclaration name="DimY" parameterType="double" value="1.8"/>
-                <ParameterDeclaration name="DimZ" parameterType="double" value="1.5"/>
+                <ParameterDeclaration name="Width" parameterType="double" value="1.8"/>
+                <ParameterDeclaration name="Length" parameterType="double" value="4.5"/>
+                <ParameterDeclaration name="Height" parameterType="double" value="1.5"/>
                 <ParameterDeclaration name="MaxSpeed" parameterType="double" value="69"/>
                 <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
                 <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
@@ -105,7 +111,7 @@
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.3" y="0.0" z="0.75"/>
-                <Dimensions width="$DimY" length="$DimX" height="$DimZ"/>
+                <Dimensions width="$Width" length="$Length" height="$Height"/>
             </BoundingBox>
                 <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>
@@ -126,6 +132,9 @@
         <Vehicle name="car_red" vehicleCategory="car" model3d="../models/car_red.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
+                <ParameterDeclaration name="Width" parameterType="double" value="2.0"/>
+                <ParameterDeclaration name="Length" parameterType="double" value="5.04"/>
+                <ParameterDeclaration name="Height" parameterType="double" value="1.5"/>
                 <ParameterDeclaration name="MaxSpeed" parameterType="double" value="70.0"/>
                 <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
                 <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
@@ -135,7 +144,7 @@
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.45" y="0.0" z="0.75"/>
-                <Dimensions width="2.0" length="5.04" height="1.5"/>
+                <Dimensions width="$Width" length="$Length" height="$Height"/>
             </BoundingBox>
             <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>

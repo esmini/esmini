@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2026-10-22T00:00:00" description="Controller instance parameter tests" author="esmini team"/>
+   <Catalog name="InstanceControllerCatalog">
+      <Controller name="driver">
+         <ParameterDeclarations>
+            <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5"/>
+            <ParameterDeclaration name="Distance" parameterType="double" value="${$TimeGap * 10}"/>
+         </ParameterDeclarations>
+         <Properties>
+            <Property name="esminiController" value="ExternalController"/>
+         </Properties>
+      </Controller>
+   </Catalog>
+</OpenSCENARIO>

@@ -10,8 +10,8 @@
         <ParameterDeclaration name="TargetSpeed" parameterType="double" value="25"/>
         <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
         <ParameterDeclaration name="TargetS" parameterType="double" value="50"/>
-        <ParameterDeclaration name="$TargetBrakeDistance" parameterType="double" value="20"/>
-        <ParameterDeclaration name="$TargetBrakeRate" parameterType="double" value="8"/>
+        <ParameterDeclaration name="TargetBrakeDistance" parameterType="double" value="20"/>
+        <ParameterDeclaration name="TargetBrakeRate" parameterType="double" value="8"/>
         <ParameterDeclaration name="TargetStationaryS" parameterType="double" value="100"/>
         <ParameterDeclaration name="AEBAvailableInEgo" parameterType="boolean" value="true"/>
     </ParameterDeclarations>

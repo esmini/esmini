@@ -1,4 +1,4 @@
-= esmini user guide – Scenario features
+scii= esmini user guide – Scenario features
 include::attributes.adoc_[]
 
 include::nav.adoc_[]
@@ -1453,3 +1453,150 @@ Now when we have a complete SUMO configuration, do the following steps in order 
 +
 `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/my_sumo.xosc`
 
+=== Instance parameter references
+
+[Note]
+====
+**Note**: This is a prototype implementation of a proposed OpenSCENARIO XML feature. It's not standardized yet. Details might change.
+====
+
+esmini supports read-only references to parameters declared on instantiated vehicles,
+pedestrians, miscellaneous objects and named object controllers, using
+`$instanceName::parameterName`. The instance name is the `ScenarioObject` or
+`ObjectController` name, not the catalog entry name or definition name.
+This is an esmini extension, not standard OpenSCENARIO XML behavior.
+
+[source,xml]
+----
+<ScenarioObject name="Car1">
+    <CatalogReference catalogName="VehicleCatalog" entryName="car_white">
+        <ParameterAssignments>
+            <ParameterAssignment parameterRef="Width" value="2.4"/>
+        </ParameterAssignments>
+    </CatalogReference>
+</ScenarioObject>
+----
+
+If the catalog entry declares a `Width` parameter, `$Car1::Width` resolves to
+`2.4`. References also work inside expressions, for example:
+
+[source,xml]
+----
+<WorldPosition x="10" y="${$Car1::Width / 2 + 0.5}" h="0"/>
+----
+
+Each instance retains its own typed snapshot after assignments and expression
+evaluation. Only parameters declared directly on the entity definition are
+exposed; global, controller and nested trailer parameters are not inherited.
+Inline entity definitions support the same syntax.
+
+Named `ObjectController` instances likewise expose parameters declared directly
+on their inline or catalog-backed `Controller` definition. For example,
+`$Driver1::TimeGap` accesses `TimeGap` on the `ObjectController` named `Driver1`,
+not on its parent vehicle. Controller and entity instance names share one
+namespace; duplicate names are rejected. Unnamed controllers have no qualified
+namespace. Controllers skipped by `--disable_controllers` are not registered.
+Controllers introduced by `AssignControllerAction` are registered while that
+action is parsed, not when it executes. References before their definition is
+parsed are not supported. Their retained parameters are configuration snapshots,
+not live controller state.
+
+The new syntax does not change how existing parameter references work:
+
+* An unqualified reference, such as `$Width`, still resolves using the current
+  parameter scope. While parsing a catalog entry, its local `Width` declaration
+  takes precedence over a global parameter with the same name. After leaving
+  that scope, the local declaration is no longer available as `$Width`;
+  `$Car1::Width` provides explicit access to the retained instance value.
+* Instance parameters are stored separately from global parameters. They do not
+  add entries to the list returned by `SE_GetNumberOfParameters()` and
+  `SE_GetParameterName()`. For example, if the scenario declares two global
+  parameters and instantiates three cars with five local parameters each, the
+  global parameter count remains two, not seventeen. Instance parameters can
+  instead be read by their qualified names, as shown below.
+
+Parameter conditions and typed API getters also accept qualified names without
+the `$` prefix, for example `parameterRef="Car1::Width"` or
+`SE_GetParameterDouble("Car1::Width", &width)`. Failed qualified API lookups and
+attempted writes are logged and return `-1`.
+
+References are available after the entity has been instantiated. All entities
+are available in `Init` and the storyboard. Entity definitions and catalog
+assignments can reference earlier instances, but not themselves or later
+instances. Global declarations and the road network are evaluated before
+entities and cannot use instance references. Missing instances or parameters
+cause an explicit error.
+
+These values are configuration parameters, not live object properties.
+For example, `Width` must be explicitly declared; it does not automatically
+refer to the bounding box or reflect subsequent model scaling. Instance
+parameters cannot be modified by parameter actions, assignments or API setters.
+They are cleared when the scenario is unloaded. The separator `::` is reserved:
+parameter names and scenario-object names must not contain it. Duplicate
+instance namespaces are rejected.
+
+==== Opt-in XML schema validation
+
+The official OpenSCENARIO 1.4 schema does not permit `::` in numeric parameter
+references or expressions. Use the separate
+`resources/schema/OpenSCENARIOv1.4-esmini.xsd` schema to validate this experimental
+extension. The official schema is not modified. Passing the extension schema
+does not imply conformance to unmodified ASAM OpenSCENARIO 1.4.
+
+The extension is a small XSD 1.1 wrapper. It loads the original schema with
+`xsd:override` and replaces only the `parameter` and `expression` type
+definitions. An XSD 1.1 validator is required for the extension; the official
+schema still requires only XSD 1.0. The Python `xmlschema` package supports the
+wrapper, but the `lxml` schema validator does not.
+
+For example, a scenario in `resources/xosc` can select the extension schema with:
+
+[source,xml]
+----
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../schema/OpenSCENARIOv1.4-esmini.xsd">
+----
+
+Keep `FileHeader` at `revMajor="1"` and `revMinor="4"`. The schema location is a
+hint; tools that explicitly select a schema can ignore it. The esmini validator
+honors this hint, resolving local paths relative to the scenario file:
+
+[source]
+----
+python scripts/run_schema_comply.py resources/xosc/my_scenario.xosc
+----
+
+An explicitly referenced schema takes precedence over version-based selection.
+Missing referenced schemas produce a warning and fall back to the official
+version-based schema. Invalid existing schemas remain errors.
+Add `--silent` to suppress missing-schema fallback warnings without hiding
+validation results or errors.
+Local paths and local `file:` URIs are supported;
+remote schema-location URLs are not downloaded.
+
+Without a schema-location hint, official schemas are selected by version.
+Scenarios using the extension must reference its schema explicitly.
+
+Both names in a qualified reference must match `[A-Za-z_][A-Za-z0-9_]*`.
+This restriction applies to qualified access, not to unrelated scenario-object
+names. Both `$Car1::Width` and `${$Car1::Width / 2}` are supported. Single colons
+are not supported. `::` is part of an attribute value, not an XML namespace.
+
+The extension changes only the `parameter` and `expression` lexical patterns.
+As with the official schema, the expression pattern is not a complete grammar.
+esmini checks reference syntax, existence, scope and evaluation; schema validation
+alone cannot establish these semantics.
+
+For standard scenarios, select `OpenSCENARIOv1.4.xsd` instead. For extension
+scenarios, select only `OpenSCENARIOv1.4-esmini.xsd`, not both schemas. Editors
+that honor the schema-location hint also need XSD 1.1 support.
+
+No schema generation is needed. Run the schema boundary tests with:
+
+[source]
+----
+python -m unittest discover -s test -p test_esmini_schema.py
+----
+
+CI verifies the wrapper structure and tests the official/extended validation
+boundary, including schema-location resolution and command-line fallback.

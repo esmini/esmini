@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+            vc:minVersion="1.1">
+    <xsd:annotation>
+        <xsd:documentation>
+Experimental esmini extension to ASAM OpenSCENARIO XML 1.4.
+Supports read-only $instanceName::parameterName references.
+Requires an XSD 1.1 validator. Scope, existence and evaluation are checked by esmini.
+        </xsd:documentation>
+    </xsd:annotation>
+    <xsd:override schemaLocation="OpenSCENARIOv1.4.xsd">
+        <xsd:simpleType name="parameter">
+            <xsd:restriction base="xsd:string">
+                <xsd:pattern value="[$][A-Za-z_][A-Za-z0-9_]*(::[A-Za-z_][A-Za-z0-9_]*)?"/>
+            </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:simpleType name="expression">
+            <xsd:restriction base="xsd:string">
+                <xsd:pattern value="[$][{]([ A-Za-z0-9_\+\-\*/%$\(\)\.,]|::)*[\}]"/>
+            </xsd:restriction>
+        </xsd:simpleType>
+    </xsd:override>
+</xsd:schema>
