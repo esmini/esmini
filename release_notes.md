@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2026-10-22 Version 3.10.2
+
+Improvements and fixes:
+
+- Support specify explicit tag for dependencies
+  - enables use of bumped [Protobuf 3.20.2](https://github.com/esmini/esmini-dependencies/commit/894a0f8d85e7cd571e4006b3ae45fe020d824600) with OSI 3.5
+  - by specifying corresponding [tag](https://github.com/esmini/esmini-dependencies/releases/tag/osi-v3.5.0_3) `3.5.0_3` in cmake command
+  - see also [User guide - OSI versions](https://esmini.github.io/build-guide.html#_osi_versions)
+
 ### 2026-10-20 Version 3.10.1
 
 Improvements and fixes:
