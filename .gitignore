@@ -39,4 +39,5 @@ EnvironmentSimulator/Libraries/esminiJS/build*/*
 support/generated
 CMakeUserPresets.json
 .DS_Store
-EnvironmentSimulator/Libraries/esminiJS/example/esmini.js
+EnvironmentSimulator/Applications/esmini-wasm/esmini.js
+EnvironmentSimulator/Applications/esmini-wasm/esmini.wasm
