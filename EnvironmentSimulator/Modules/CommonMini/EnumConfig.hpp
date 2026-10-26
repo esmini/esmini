@@ -122,6 +122,10 @@ namespace esmini_options
         WHEEL_ANGLE_FILTER,              // 110
         OSI_RECEIVER_PORT,               // 111
         OSI_RECEIVER_UDP_DATA_SIZE,      // 112
+        OSI_FILE_SUFFIX,                 // 113
+        OSI_TC_FILE,                     // 114
+        OSI_TC_FILE_SUFFIX,              // 115
+        OSI_FILES,                       // 116
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -174,6 +178,10 @@ namespace esmini_options
         {"osi_crop_dynamic", OSI_CROP_DYNAMIC},
         {"osi_exclude_ghost", OSI_EXCLUDE_GHOST},
         {"osi_file", OSI_FILE},
+        {"osi_file_suffix", OSI_FILE_SUFFIX},
+        {"osi_tc_file", OSI_TC_FILE},
+        {"osi_tc_file_suffix", OSI_TC_FILE_SUFFIX},
+        {"osi_files", OSI_FILES},
         {"osi_freq", OSI_FREQ},
         {"osi_lines", OSI_LINES},
         {"osi_points", OSI_POINTS},

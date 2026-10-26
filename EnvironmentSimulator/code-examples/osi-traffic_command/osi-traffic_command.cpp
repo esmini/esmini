@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     (void)argv;
     int retval = 0;
 
-    SE_EnableOSIFile(0);  // 0 or "" will result in default filename, ground_truth.osi
+    SE_EnableOSIFile("ground_truth");  // if not named, will default to <timestamp>_<type>_<osi-version>_<protobuf-version>_<number-of-frames>.osi
 
     if (argc > 1)
     {

@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
     SE_AddPath("../../../../resources");
     SE_AddPath("../../../../resources/models");
-    SE_EnableOSIFile(0);
+    SE_EnableOSIFile("ground_truth.osi");
 
     // provide headless mode option for smoke test
     if (argc > 1 && !strcmp(argv[1], "--headless"))

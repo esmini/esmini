@@ -12,6 +12,7 @@
 
 #include <string>
 #include <clocale>
+#include <optional>
 
 #include "CommonMini.hpp"
 #include "playerbase.hpp"
@@ -442,6 +443,23 @@ static int InitScenario()
 
     return 0;
 }
+
+#ifdef _USE_OSI
+// Get map the API osi trace type to internal osi trace type and associated option values
+static std::optional<std::pair<OSIReporter::OSITraceMessage, std::string>> ToOSITraceMessage(SE_OSITraceMessage message)
+{
+    switch (message)
+    {
+        case SE_OSI_GROUND_TRUTH:
+            return std::make_pair(OSIReporter::OSITraceMessage::GROUND_TRUTH, "osi_file");
+        case SE_OSI_TRAFFIC_COMMAND:
+            return std::make_pair(OSIReporter::OSITraceMessage::TRAFFIC_COMMAND, "osi_tc_file");
+        default:
+            LOG_ERROR("Invalid OSI message type {}", static_cast<int>(message));
+            return std::nullopt;
+    }
+}
+#endif
 
 extern "C"
 {
@@ -2291,30 +2309,113 @@ extern "C"
         return 0;
     }
 
+    SE_DLL_API void SE_DisableOSIFiles()
+    {
+#ifdef _USE_OSI
+        SE_DisableOSIFileEx(SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
+        SE_DisableOSIFileEx(SE_OSI_TRAFFIC_COMMAND, SE_TRACE_SINGLE_CHANNEL);
+#endif
+    }
+
     SE_DLL_API void SE_DisableOSIFile()
     {
-        SE_Env::Inst().GetOptions().SetOptionValue("osi_file", "");
-        if (player != nullptr)
+#ifdef _USE_OSI
+        SE_DisableOSIFileEx(SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
+#endif
+    }
+
+    SE_DLL_API int SE_DisableOSIFileEx(SE_OSITraceMessage message, SE_TraceType type)
+    {
+#ifdef _USE_OSI
+        (void)type;  // Placeholder
+        const auto trace_message = ToOSITraceMessage(message);
+        if (!trace_message)
         {
-            player->SetOSIFileStatus(false);
+            return -1;
         }
-        else
+        const std::string option = trace_message->second;
+        SE_Env::Inst().GetOptions().UnsetOption(option);
+        SE_Env::Inst().GetOptions().UnsetOption(option + "_suffix");
+        if (player == nullptr)
         {
-            LOG_WARN("SE_DisableOSIFile called before scenario initialized");
+            return 0;
         }
+        if (player->osiReporter == nullptr)
+        {
+            LOG_ERROR("SE_DisableOSIFileEx: OSI reporter unavailable");
+            return -1;
+        }
+        return player->osiReporter->CloseOSIFile(trace_message->first) ? 0 : -1;
+#else
+        (void)message;
+        (void)type;
+        LOG_ERROR("SE_DisableOSIFileEx requires OSI support");
+        return -1;
+#endif
+    }
+
+    SE_DLL_API void SE_EnableOSIFiles(const char *suffix)
+    {
+#ifdef _USE_OSI
+        SE_EnableOSIFileEx(suffix, false, SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
+        SE_EnableOSIFileEx(suffix, false, SE_OSI_TRAFFIC_COMMAND, SE_TRACE_SINGLE_CHANNEL);
+#else
+        (void)suffix;
+#endif  // _USE_OSI
     }
 
     SE_DLL_API void SE_EnableOSIFile(const char *filename)
     {
 #ifdef _USE_OSI
-        SE_Env::Inst().GetOptions().SetOptionValue("osi_file", filename == nullptr ? "" : filename);
-        if (player != nullptr)
-        {
-            player->SetOSIFileStatus(true, filename);
-            player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_);
-        }
+        SE_EnableOSIFileEx(filename, true, SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
 #else
         (void)filename;
+#endif  // _USE_OSI
+    }
+
+    SE_DLL_API int SE_EnableOSIFileEx(const char *filename, bool override_filename, SE_OSITraceMessage message, SE_TraceType type)
+    {
+#ifdef _USE_OSI
+
+        (void)type;  // Placeholder
+        const auto trace_message = ToOSITraceMessage(message);
+        if (!trace_message)
+        {
+            return -1;
+        }
+        const std::string option          = trace_message->second;
+        auto             &options         = SE_Env::Inst().GetOptions();
+        const std::string selected_option = override_filename ? option : option + "_suffix";
+        options.ClearOption(selected_option);
+        if (options.SetOptionValue(selected_option, filename == nullptr ? "" : filename) != 0)
+        {
+            return -1;
+        }
+        if (player == nullptr)
+        {
+            return 0;
+        }
+        if (player->osiReporter == nullptr)
+        {
+            LOG_ERROR("SE_EnableOSIFileEx: OSI reporter unavailable");
+            return -1;
+        }
+        if (!player->OpenOSIFile(options.GetOptionValue(option).c_str(), trace_message->first))
+        {
+            return -1;
+        }
+        if (message == SE_OSI_GROUND_TRUTH && player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_) < 0)
+        {
+            return -1;
+        }
+        return 0;
+#else
+        (void)filename;
+        (void)override_filename;
+        (void)message;
+        (void)type;
+        LOG_ERROR("SE_EnableOSIFileEx requires OSI support");
+        return -1;
 #endif  // _USE_OSI
     }
 
@@ -2323,9 +2424,37 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr && player->osiReporter != nullptr)
         {
-            player->osiReporter->FlushOSIFile();
+            player->osiReporter->FlushAllOSIFiles();
         }
 #endif  // _USE_OSI
+    }
+
+    SE_DLL_API int SE_FlushOSIFileEx(SE_OSITraceMessage message, SE_TraceType type)
+    {
+#ifdef _USE_OSI
+        (void)type;  // Placeholder
+        const auto trace_message = ToOSITraceMessage(message);
+        if (!trace_message)
+        {
+            return -1;
+        }
+        if (player == nullptr || player->osiReporter == nullptr)
+        {
+            LOG_ERROR("SE_FlushOSIFileEx requires an initialized scenario");
+            return -1;
+        }
+        if (!player->osiReporter->IsFileOpen(trace_message->first))
+        {
+            LOG_ERROR("SE_FlushOSIFileEx: no open OSI tracefile for message type {}", static_cast<int>(message));
+            return -1;
+        }
+        return player->osiReporter->FlushOSIFile(trace_message->first) ? 0 : -1;
+#else
+        (void)message;
+        (void)type;
+        LOG_ERROR("SE_FlushOSIFileEx requires OSI support");
+        return -1;
+#endif
     }
 
     SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list)

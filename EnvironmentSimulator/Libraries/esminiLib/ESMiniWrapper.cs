@@ -131,6 +131,17 @@ namespace ESMini
         API_AND_LOG = 2,
     }
 
+    public enum SE_OSITraceMessage
+    {
+        SE_OSI_GROUND_TRUTH = 0,
+        SE_OSI_TRAFFIC_COMMAND = 1,
+    }
+
+    public enum SE_TraceType
+    {
+        SE_TRACE_SINGLE_CHANNEL = 0,
+    }
+
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct SE_ScenarioObjectState
     {
@@ -1862,26 +1873,69 @@ namespace ESMini
         public static extern int SE_OpenCustomOSISocket(string ipaddr, uint port, uint data_max_size);
 
         /// <summary>
-        /// Switch off logging to OSI file(s)
+        /// Switch off logging to all OSI files.
         /// </summary>
-        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern void SE_DisableOSIFiles();
+
+        /// <summary>
+        /// Switch off logging to the OSI GroundTruth file, leaving other message types unchanged.
+        /// </summary>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern void SE_DisableOSIFile();
 
         /// <summary>
-        /// Switch on logging to OSI file(s)
+        /// Close only the selected OSI trace file, leaving other message types unchanged.
+        /// Closing an already closed file succeeds.
+        /// </summary>
+        /// <param name="message">Message to stop recording: GroundTruth or TrafficCommand.</param>
+        /// <param name="type">Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported. Before initialization, cancels the pending request for the selected message.</param>
+        /// <returns>0 on success, -1 on invalid arguments, unavailable OSI support, or file error.</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_DisableOSIFileEx(SE_OSITraceMessage message, SE_TraceType type);
+
+        /// <summary>
+        /// Switch on logging to OSI files
+        /// </summary>
+        /// <param name="filename">suffix (including optional path) Set to 0 or "" to use the default filename or no suffix.</param>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern void SE_EnableOSIFiles(string suffix);
+
+        /// <summary>
+        /// Switch on logging to OSI groundtruth
         /// </summary>
         /// <param name="filename">Optional filename, including path. Set to 0 or "" to use default.</param>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern void SE_EnableOSIFile(string filename);
 
         /// <summary>
-        /// Enforce flushing OSI file (save all buffered data to file)
+        /// Enable an OSI trace file before or after scenario initialization using the corresponding filename or suffix option.
+        /// Before initialization, stores the option and opens the file during initialization.
+        /// Existing files for other message types remain open. Subsequent updates require a positive OSI frequency.
+        /// </summary>
+        /// <param name="filename">Filename (including optional path) if override_filename is true; otherwise a suffix. Set to 0 or "" to use the default filename or no suffix.</param>
+        /// <param name="override_filename">If true, set osi_file or osi_tc_file; otherwise set osi_file_suffix or osi_tc_file_suffix. Filename and suffix options combine using the normal command-line naming rules.</param>
+        /// <param name="message">Message to record: GroundTruth or TrafficCommand.</param>
+        /// <param name="type">Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported.</param>
+        /// <returns>0 if configured or opened, -1 on invalid arguments, unavailable OSI support, or file error. For requests made before initialization, file errors are reported by the initialization function.</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_EnableOSIFileEx(string filename, [MarshalAs(UnmanagedType.I1)] bool override_filename, SE_OSITraceMessage message, SE_TraceType type);
+
+        /// <summary>
+        /// Enforce flushing all open OSI files (save all buffered data to file)
         /// Normally not necessary, since data is flushed automatically at file closure
         /// </summary>
-        /// <returns>0</returns>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern void SE_FlushOSIFile();
+
+        /// <summary>
+        /// Flush only the selected OSI trace file, leaving other message types unchanged.
+        /// </summary>
+        /// <param name="message">Message to flush: GroundTruth or TrafficCommand.</param>
+        /// <param name="type">Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported.</param>
+        /// <returns>0 on success, -1 on invalid arguments, uninitialized scenario, unavailable OSI support, closed file, or file error.</returns>
+        [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern int SE_FlushOSIFileEx(SE_OSITraceMessage message, SE_TraceType type);
 
         /// <summary>
         /// The SE_CropGroundTruth will limit the area of the dynamic groundtruth data to a circle with the specified radius around the given object
