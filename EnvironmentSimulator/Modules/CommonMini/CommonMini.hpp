@@ -433,6 +433,11 @@ std::string GetDefaultPath();
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
 
 /**
+        Rename a file, rejecting an existing destination. Logs errors and returns false on failure.
+*/
+bool RenameFile(const std::string& source, const std::string& destination);
+
+/**
         Resolve file path by searching in given directories and added paths
         @param file_path File to locate, can be just filename or path
         @param dirs Directories to search in
@@ -1552,6 +1557,8 @@ public:
     }
 
     static SE_Env& Inst();
+
+    std::string CreateISOTimestamp();
 
     void SetOSITimeStamp(unsigned long long timestamp)
     {

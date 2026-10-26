@@ -270,6 +270,26 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
     return path;
 }
 
+bool RenameFile(const std::string& source, const std::string& destination)
+{
+    std::error_code error;
+    const bool      exists = fs::exists(destination, error);
+    if (error || exists)
+    {
+        LOG_ERROR("Cannot rename file {} to {}: {}", source, destination, error ? error.message() : "destination already exists");
+        return false;
+    }
+
+    fs::rename(source, destination, error);
+    if (error)
+    {
+        LOG_ERROR("Failed rename file {} to {}: {}", source, destination, error.message());
+        return false;
+    }
+
+    return true;
+}
+
 std::string LocateFile(const std::string& file_path, const std::vector<std::string>& dirs, const std::string& label, bool& found, bool log_not_found)
 {
     found = false;
@@ -1973,6 +1993,28 @@ void InverseRotateVec3d(double h, double p, double r, double x, double y, double
     x_out = x * (ch * cp) + y * (sh * cp) + z * (-sp + 0.0);  // + 0.0 to avoid -0.0
     y_out = x * (ch * sp * sr - sh * cr) + y * (sh * sp * sr + ch * cr) + z * (cp * sr);
     z_out = x * (ch * sp * cr + sh * sr) + y * (sh * sp * cr - ch * sr) + z * (cp * cr);
+}
+
+std::string SE_Env::CreateISOTimestamp()
+{
+    auto now = std::chrono::system_clock::now();
+    auto itt = std::chrono::system_clock::to_time_t(now);
+
+    // Extract milliseconds component
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+
+    // Convert to UTC broken-down time safely
+    std::tm tm_utc;
+#if defined(_MSC_VER)
+    gmtime_s(&tm_utc, &itt);  // Windows thread-safe version
+#else
+    gmtime_r(&itt, &tm_utc);  // POSIX thread-safe version
+#endif
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm_utc, "%Y%m%dT%H%M%SZ");
+
+    return oss.str();
 }
 
 int SE_Env::AddPath(std::string path)

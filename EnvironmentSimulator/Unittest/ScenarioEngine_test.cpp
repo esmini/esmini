@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <array>
+#include <set>
 
 #include "CommonMini.hpp"
 #include "ScenarioEngine.hpp"
@@ -15,6 +16,24 @@
 #include "OSCParameterDistribution.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
+
+#if defined(_USE_OSI) && _RUN_OSI_TESTS
+#include "playerbase.hpp"
+#include <google/protobuf/io/coded_stream.h>
+#include <chrono>
+#include <regex>
+#include <tuple>
+
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+#endif
 
 using namespace roadmanager;
 using namespace scenarioengine;
@@ -31,6 +50,263 @@ static void scenario_step(ScenarioEngine* scenario_engine, double dt)
     scenario_engine->SwapAndClearDirtyBits();
     DirtyBits::SetReadBack();
 }
+
+#if defined(_USE_OSI) && _RUN_OSI_TESTS
+class OSIFileOptionsTest : public ::testing::TestWithParam<std::tuple<int, int>>
+{
+protected:
+    void SetUp() override
+    {
+        directory_ = fs::current_path();
+        scenario_  = "../../../resources/xosc/cut-in_simple.xosc";
+        for (const auto* filename : {"gt.osi", "gt_my_file.osi"})
+        {
+            if (fs::exists(filename))
+            {
+                ASSERT_TRUE(fs::is_regular_file(filename)) << filename;
+                ASSERT_TRUE(fs::remove(filename)) << filename;
+            }
+        }
+        for (const auto& entry : fs::directory_iterator(directory_))
+        {
+            if (entry.path().extension() == ".osi")
+            {
+                existing_traces_.insert(entry.path());
+            }
+        }
+        ASSERT_TRUE(fs::exists(scenario_));
+    }
+
+    void TearDown() override
+    {
+        for (const auto& path : GetTraces())
+        {
+            EXPECT_TRUE(fs::remove(path)) << path;
+        }
+    }
+
+    std::vector<fs::path> GetTraces() const
+    {
+        std::vector<fs::path> traces;
+        for (const auto& entry : fs::directory_iterator(directory_))
+        {
+            if (entry.path().extension() == ".osi" && existing_traces_.count(entry.path()) == 0)
+            {
+                traces.push_back(entry.path());
+            }
+        }
+        return traces;
+    }
+
+    std::set<fs::path> existing_traces_;
+    fs::path           directory_;
+    std::string        scenario_;
+};
+
+TEST_P(OSIFileOptionsTest, FilenameCombinations)
+{
+    // File: absent, bare, explicit. Suffix also covers relative/absolute paths and a directory without a suffix.
+    const int                file_mode   = std::get<0>(GetParam());
+    const int                suffix_mode = std::get<1>(GetParam());
+    std::vector<std::string> args        = {"esmini", "--osc", scenario_, "--headless", "--disable_log"};
+    if (file_mode != 0)
+    {
+        args.push_back("--osi_file");
+        if (file_mode == 2)
+        {
+            args.push_back("gt.osi");
+        }
+    }
+    if (suffix_mode != 0)
+    {
+        args.push_back("--osi_file_suffix");
+        if (suffix_mode >= 2)
+        {
+            switch (suffix_mode)
+            {
+                case 2:
+                    args.push_back("");
+                    break;
+                case 3:
+                    args.push_back("my_file");
+                    break;
+                case 4:
+                    args.push_back("./my_file");
+                    break;
+                case 5:
+                    args.push_back((directory_ / "my_file").string());
+                    break;
+                case 6:
+                    args.push_back("./");
+                    break;
+            }
+        }
+    }
+    std::vector<char*> argv;
+    for (auto& arg : args)
+    {
+        argv.push_back(&arg[0]);
+    }
+    {
+        ScenarioPlayer player(static_cast<int>(argv.size()), argv.data());
+        ASSERT_EQ(player.Init(), 0);
+        player.Frame(0.01);
+        player.Frame(0.01);
+    }
+
+    const auto traces = GetTraces();
+    if (file_mode == 0 && suffix_mode == 0)
+    {
+        EXPECT_TRUE(traces.empty());
+        return;
+    }
+    ASSERT_EQ(traces.size(), 1u);
+    EXPECT_GT(fs::file_size(traces[0]), 0u);
+    const std::string suffix = suffix_mode >= 3 && suffix_mode <= 5 ? "_my_file" : "";
+    EXPECT_EQ(traces[0].parent_path(), directory_);
+    if (file_mode == 2)
+    {
+        EXPECT_EQ(traces[0].filename().string(), "gt" + suffix + ".osi");
+    }
+    else
+    {
+        EXPECT_TRUE(std::regex_match(traces[0].filename().string(), std::regex("[0-9]{8}T[0-9]{6}Z_gt_[0-9]+_[0-9]+_3" + suffix + "\\.osi")));
+    }
+}
+
+// File: 0=absent, 1=bare, 2=explicit; suffix: 0=absent, 1=bare, 2=empty, 3=named, 4=relative, 5=absolute, 6=directory.
+INSTANTIATE_TEST_SUITE_P(OSIFileOptions, OSIFileOptionsTest, ::testing::Combine(::testing::Range(0, 3), ::testing::Range(0, 7)));
+
+// GetParam() selects compression. Output files are removed by TearDown().
+class OSITraceWriterTest : public ::testing::TestWithParam<bool>
+{
+protected:
+    void SetUp() override
+    {
+        directory_ = fs::current_path();
+        ASSERT_FALSE(fs::exists(directory_ / "missing"));
+        for (const auto* filename : {"20261027T120000Z_gt_370_3150_0.osi",
+                                     "20261027T120000Z_tc_370_3150_0.osi",
+                                     "20261027T120000Z_gt_370_3150_2.osi",
+                                     "20261027T120000Z_tc_370_3150_3.osi",
+                                     "20261027T120000Z_gt_370_3150_0_first.osi",
+                                     "20261027T120000Z_tc_370_3150_0_second.osi",
+                                     "20261027T120000Z_gt_370_3150_1_first.osi",
+                                     "20261027T120000Z_tc_370_3150_2_second.osi"})
+        {
+            const auto path = directory_ / filename;
+            if (fs::exists(path))
+            {
+                ASSERT_TRUE(fs::is_regular_file(path)) << path;
+                ASSERT_TRUE(fs::remove(path)) << path;
+            }
+            output_files_.push_back(path);
+        }
+    }
+
+    void TearDown() override
+    {
+        for (const auto& path : output_files_)
+        {
+            if (fs::exists(path))
+            {
+                EXPECT_TRUE(fs::remove(path)) << path;
+            }
+        }
+    }
+
+    void ExpectMessages(const fs::path& path, bool compressed, const std::vector<std::string>& messages)
+    {
+        // Check the file format and exact payload bytes, not OSI message semantics.
+        // The writer accepts arbitrary serialized bytes, so real protobuf messages are unnecessary here.
+        std::ifstream file(path.string(), std::ios::binary);
+        ASSERT_TRUE(file.good());
+        google::protobuf::io::IstreamInputStream               raw_input(&file);
+        std::unique_ptr<google::protobuf::io::GzipInputStream> gzip_input;
+        google::protobuf::io::ZeroCopyInputStream*             input = &raw_input;
+        if (compressed)
+        {
+            // Decompress before reading the same size-prefixed records used by uncompressed files.
+            gzip_input = std::make_unique<google::protobuf::io::GzipInputStream>(&raw_input);
+            input      = gzip_input.get();
+        }
+        google::protobuf::io::CodedInputStream coded_input(input);
+        for (const auto& expected : messages)
+        {
+            // Each record is [unsigned int payload length][that many payload bytes].
+            unsigned int size = 0;
+            ASSERT_TRUE(coded_input.ReadRaw(&size, sizeof(size)));
+            ASSERT_EQ(size, expected.size());
+            std::string message(size, '\0');
+            if (size > 0)
+            {
+                ASSERT_TRUE(coded_input.ReadRaw(&message[0], static_cast<int>(size)));
+            }
+            EXPECT_EQ(message, expected);
+        }
+        unsigned int size = 0;
+        // There must not be another record after the expected messages.
+        EXPECT_FALSE(coded_input.ReadRaw(&size, sizeof(size)));
+    }
+
+    fs::path              directory_;
+    std::vector<fs::path> output_files_;
+};
+
+TEST_P(OSITraceWriterTest, IndependentFilesAndFinalization)
+{
+    // The "_0" field is a placeholder that Close() replaces with this file's frame count.
+    const fs::path    gt_path = directory_ / "20261027T120000Z_gt_370_3150_0.osi";
+    const fs::path    tc_path = directory_ / "20261027T120000Z_tc_370_3150_0.osi";
+    const std::string gt_message("ground\0truth", 12);  // Embedded NUL detects accidental C-string truncation.
+    {
+        OSITraceWriter gt_writer;
+        OSITraceWriter tc_writer;
+        ASSERT_TRUE(gt_writer.Open(gt_path.string(), true, GetParam()));
+        ASSERT_TRUE(gt_writer.Write(gt_message));
+        // Open and interleave a second writer to expose accidentally shared file/compression state.
+        ASSERT_TRUE(tc_writer.Open(tc_path.string(), true, GetParam()));
+        ASSERT_TRUE(tc_writer.Write("command1"));
+        ASSERT_TRUE(gt_writer.Write("groundtruth2"));
+        ASSERT_TRUE(gt_writer.Flush());
+        ASSERT_TRUE(tc_writer.Flush());
+        // Closing GT must not close TC or prevent further TC writes.
+        ASSERT_TRUE(gt_writer.Close());
+        EXPECT_FALSE(gt_writer.IsOpen());
+        EXPECT_TRUE(tc_writer.IsOpen());
+        ASSERT_TRUE(tc_writer.Write("command2"));
+        ASSERT_TRUE(tc_writer.Write("command3"));
+    }
+    // TC was not explicitly closed: its destructor must finalize compression and rename the file.
+    // The separate counts (GT=2, TC=3) and payload checks detect mixed counters or output streams.
+    EXPECT_FALSE(fs::exists(gt_path));
+    EXPECT_FALSE(fs::exists(tc_path));
+    ExpectMessages(directory_ / "20261027T120000Z_gt_370_3150_2.osi", GetParam(), {gt_message, "groundtruth2"});
+    ExpectMessages(directory_ / "20261027T120000Z_tc_370_3150_3.osi", GetParam(), {"command1", "command2", "command3"});
+}
+
+TEST_P(OSITraceWriterTest, ReopenResetsStateAndRecoversFromOpenFailure)
+{
+    OSITraceWriter writer;
+    // A missing parent directory forces Open() to fail; the same writer must remain reusable.
+    ASSERT_FALSE(writer.Open((directory_ / "missing" / "trace.osi").string(), false, GetParam()));
+    ASSERT_TRUE(writer.Open((directory_ / "20261027T120000Z_gt_370_3150_0_first.osi").string(), true, GetParam()));
+    ASSERT_TRUE(writer.Write("first"));
+    // Reopening must finalize the first file, reset the frame count, and switch compression mode.
+    // !GetParam() exercises both compressed -> plain and plain -> compressed across the two runs.
+    ASSERT_TRUE(writer.Open((directory_ / "20261027T120000Z_tc_370_3150_0_second.osi").string(), true, !GetParam()));
+    ASSERT_TRUE(writer.Write("second"));
+    ASSERT_TRUE(writer.Write("third"));
+    ASSERT_TRUE(writer.Close());
+    ASSERT_TRUE(writer.Close());  // Repeated close must succeed without another rename/finalization.
+    // Both files must retain their own payloads, compression mode, frame count, and filename suffix.
+    ExpectMessages(directory_ / "20261027T120000Z_gt_370_3150_1_first.osi", GetParam(), {"first"});
+    ExpectMessages(directory_ / "20261027T120000Z_tc_370_3150_2_second.osi", !GetParam(), {"second", "third"});
+}
+
+// Run both test bodies with GetParam()=false and true: four test cases in total.
+INSTANTIATE_TEST_SUITE_P(OSITraceWriter, OSITraceWriterTest, ::testing::Bool());
+#endif
 
 TEST(DistanceTest, CalcDistanceVariations)
 {

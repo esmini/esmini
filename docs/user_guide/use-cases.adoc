@@ -584,11 +584,21 @@ esmini can provide OSI groundtruth data in three ways:
 . API to fetch via function call from a custom application
 . Save to OSI trace file
 
-Only trace file way is described here. To save OSI data, add argument `--osi_file [filename]`. The filename is optional. If omitted it will be named `ground_truth.osi`. Example:
+This section covers saving OSI data to trace files. To record GroundTruth, use `--osi_file [filename]`. The filename is optional; if omitted, esmini generates one in the OSI trace-file format (https://opensimulation-interface.github.io/osi-antora-generator/asamosi/V3.5.0/interface/architecture/trace_file_formats.html[OSI trace files, section 2.2.6]):
 
-``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file``
+`<timestamp>_gt_<osi-version>_<protobuf-version>_<frames>[<_optional_suffix>].osi`
 
-will create `ground_truth.osi` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/interface/architecture/trace_file_formats.html[2.2.6 OSI trace files].
+The frame count is finalized when the file closes. To choose a fixed filename, provide one:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file ground_truth.osi``
+
+Use `--osi_file_suffix [suffix]` to append an optional suffix to the GroundTruth filename.
+
+To record TrafficCommand instead, use `--osi_tc_file [filename]`; add an optional suffix with `--osi_tc_file_suffix [suffix]`. TrafficCommand files contain records only when actions generate commands.
+
+Filename and suffix arguments may include a directory. For example, `--osi_file_suffix traces/my_run` generates a GroundTruth file named `traces/<timestamp>_gt_<osi-version>_<protobuf-version>_<frames>_my_run.osi`.
+
+Use `--osi_files [suffix]` to record GroundTruth and TrafficCommand in separate files with the same optional suffix.
 
 esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
 
@@ -599,11 +609,17 @@ will create ground_truth.csv. +
 
 However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of the Python script https://github.com/OpenSimulationInterface/open-simulation-interface/blob/v3.5.0/format/osi2read.py[format/osi2read.py] in the OSI project.
 
-Use as following example:
+Use following example for ground truth:
 
 `../open-simulation-interface/format/osi2read.py --data ./ground_truth.osi --output ground_truth --type GroundTruth`
 
 it should create `ground_truth.txth` which is readable in a text editor.
+
+Use following example for traffic command (requires checkout of OSI >= 3.7.0):
+
+`/path/to/osi/osi2read.py --data ./traffic_command.osi --output traffic_command --type TrafficCommand`
+
+it should create `traffic_command.txth` which is readable in text editor.
 
 [Note]
 ====
@@ -611,7 +627,8 @@ it should create `ground_truth.txth` which is readable in a text editor.
 
 See link:support-qa.html#_osi_for_python_on_windows[OSI for Python on Windows] for hints how to install dependencies (OSI and Protobuf).
 
-The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py].
+The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py] or in a separate repo https://github.com/OpenSimulationInterface/osi-python/tree/main/osi3trace[osi-python/osi3trace].
+
 ====
 
 ==== Visualize `.osi` in Lichtblick (`.mcap`)
@@ -658,4 +675,3 @@ Run:
 Select (click on) esmini-player in Hierarchy to show up in Inspector, where you can specify scenario file and a few parameters. Note that scenario file and dependent OpenDRIVE and optional 3D scenegraph file must be present in StreamingAssets folder.
 
 Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
-

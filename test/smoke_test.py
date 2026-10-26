@@ -2684,7 +2684,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^80.000, 0, Ego, 188.436, -1.875, 0.000, 0.000, 0.000, 0.000, 19.444, -0.000, 3.357', csv, re.MULTILINE))
 
     def test_osi2csv(self):
-        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/cut-in.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1 --osi_file")
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/cut-in.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1 --osi_file ground_truth.osi")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)

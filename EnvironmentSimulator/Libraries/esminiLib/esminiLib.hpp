@@ -376,6 +376,17 @@ typedef enum
     API_AND_LOG = 2
 } SE_OSIStaticReportMode;  // Must match roadmanager::OSIStaticReportMode
 
+typedef enum
+{
+    SE_OSI_GROUND_TRUTH    = 0,
+    SE_OSI_TRAFFIC_COMMAND = 1
+} SE_OSITraceMessage;
+
+typedef enum
+{
+    SE_TRACE_SINGLE_CHANNEL = 0,
+} SE_TraceType;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -1590,23 +1601,66 @@ extern "C"
     SE_DLL_API int SE_OpenCustomOSISocket(const char *ipaddr, unsigned int port, unsigned int data_max_size);
 
     /**
-            Switch off logging to OSI file(s)
-            @return 0 if successful, -1 if not
+            Switch off logging to all OSI files.
+    */
+    SE_DLL_API void SE_DisableOSIFiles();
+
+    /**
+            Switch off logging to the OSI GroundTruth file, leaving other message types unchanged.
     */
     SE_DLL_API void SE_DisableOSIFile();
 
     /**
-            Switch on logging to OSI file(s)
+            Close only the selected OSI trace file, leaving other message types unchanged.
+            Closing an already closed file succeeds.
+            @param message Message to stop recording: GroundTruth or TrafficCommand.
+            @param type Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported.
+            Before initialization, cancels the pending request for the selected message.
+            @return 0 on success, -1 on invalid arguments, unavailable OSI support, or file error.
+    */
+    SE_DLL_API int SE_DisableOSIFileEx(SE_OSITraceMessage message, SE_TraceType type);
+
+    /**
+            Switch on logging to OSI files
+            @param filename suffix (including optional path) Set to 0 or "" to use the default filename or no suffix.
+    */
+    SE_DLL_API void SE_EnableOSIFiles(const char *suffix);
+
+    /**
+            Switch on logging to OSI groundtruth
             @param filename Optional filename, including path. Set to 0 or "" to use default.
     */
     SE_DLL_API void SE_EnableOSIFile(const char *filename);
 
     /**
-            Enforce flushing OSI file (save all buffered data to file)
+            Enable an OSI trace file before or after scenario initialization using the corresponding filename or suffix option.
+            Before initialization, stores the option and opens the file during initialization.
+            Existing files for other message types remain open. Subsequent updates require a positive OSI frequency.
+            @param filename Filename (including optional path) if override_filename is true; otherwise a suffix.
+                            Set to 0 or "" to use the default filename or no suffix.
+            @param override_filename If true, set osi_file or osi_tc_file; otherwise set osi_file_suffix or osi_tc_file_suffix.
+                                    Filename and suffix options combine using the normal command-line naming rules.
+            @param message Message to record: GroundTruth or TrafficCommand.
+            @param type Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported.
+            @return 0 if configured or opened, -1 on invalid arguments, unavailable OSI support, or file error.
+                    For requests made before initialization, file errors are reported by the initialization function.
+    */
+    SE_DLL_API int SE_EnableOSIFileEx(const char *filename, bool override_filename, SE_OSITraceMessage message, SE_TraceType type);
+
+    /**
+            Enforce flushing all open OSI files (save all buffered data to file)
             Normally not necessary, since data is flushed automatically at file closure
-            @return 0
     */
     SE_DLL_API void SE_FlushOSIFile();
+
+    /**
+            Flush only the selected OSI trace file, leaving other message types unchanged.
+            @param message Message to flush: GroundTruth or TrafficCommand.
+            @param type Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported.
+            @return 0 on success, -1 on invalid arguments, uninitialized scenario, unavailable OSI support, closed file, or file error.
+    */
+    SE_DLL_API int SE_FlushOSIFileEx(SE_OSITraceMessage message, SE_TraceType type);
+
     /**
      *      The SE_CropGroundTruth will limit the area of the dynamic groundtruth data to a circle with the specified radius around the given object
      * id Using the method repeatedly with different object ids will crop the groundtruth data around all objects specified Setting the radius to 0
