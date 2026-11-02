@@ -195,11 +195,11 @@ namespace ESMini
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct SE_WheelData
     {
-        /// <summary>global x coordinate of position</summary>
+        /// <summary>local x coordinate of position</summary>
         public double x;
-        /// <summary>global y coordinate of position</summary>
+        /// <summary>local y coordinate of position</summary>
         public double y;
-        /// <summary>global z coordinate of position</summary>
+        /// <summary>local z coordinate of position</summary>
         public double z;
         /// <summary>heading/yaw in global coordinate system</summary>
         public double h;

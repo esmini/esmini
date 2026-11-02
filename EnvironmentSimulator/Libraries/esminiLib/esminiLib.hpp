@@ -61,9 +61,9 @@ typedef struct
 
 typedef struct
 {
-    double x;  // global x coordinate of position
-    double y;  // global y coordinate of position
-    double z;  // global z coordinate of position
+    double x;  // local x coordinate of position
+    double y;  // local y coordinate of position
+    double z;  // local z coordinate of position
     double h;  // heading/yaw in global coordinate system
     double p;  // pitch in global coordinate system
     // double r;                     // roll in global coordinate system
