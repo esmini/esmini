@@ -1622,30 +1622,28 @@ extern "C"
 
     /**
             Switch on logging to OSI files
-            @param filename suffix (including optional path) Set to 0 or "" to use the default filename or no suffix.
+            @param suffix Suffix (including optional path). Set to 0 or "" for no suffix.
     */
     SE_DLL_API void SE_EnableOSIFiles(const char *suffix);
 
     /**
             Switch on logging to OSI groundtruth
-            @param filename Optional filename, including path. Set to 0 or "" to use default.
+            @param filename Optional filename, including path. Set to 0 or "" to use default
     */
     SE_DLL_API void SE_EnableOSIFile(const char *filename);
 
     /**
-            Enable an OSI trace file before or after scenario initialization using the corresponding filename or suffix option.
-            Before initialization, stores the option and opens the file during initialization.
+            Enable an OSI trace file before or after scenario initialization using the corresponding filename and suffix options.
+            Before initialization, stores the options and opens the file during initialization.
             Existing files for other message types remain open. Subsequent updates require a positive OSI frequency.
-            @param filename Filename (including optional path) if override_filename is true; otherwise a suffix.
-                            Set to 0 or "" to use the default filename or no suffix.
-            @param override_filename If true, set osi_file or osi_tc_file; otherwise set osi_file_suffix or osi_tc_file_suffix.
-                                    Filename and suffix options combine using the normal command-line naming rules.
+            @param filename Filename (including optional path). Set to 0 or "" to use the default filename.
+            @param suffix Suffix that will be added to the filename base. Set to 0 or "" for no suffix, clearing any previous suffix.
             @param message Message to record: GroundTruth or TrafficCommand.
-            @param type Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported.
+            @param type Trace format. Only SE_TRACE_SINGLE_CHANNEL is currently supported.
             @return 0 if configured or opened, -1 on invalid arguments, unavailable OSI support, or file error.
                     For requests made before initialization, file errors are reported by the initialization function.
     */
-    SE_DLL_API int SE_EnableOSIFileEx(const char *filename, bool override_filename, SE_OSITraceMessage message, SE_TraceType type);
+    SE_DLL_API int SE_EnableOSIFileEx(const char *filename, const char *suffix, SE_OSITraceMessage message, SE_TraceType type);
 
     /**
             Enforce flushing all open OSI files (save all buffered data to file)

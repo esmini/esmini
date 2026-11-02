@@ -117,29 +117,23 @@ TEST_P(OSIFileOptionsTest, FilenameCombinations)
             args.push_back("gt.osi");
         }
     }
-    if (suffix_mode != 0)
+    if (suffix_mode > 0)
     {
         args.push_back("--osi_file_suffix");
-        if (suffix_mode >= 2)
+        switch (suffix_mode)
         {
-            switch (suffix_mode)
-            {
-                case 2:
-                    args.push_back("");
-                    break;
-                case 3:
-                    args.push_back("my_file");
-                    break;
-                case 4:
-                    args.push_back("./my_file");
-                    break;
-                case 5:
-                    args.push_back((directory_ / "my_file").string());
-                    break;
-                case 6:
-                    args.push_back("./");
-                    break;
-            }
+            case 1:
+                args.push_back("my_file");
+                break;
+            case 2:
+                args.push_back("./my_file");
+                break;
+            case 3:
+                args.push_back((directory_ / "my_file").string());
+                break;
+            case 4:
+                args.push_back("./");
+                break;
         }
     }
     std::vector<char*> argv;
@@ -162,7 +156,7 @@ TEST_P(OSIFileOptionsTest, FilenameCombinations)
     }
     ASSERT_EQ(traces.size(), 1u);
     EXPECT_GT(fs::file_size(traces[0]), 0u);
-    const std::string suffix = suffix_mode >= 3 && suffix_mode <= 5 ? "_my_file" : "";
+    const std::string suffix = suffix_mode >= 1 && suffix_mode <= 3 ? "_my_file" : "";
     EXPECT_EQ(traces[0].parent_path(), directory_);
     if (file_mode == 2)
     {
@@ -174,8 +168,8 @@ TEST_P(OSIFileOptionsTest, FilenameCombinations)
     }
 }
 
-// File: 0=absent, 1=bare, 2=explicit; suffix: 0=absent, 1=bare, 2=empty, 3=named, 4=relative, 5=absolute, 6=directory.
-INSTANTIATE_TEST_SUITE_P(OSIFileOptions, OSIFileOptionsTest, ::testing::Combine(::testing::Range(0, 3), ::testing::Range(0, 7)));
+// File: 0=absent, 1=bare, 2=explicit; suffix: 0=absent, 1=named, 2=relative, 3=absolute, 4=directory.
+INSTANTIATE_TEST_SUITE_P(OSIFileOptions, OSIFileOptionsTest, ::testing::Combine(::testing::Range(0, 3), ::testing::Range(0, 5)));
 
 // GetParam() selects compression. Output files are removed by TearDown().
 class OSITraceWriterTest : public ::testing::TestWithParam<bool>

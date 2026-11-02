@@ -1897,29 +1897,29 @@ namespace ESMini
         /// <summary>
         /// Switch on logging to OSI files
         /// </summary>
-        /// <param name="filename">suffix (including optional path) Set to 0 or "" to use the default filename or no suffix.</param>
+        /// <param name="suffix">Suffix (including optional path). Set to 0 or "" for no suffix.</param>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern void SE_EnableOSIFiles(string suffix);
 
         /// <summary>
         /// Switch on logging to OSI groundtruth
         /// </summary>
-        /// <param name="filename">Optional filename, including path. Set to 0 or "" to use default.</param>
+        /// <param name="filename">Optional filename, including path. Set to 0 or "" to use default</param>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern void SE_EnableOSIFile(string filename);
 
         /// <summary>
-        /// Enable an OSI trace file before or after scenario initialization using the corresponding filename or suffix option.
-        /// Before initialization, stores the option and opens the file during initialization.
+        /// Enable an OSI trace file before or after scenario initialization using the corresponding filename and suffix options.
+        /// Before initialization, stores the options and opens the file during initialization.
         /// Existing files for other message types remain open. Subsequent updates require a positive OSI frequency.
         /// </summary>
-        /// <param name="filename">Filename (including optional path) if override_filename is true; otherwise a suffix. Set to 0 or "" to use the default filename or no suffix.</param>
-        /// <param name="override_filename">If true, set osi_file or osi_tc_file; otherwise set osi_file_suffix or osi_tc_file_suffix. Filename and suffix options combine using the normal command-line naming rules.</param>
+        /// <param name="filename">Filename (including optional path). Set to 0 or "" to use the default filename.</param>
+        /// <param name="suffix">Suffix that will be added to the filename base. Set to 0 or "" for no suffix, clearing any previous suffix.</param>
         /// <param name="message">Message to record: GroundTruth or TrafficCommand.</param>
-        /// <param name="type">Trace format. Only SE_TRACE_SINGLE_CHANNEL is supported.</param>
+        /// <param name="type">Trace format. Only SE_TRACE_SINGLE_CHANNEL is currently supported.</param>
         /// <returns>0 if configured or opened, -1 on invalid arguments, unavailable OSI support, or file error. For requests made before initialization, file errors are reported by the initialization function.</returns>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern int SE_EnableOSIFileEx(string filename, [MarshalAs(UnmanagedType.I1)] bool override_filename, SE_OSITraceMessage message, SE_TraceType type);
+        public static extern int SE_EnableOSIFileEx(string filename, string suffix, SE_OSITraceMessage message, SE_TraceType type);
 
         /// <summary>
         /// Enforce flushing all open OSI files (save all buffered data to file)
