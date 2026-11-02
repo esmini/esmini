@@ -72,15 +72,15 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event name="WaitEvent" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="WaitAction">
+                        <Event name="UserEvent" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="UserAction">
                                 <UserDefinedAction>
-                                    <CustomCommandAction type="noop">Wait</CustomCommandAction>
+                                    <CustomCommandAction type="noop">Accelerating</CustomCommandAction>
                                 </UserDefinedAction>
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="WaitStartCondition" delay="0" conditionEdge="none">
+                                    <Condition name="UserActionStartCondition" delay="0" conditionEdge="none">
                                         <ByValueCondition>
                                             <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="AccelerateEvent" state="endTransition"/>
                                         </ByValueCondition>

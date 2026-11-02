@@ -1697,8 +1697,10 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('^.0.000.* Starting UserDefinedAction type: info content: Initialize', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.4.890.* Starting UserDefinedAction type: noop content: Wait', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.7.000.* Event WaitEvent ended, overwritten by event DecelerateEvent', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.000.* Init CustomCommandAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.890.* Starting UserDefinedAction type: noop content: Accelerating', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.890.* UserEvent runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.7.000.* DecelerateEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.8.950.* DecelerateDoneCondition: true, delay: 1.00, DecelerateEvent, COMPLETE / END_TRANSITION == END_TRANSITION, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.9.950.* DecelerateDoneCondition: true$', log, re.MULTILINE)  is not None)
         # Check vehicle key positions
