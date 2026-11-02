@@ -159,7 +159,7 @@ Examples:
 ** `traces/<timestamp>_gt_<osi-version>_<protobuf-version>_<frames>_my_run.osi`
 ** `traces/<timestamp>_tc_<osi-version>_<protobuf-version>_<frames>_my_run.osi`
 
-Call `SE_DisableOSIFile()` to close the GroundTruth file only, or `SE_DisableOSIFiles()` to close both files. The `*Ex` functions provide per-message control: `SE_EnableOSIFileEx(filename, override_filename, message, type)` opens or configures one trace; `SE_DisableOSIFileEx(message, type)` closes it; and `SE_FlushOSIFileEx(message, type)` flushes it.
+Call `SE_DisableOSIFile()` to close the GroundTruth file only, or `SE_DisableOSIFiles()` to close both files. The `*Ex` functions provide per-message control: `SE_EnableOSIFileEx(filename, suffix, message, type)` opens or configures one trace; `SE_DisableOSIFileEx(message, type)` closes it; and `SE_FlushOSIFileEx(message, type)` flushes it. Pass `0` or `""` for the filename to use a generated name, or for the suffix to use no suffix (clearing any previously configured suffix).
 
 Select `SE_OSI_GROUND_TRUTH` or `SE_OSI_TRAFFIC_COMMAND` for `message`; `SE_TRACE_SINGLE_CHANNEL` is the only supported `type`. `SE_FlushOSIFile()` flushes all open OSI trace files.
 

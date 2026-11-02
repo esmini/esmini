@@ -100,16 +100,16 @@ Options:
       Crop the dynamic osi data around the given object id with given radius
   --osi_exclude_ghost
       Excludes ghost from osi dynamic osi ground truth
-  --osi_file [filename]  (default if value omitted: .)
-      Save osi trace file
-  --osi_file_suffix [suffix]  (default if value omitted: .)
-      Save osi trace file with an optional suffix before the extension (default: no suffix)
-  --osi_tc_file [filename]  (default if value omitted: .)
-      Save OSI TrafficCommand trace file
-  --osi_tc_file_suffix [suffix]  (default if value omitted: .)
-      Save OSI TrafficCommand trace file with an optional suffix before the extension
-  --osi_files [suffix]  (default if value omitted: .)
-      Save all available osi trace files
+  --osi_file [filename]  (default if value omitted: <time>_gt_<osi-version>_<protobuf-version>_<#frames>[_<suffix>].osi)
+      Enable and set OSI ground-truth output filename
+  --osi_file_suffix <suffix>
+      Enable OSI ground-truth output and append a suffix to the filename base
+  --osi_tc_file [filename]  (default if value omitted: <time>_tc_<osi-version>_<protobuf-version>_<#frames>[_<suffix>].osi)
+      Enable and set OSI traffic-command output filename
+  --osi_tc_file_suffix <suffix>
+      Enable OSI traffic-command output and append a suffix to the filename base
+  --osi_files [suffix]  (default if value omitted: <time>_<type>_<osi-version>_<protobuf-version>_<#frames>.osi)
+      Enable ALL available osi trace files with optional suffix
   --osi_freq <frequency>
       Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps
   --osi_lines

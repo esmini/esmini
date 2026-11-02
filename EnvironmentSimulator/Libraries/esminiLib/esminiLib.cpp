@@ -2357,8 +2357,8 @@ extern "C"
     SE_DLL_API void SE_EnableOSIFiles(const char *suffix)
     {
 #ifdef _USE_OSI
-        SE_EnableOSIFileEx(suffix, false, SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
-        SE_EnableOSIFileEx(suffix, false, SE_OSI_TRAFFIC_COMMAND, SE_TRACE_SINGLE_CHANNEL);
+        SE_EnableOSIFileEx(0, suffix, SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
+        SE_EnableOSIFileEx(0, suffix, SE_OSI_TRAFFIC_COMMAND, SE_TRACE_SINGLE_CHANNEL);
 #else
         (void)suffix;
 #endif  // _USE_OSI
@@ -2367,13 +2367,13 @@ extern "C"
     SE_DLL_API void SE_EnableOSIFile(const char *filename)
     {
 #ifdef _USE_OSI
-        SE_EnableOSIFileEx(filename, true, SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
+        SE_EnableOSIFileEx(filename, 0, SE_OSI_GROUND_TRUTH, SE_TRACE_SINGLE_CHANNEL);
 #else
         (void)filename;
 #endif  // _USE_OSI
     }
 
-    SE_DLL_API int SE_EnableOSIFileEx(const char *filename, bool override_filename, SE_OSITraceMessage message, SE_TraceType type)
+    SE_DLL_API int SE_EnableOSIFileEx(const char *filename, const char *suffix, SE_OSITraceMessage message, SE_TraceType type)
     {
 #ifdef _USE_OSI
 
@@ -2383,11 +2383,12 @@ extern "C"
         {
             return -1;
         }
-        const std::string option          = trace_message->second;
-        auto             &options         = SE_Env::Inst().GetOptions();
-        const std::string selected_option = override_filename ? option : option + "_suffix";
-        options.ClearOption(selected_option);
-        if (options.SetOptionValue(selected_option, filename == nullptr ? "" : filename) != 0)
+        const std::string option  = trace_message->second;
+        auto             &options = SE_Env::Inst().GetOptions();
+        options.ClearOption(option);
+        options.ClearOption(option + "_suffix");
+        if (options.SetOptionValue(option, filename == nullptr ? "" : filename) != 0 ||
+            options.SetOptionValue(option + "_suffix", suffix == nullptr ? "" : suffix) != 0)
         {
             return -1;
         }
@@ -2411,7 +2412,7 @@ extern "C"
         return 0;
 #else
         (void)filename;
-        (void)override_filename;
+        (void)suffix;
         (void)message;
         (void)type;
         LOG_ERROR("SE_EnableOSIFileEx requires OSI support");

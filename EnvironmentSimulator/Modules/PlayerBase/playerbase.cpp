@@ -154,8 +154,9 @@ bool ScenarioPlayer::OpenOSIFile(const char* filename, OSIReporter::OSITraceMess
     const std::string suffix_path = SE_Env::Inst().GetOptions().GetOptionValue(ground_truth ? "osi_file_suffix" : "osi_tc_file_suffix");
     // Extract suffix in case we have received a path and suffix
     std::string suffix = FileNameOf(suffix_path);
-    // path is input filename
-    std::string path = filename == nullptr ? "" : filename;
+    // path is input filename, if set. Default value also means no explicit filename was set
+    std::string path =
+        (filename == nullptr || filename == SE_Env::Inst().GetOptions().GetOptionByEnum(esmini_options::OSI_FILE)->default_value_) ? "" : filename;
     // No path received through filename, then path is from the suffix option
     if (path.empty() || path == ".")
     {
@@ -1592,11 +1593,20 @@ int ScenarioPlayer::Init()
     opt.AddOption("osi_compress", "Compress OSI data with gzip");
     opt.AddOption("osi_crop_dynamic", "Crop the dynamic osi data around the given object id with given radius", "id,radius", "", false, false);
     opt.AddOption("osi_exclude_ghost", "Excludes ghost from osi dynamic osi ground truth");
-    opt.AddOption("osi_file", "Save osi trace file", "filename", ".");
-    opt.AddOption("osi_file_suffix", "Save osi trace file with an optional suffix before the extension (default: no suffix)", "suffix", ".");
-    opt.AddOption("osi_tc_file", "Save OSI TrafficCommand trace file", "filename", ".");
-    opt.AddOption("osi_tc_file_suffix", "Save OSI TrafficCommand trace file with an optional suffix before the extension", "suffix", ".");
-    opt.AddOption("osi_files", "Save all available osi trace files", "suffix", ".");
+    opt.AddOption("osi_file",
+                  "Enable and set OSI ground-truth output filename",
+                  "filename",
+                  "<time>_gt_<osi-version>_<protobuf-version>_<#frames>[_<suffix>].osi");
+    opt.AddOption("osi_file_suffix", "Enable OSI ground-truth output and append a suffix to the filename base", "suffix");
+    opt.AddOption("osi_tc_file",
+                  "Enable and set OSI traffic-command output filename",
+                  "filename",
+                  "<time>_tc_<osi-version>_<protobuf-version>_<#frames>[_<suffix>].osi");
+    opt.AddOption("osi_tc_file_suffix", "Enable OSI traffic-command output and append a suffix to the filename base", "suffix");
+    opt.AddOption("osi_files",
+                  "Enable ALL available osi trace files with optional suffix",
+                  "suffix",
+                  "<time>_<type>_<osi-version>_<protobuf-version>_<#frames>.osi");
     opt.AddOption("osi_freq", "Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps", "frequency");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
