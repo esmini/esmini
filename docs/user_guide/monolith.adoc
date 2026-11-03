@@ -4,7 +4,7 @@
 :sectnums:
 :sectnumlevels: 2
 include::attributes.adoc_[]
-:src-local-root: ../../
+:src-local-root: ../..
 
 image:https://avatars.githubusercontent.com/u/49203938[160, 160]
 
@@ -26,9 +26,13 @@ include::build-guide.adoc[lines=6..-1]
 include::developers-contributors.adoc[lines=6..-1]
 include::inner-workings.adoc[lines=6..-1]
 include::esmini-lib-programming.adoc[lines=6..-1]
-:src-local-root: ../
+
+:src-local-root: ..
+
 include::hello-world-tutorial.adoc[lines=7..-1]
-:src-local-root: ../../
+
+:src-local-root: ../..
+
 include::scenario-construction-tips.adoc[lines=6..-1]
 include::run-asam-examples.adoc[lines=6..-1]
 include::about-this-document.adoc[lines=6..-1]
