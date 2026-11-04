@@ -92,52 +92,37 @@ https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.
 
 ==== External dependency details
 
-The provided 3rd party packages includes needed headerfiles and prebuilt libraries. The packages are available for Win, Mac and Linux. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
+The provided 3rd party packages includes needed headerfiles and prebuilt libraries. The packages are available for Windows, Linux and Mac. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
 
-The cmake script checks for the availability of these libraries by looking for the expected folders under `externals`. From esmini v3.1.1, some packages (`osi` and `implot`) are built, released and version controlled via tags on https://github.com/esmini/esmini-dependencies[github], so the library handling is slightly different depending on the package.
+The cmake script checks for the availability of these libraries by looking for the expected folders under `externals`. From esmini v3.1.1, some packages are built, released and version controlled via tags on https://github.com/esmini/esmini-dependencies[esmini-dependencies], so the library handling is slightly different depending on the package.
 
-For example, `osg` and `sumo` are checked through their corresponding folder names, while for `osi` and `implot`, cmake maps the selected version (specified via `-D OSI_VERSION` and `-D IMPLOT_VERSION`) to a release tag and looks for the matching package locally under `externals/osi` and `externals/implot`.
+For example, `osg` is checked through its corresponding folder name, while for e.g. `osi`, cmake maps the selected version (specified via `-D OSI_VERSION`) to a default release tag and looks for the matching package locally under `externals/osi`. The resolved tags for each library can be found at the top of https://github.com/esmini/esmini/blob/master/support/cmake/common/version_mapping.cmake[version_mapping.cmake] (variables starting with DEFAULT_*). An explicit tag can also be chosen if desired.
+
+Examples, select a version which will be resolved to the default tag:
+
+`cmake .. -D OSI_VERSION=3.5.0`
+
+or set explicit tag:
+
+`cmake .. -D OSI_VERSION=3.5.0_1`
+
+For more information about available version controlled packages, see esmini-dependencies https://github.com/esmini/esmini-dependencies/blob/main/release_notes.md[release notes].
 
 If a required package is missing, cmake automatically downloads and extracts it alongside any other packages in that folder.
 
-When one of these prebuilt libraries needs to be updated, it is typically enough to remove the corresponding package folder and run cmake again. For `osi` and `implot`, the update should happen automatically. The simplest way to enforce re-download of all downloadable packages is:
+When one of these prebuilt libraries needs to be updated, it is typically enough to remove the corresponding package folder and run cmake again. For packages which are version controlled on esmini-dependencies, the update should happen automatically. The simplest way to enforce re-download of all downloadable packages is:
 
 `cmake .. -D  FORCE_DOWNLOAD_BINARIES=TRUE`
 
-The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforced download of all packages. Upon successful download, the libraries will be replaced, one by one.
+The `FORCE_DOWNLOAD_BINARIES` flag will be checked by the cmake script for enforced download of all packages. Upon successful download, the libraries will be replaced, one by one.
 
-Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
+Library updates are not detected by the esmini build dependencies, so a clean rebuild of esmini should be performed manually afterwards.
 
 A few additional notes:
 
 - Although dependent libraries are provided, nothing stops you from building them yourself, e.g. for an unsupported system or need for a specific version or customized build.
 - The dependencies are built using as old compiler and toolset as possible to maximize compatibility with systems. Baseline is oldest https://github.com/actions/runner-images[image] supported by GitHub actions. The assumption being that a binary built on an older generation will run on a newer generation of a platform, but not vice versa. E.g. a binary built with on ubuntu 22.04 (e.g. with g++ v9) will run fine on Ubuntu 24.04.
-
-==== OSI versions
-
-Current supported versions:
-
-[cols="1,1,1,1", options="header"]
-|===
-| CMake flag | OSI version | Google Protobuf version | Abseil version
-| `-D OSI_VERSION=3.5.0` (default) | v3.5.0 | v3.15.2 | N/A
-| `-D OSI_VERSION=3.5.0_3` | v3.5.0 | v3.20.2 | N/A
-| `-D OSI_VERSION=3.8.0` | v3.8.0 | v5.29.3 | 20240722.1
-|===
-
-Example:
-
-`cmake .. -D OSI_VERSION=3.5.0`
-
-==== Implot versions
-
-Current supported versions:
-
-[cols="1,1,1,1", options="header"]
-|===
-| CMake flag | Implot version | ImGui version | GLFW version
-| `-D IMPLOT_VERSION=0.16` | v0.16 | v1.89.8 | 3.3.8
-|===
+- Tests and functionality are only up to date with the default tag of each library, therefore, tests passing and full functionality can't be guaranteed if explicitly choosing a tag other than the default tag.
 
 === Additional platform dependencies
 
