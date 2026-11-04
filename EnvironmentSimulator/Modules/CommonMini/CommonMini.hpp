@@ -24,6 +24,7 @@
 #include <cstring>
 #include <map>
 #include <unordered_map>
+#include <algorithm>
 
 #ifndef _WIN32
 #include <inttypes.h>
@@ -1424,6 +1425,19 @@ private:
 class SE_Rand
 {
 public:
+    struct DistributionRange
+    {
+        bool   is_set      = false;
+        double lower_limit = 0.0;
+        double upper_limit = 0.0;
+    };
+
+    struct HistogramBin
+    {
+        DistributionRange range;
+        double            weight = 0.0;
+    };
+
     SE_Rand()
     {
         ResetSeed();
@@ -1439,6 +1453,15 @@ public:
     {
         seed_ = seed;
         gen_.seed(seed_);
+    }
+
+    // Preserve independent, reproducible streams for each run of a parameter set.
+    void SetSeedForRun(unsigned int seed, unsigned int index)
+    {
+        std::seed_seq seq{seed, uint32_t{0}, index};
+        uint32_t      run_seed;
+        seq.generate(&run_seed, &run_seed + 1);
+        SetSeed(run_seed);
     }
 
     // Get an integer in the range (min, max) NOTE: including max
@@ -1471,6 +1494,53 @@ public:
         return std::uniform_real_distribution<>{min, max}(gen_);
     }
 
+    // cppcheck-suppress functionConst
+    // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
+    // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
+    size_t GetWeightedIndex(const std::vector<double>& weights)
+    {
+        return std::discrete_distribution<size_t>{weights.begin(), weights.end()}(gen_);
+    }
+
+    double GetNormal(double expected_value, double variance, const DistributionRange& range, bool& clamped)
+    {
+        clamped = false;
+        if (variance < SMALL_NUMBER)
+        {
+            return expected_value;
+        }
+        std::normal_distribution<double> distribution(expected_value, sqrt(variance));
+        return SampleTruncated([&]() { return distribution(gen_); }, range, clamped);
+    }
+
+    // Mean and variance describe the log-normal itself, not the underlying normal.
+    double GetLogNormal(double expected_value, double variance, const DistributionRange& range, bool& clamped)
+    {
+        clamped = false;
+        if (variance < SMALL_NUMBER)
+        {
+            return expected_value;
+        }
+        double                              sigma2 = log1p(variance / (expected_value * expected_value));
+        double                              mu     = log(expected_value) - 0.5 * sigma2;
+        std::lognormal_distribution<double> distribution(mu, sqrt(sigma2));
+        return SampleTruncated([&]() { return distribution(gen_); }, range, clamped);
+    }
+
+    int GetPoisson(double expected_value, const DistributionRange& range, bool& clamped)
+    {
+        std::poisson_distribution<int> distribution(expected_value);
+        return static_cast<int>(SampleTruncated([&]() { return static_cast<double>(distribution(gen_)); }, range, clamped));
+    }
+
+    double GetHistogram(const std::vector<HistogramBin>& bins)
+    {
+        std::vector<double> weights(bins.size());
+        std::transform(bins.begin(), bins.end(), weights.begin(), [](const HistogramBin& bin) { return bin.weight; });
+        const HistogramBin& bin = bins[GetWeightedIndex(weights)];
+        return GetRealBetween(bin.range.lower_limit, bin.range.upper_limit);
+    }
+
     unsigned int GetSeed() const
     {
         return seed_;
@@ -1481,6 +1551,24 @@ public:
     }
 
 private:
+    // Rejection sampling preserves the truncated shape; report the clamp fallback to the caller.
+    template <typename Draw>
+    double SampleTruncated(Draw draw, const DistributionRange& range, bool& clamped)
+    {
+        clamped      = false;
+        double value = draw();
+        for (int i = 0; range.is_set && (value < range.lower_limit || value > range.upper_limit); i++)
+        {
+            if (i >= 1000)
+            {
+                clamped = true;
+                return CLAMP(value, range.lower_limit, range.upper_limit);
+            }
+            value = draw();
+        }
+        return value;
+    }
+
     unsigned int seed_;
     std::mt19937 gen_;
 };

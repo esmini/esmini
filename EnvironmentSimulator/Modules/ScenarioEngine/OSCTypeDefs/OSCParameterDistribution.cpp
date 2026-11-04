@@ -265,7 +265,16 @@ int OSCParameterDistribution::Parse()
         }
         else
         {
-            LOG_WARN("Stochastic distributions not supported yet");
+            if (ParseStochastic(stochastic) != 0)
+            {
+                return -1;
+            }
+            isDeterministic = false;
+            if (!stochastic_.random_seed_set)
+            {
+                // Retain the global seed for the entire parameter set.
+                stochastic_.random_seed = SE_Env::Inst().GetRand().GetSeed();
+            }
         }
     }
     else if (deterministic.empty())
@@ -276,18 +285,257 @@ int OSCParameterDistribution::Parse()
     return 0;
 }
 
+int OSCParameterDistribution::ParseRange(pugi::xml_node node, DistributionRange& range, bool required)
+{
+    range.is_set = false;
+
+    if (node.empty())
+    {
+        if (required)
+        {
+            LOG_ERROR("Distribution range missing");
+            return -1;
+        }
+        return 0;
+    }
+
+    if (node.attribute("lowerLimit").empty() || node.attribute("upperLimit").empty())
+    {
+        LOG_ERROR("Range missing lowerLimit and/or upperLimit attribute");
+        return -1;
+    }
+
+    range.lower_limit = std::atof(node.attribute("lowerLimit").value());
+    range.upper_limit = std::atof(node.attribute("upperLimit").value());
+
+    if (range.upper_limit < range.lower_limit)
+    {
+        LOG_ERROR("Distribution range invalid range {:.2f}..{:.2f}", range.lower_limit, range.upper_limit);
+        return -1;
+    }
+
+    range.is_set = true;
+
+    return 0;
+}
+
+int OSCParameterDistribution::ParseStochasticDistribution(pugi::xml_node node, StochasticDistribution& dist)
+{
+    dist.parameter_name = node.attribute("parameterName").value();
+    if (dist.parameter_name.empty())
+    {
+        LOG_ERROR("Missing stochastic distribution parameter name");
+        return -1;
+    }
+
+    pugi::xml_node dist_node = node.first_child();
+    if (dist_node.empty())
+    {
+        LOG_ERROR("Missing stochastic distribution definition for parameter {}", dist.parameter_name);
+        return -1;
+    }
+
+    std::string dist_name(dist_node.name());
+
+    if (dist_name == "ProbabilityDistributionSet")
+    {
+        dist.type = StochasticDistributionType::PROBABILITY_DISTRIBUTION_SET;
+        for (pugi::xml_node elem = dist_node.child("Element"); elem; elem = elem.next_sibling("Element"))
+        {
+            if (elem.attribute("value").empty() || elem.attribute("weight").empty())
+            {
+                LOG_ERROR("ProbabilityDistributionSet Element missing value and/or weight attribute");
+                return -1;
+            }
+
+            ProbabilityDistributionSetElement element;
+            element.value  = elem.attribute("value").value();
+            element.weight = elem.attribute("weight").as_double();
+            if (element.weight < 0.0)
+            {
+                LOG_ERROR("ProbabilityDistributionSet Element negative weight {:.2f}", element.weight);
+                return -1;
+            }
+            dist.elements.push_back(element);
+        }
+
+        if (dist.elements.empty())
+        {
+            LOG_ERROR("ProbabilityDistributionSet requires at least one Element");
+            return -1;
+        }
+    }
+    else if (dist_name == "NormalDistribution" || dist_name == "LogNormalDistribution")
+    {
+        dist.type = dist_name == "NormalDistribution" ? StochasticDistributionType::NORMAL : StochasticDistributionType::LOG_NORMAL;
+
+        if (dist_node.attribute("expectedValue").empty() || dist_node.attribute("variance").empty())
+        {
+            LOG_ERROR("{} missing expectedValue and/or variance attribute", dist_name);
+            return -1;
+        }
+
+        dist.expected_value = dist_node.attribute("expectedValue").as_double();
+        dist.variance       = dist_node.attribute("variance").as_double();
+
+        if (dist.variance < 0.0)
+        {
+            LOG_ERROR("{} negative variance {:.2f}", dist_name, dist.variance);
+            return -1;
+        }
+
+        if (ParseRange(dist_node.child("Range"), dist.range, false) != 0)
+        {
+            return -1;
+        }
+    }
+    else if (dist_name == "UniformDistribution")
+    {
+        dist.type = StochasticDistributionType::UNIFORM;
+        if (ParseRange(dist_node.child("Range"), dist.range, true) != 0)
+        {
+            return -1;
+        }
+    }
+    else if (dist_name == "PoissonDistribution")
+    {
+        dist.type = StochasticDistributionType::POISSON;
+
+        if (dist_node.attribute("expectedValue").empty())
+        {
+            LOG_ERROR("PoissonDistribution missing expectedValue attribute");
+            return -1;
+        }
+
+        dist.expected_value = std::atof(dist_node.attribute("expectedValue").value());
+
+        if (ParseRange(dist_node.child("Range"), dist.range, false) != 0)
+        {
+            return -1;
+        }
+    }
+    else if (dist_name == "Histogram")
+    {
+        dist.type = StochasticDistributionType::HISTOGRAM;
+        for (pugi::xml_node bin_node = dist_node.child("Bin"); bin_node; bin_node = bin_node.next_sibling("Bin"))
+        {
+            if (bin_node.attribute("weight").empty())
+            {
+                LOG_ERROR("Histogram Bin missing weight attribute");
+                return -1;
+            }
+
+            HistogramBin bin;
+            bin.weight = bin_node.attribute("weight").as_double();
+            if (bin.weight < 0.0)
+            {
+                LOG_ERROR("Histogram Bin negative weight {:.2f}", bin.weight);
+                return -1;
+            }
+
+            if (ParseRange(bin_node.child("Range"), bin.range, true) != 0)
+            {
+                return -1;
+            }
+            dist.bins.push_back(bin);
+        }
+
+        if (dist.bins.empty())
+        {
+            LOG_ERROR("Histogram requires at least one Bin");
+            return -1;
+        }
+    }
+    else if (dist_name == "UserDefinedDistribution")
+    {
+        dist.type                 = StochasticDistributionType::USER_DEFINED;
+        dist.user_defined_type    = dist_node.attribute("type").value();
+        dist.user_defined_content = dist_node.text().get();
+
+        if (dist.user_defined_type.empty())
+        {
+            LOG_ERROR("UserDefinedDistribution missing type attribute");
+            return -1;
+        }
+    }
+    else
+    {
+        LOG_ERROR("Unexpected stochastic distribution type {}", dist_name);
+        return -1;
+    }
+
+    return 0;
+}
+
+int OSCParameterDistribution::ParseStochastic(pugi::xml_node stochastic)
+{
+    if (stochastic.attribute("numberOfTestRuns").empty())
+    {
+        LOG_ERROR("Stochastic missing numberOfTestRuns attribute");
+        return -1;
+    }
+
+    int n_runs = stochastic.attribute("numberOfTestRuns").as_int();
+    if (n_runs < 0)
+    {
+        LOG_ERROR("Stochastic numberOfTestRuns invalid value {}", n_runs);
+        return -1;
+    }
+    stochastic_.number_of_test_runs = static_cast<unsigned int>(n_runs);
+
+    if (!stochastic.attribute("randomSeed").empty())
+    {
+        stochastic_.random_seed     = stochastic.attribute("randomSeed").as_uint();
+        stochastic_.random_seed_set = true;
+    }
+
+    for (pugi::xml_node child_node = stochastic.first_child(); child_node; child_node = child_node.next_sibling())
+    {
+        std::string child_node_name(child_node.name());
+
+        if (child_node_name == "StochasticDistribution")
+        {
+            StochasticDistribution dist;
+            if (ParseStochasticDistribution(child_node, dist) != 0)
+            {
+                return -1;
+            }
+            stochastic_.distributions.push_back(dist);
+        }
+        else
+        {
+            LOG_ERROR("Unexpected stochastic element {}", child_node_name);
+        }
+    }
+
+    if (stochastic_.distributions.empty())
+    {
+        LOG_ERROR("Stochastic requires at least one StochasticDistribution");
+        return -1;
+    }
+
+    return 0;
+}
+
 unsigned int OSCParameterDistribution::GetNumPermutations()
 {
     unsigned int n = 1;
 
-    if (param_list_.size() == 0)
+    if (param_list_.size() == 0 && isDeterministic == true)
     {
         return 0;
     }
 
-    for (size_t i = 0; i < param_list_.size(); i++)
+    if (isDeterministic)
     {
-        n *= static_cast<unsigned int>(param_list_[i].size());
+        for (size_t i = 0; i < param_list_.size(); i++)
+        {
+            n *= static_cast<unsigned int>(param_list_[i].size());
+        }
+    }
+    else
+    {
+        n = GetStochastic().number_of_test_runs;
     }
 
     return n;
@@ -298,6 +546,11 @@ unsigned int OSCParameterDistribution::GetNumParameters()
     if (index_ < 0)
     {
         return 0;
+    }
+
+    if (!isDeterministic)
+    {
+        return static_cast<unsigned int>(GetStochasticSample().size());
     }
 
     // Calculate number of parameters in current permutation
@@ -336,6 +589,11 @@ OSCParameterDistribution::ParameterValueEntry OSCParameterDistribution::GetParam
         return {"", ""};
     }
 
+    if (!isDeterministic)
+    {
+        return GetStochasticSample()[param_index];
+    }
+
     // mirror internal index starting from end, since permutations are traversed that way
     // varying the latest variable first
     unsigned int p_idx         = n_parameters - param_index - 1;
@@ -359,6 +617,94 @@ OSCParameterDistribution::ParameterValueEntry OSCParameterDistribution::GetParam
     }
 
     return {"", ""};
+}
+
+void OSCParameterDistribution::SetStochasticSeed(unsigned int seed)
+{
+    if (stochastic_.random_seed != seed)
+    {
+        stochastic_sample_.clear();
+        stochastic_sample_index_ = -1;
+    }
+    stochastic_.random_seed = seed;
+}
+
+const std::vector<OSCParameterDistribution::ParameterValueEntry>& OSCParameterDistribution::GetStochasticSample()
+{
+    if (index_ < 0 || stochastic_sample_index_ == index_)
+    {
+        return stochastic_sample_;
+    }
+
+    // Dedicated generator, not SE_Env::Inst().GetRand(), to not interfere with the global --seed controlled sequence
+    SE_Rand rand;
+    rand.SetSeedForRun(stochastic_.random_seed, static_cast<unsigned int>(index_));
+
+    stochastic_sample_.clear();
+    for (const auto& dist : stochastic_.distributions)
+    {
+        stochastic_sample_.push_back({dist.parameter_name, SampleDistribution(dist, rand)});
+    }
+    stochastic_sample_index_ = index_;
+
+    return stochastic_sample_;
+}
+
+std::string OSCParameterDistribution::SampleDistribution(const StochasticDistribution& dist, SE_Rand& rand)
+{
+    bool        clamped = false;
+    std::string value;
+    switch (dist.type)
+    {
+        case StochasticDistributionType::PROBABILITY_DISTRIBUTION_SET:
+        {
+            std::vector<double> weights;
+            for (const auto& e : dist.elements)
+            {
+                weights.push_back(e.weight);
+            }
+            return dist.elements[rand.GetWeightedIndex(weights)].value;
+        }
+        case StochasticDistributionType::NORMAL:
+        {
+            value = std::to_string(rand.GetNormal(dist.expected_value, dist.variance, dist.range, clamped));
+            break;
+        }
+        case StochasticDistributionType::LOG_NORMAL:
+        {
+            if (dist.expected_value < SMALL_NUMBER)
+            {
+                LOG_ERROR("{}: LogNormalDistribution requires expectedValue > 0", dist.parameter_name);
+                return "";
+            }
+            value = std::to_string(rand.GetLogNormal(dist.expected_value, dist.variance, dist.range, clamped));
+            break;
+        }
+        case StochasticDistributionType::UNIFORM:
+        {
+            return std::to_string(rand.GetRealBetween(dist.range.lower_limit, dist.range.upper_limit));
+        }
+        case StochasticDistributionType::POISSON:
+        {
+            value = std::to_string(rand.GetPoisson(dist.expected_value, dist.range, clamped));
+            break;
+        }
+        case StochasticDistributionType::HISTOGRAM:
+        {
+            return std::to_string(rand.GetHistogram(dist.bins));
+        }
+        case StochasticDistributionType::USER_DEFINED:
+            LOG_ERROR("{}: UserDefinedDistribution (type {}) not supported", dist.parameter_name, dist.user_defined_type);
+            return "";
+        default:
+            LOG_ERROR("{}: undefined stochastic distribution", dist.parameter_name);
+            return "";
+    }
+    if (clamped)
+    {
+        LOG_WARN("{}: failed to sample within range {:.2f}..{:.2f}, clamping", dist.parameter_name, dist.range.lower_limit, dist.range.upper_limit);
+    }
+    return value;
 }
 
 std::string OSCParameterDistribution::GetParamName(unsigned int param_index)
@@ -426,6 +772,10 @@ void OSCParameterDistribution::Reset()
         param_list_[i].clear();
     }
     param_list_.clear();
+    stochastic_ = Stochastic();
+    stochastic_sample_.clear();
+    stochastic_sample_index_ = -1;
+    isDeterministic          = true;
     filename_.clear();
     scenario_filename_.clear();
     index_           = -1;

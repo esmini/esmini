@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO>
+  <FileHeader revMajor="1" revMinor="4" date="2026-11-09T12:00:00" description="Stochastic Parameter values for scenario" author="esmini-team" />
+  <ParameterValueDistribution>
+    <ScenarioFile filepath="cut-in.xosc" />
+    <Stochastic numberOfTestRuns="5" randomSeed="2">
+      <StochasticDistribution parameterName="HostVehicle">
+        <ProbabilityDistributionSet>
+          <Element value="car_red" weight="1"/>
+          <Element value="car_blue" weight="3"/>
+          <Element value="car_yellow" weight="5"/>
+          <Element value="car_white" weight="10"/>
+        </ProbabilityDistributionSet>
+      </StochasticDistribution>
+      <StochasticDistribution parameterName="TargetSpeedFactor">
+        <NormalDistribution expectedValue="1.2" variance="2.0">
+          <Range lowerLimit="1.2" upperLimit="2.0"/>
+        </NormalDistribution>
+      </StochasticDistribution>
+      <StochasticDistribution parameterName="EgoStartS">
+        <PoissonDistribution expectedValue="50">
+          <Range lowerLimit="45" upperLimit="55"/>
+        </PoissonDistribution>
+      </StochasticDistribution>
+      <StochasticDistribution parameterName="HeadwayTime_LaneChange">
+          <UniformDistribution>
+              <Range lowerLimit="0.2" upperLimit="0.6"/>
+          </UniformDistribution>
+      </StochasticDistribution>
+      <StochasticDistribution parameterName="HeadwayTime_Brake">
+          <Histogram>
+              <Bin weight="1">
+                  <Range lowerLimit="0.6" upperLimit="0.7"/>
+              </Bin>
+              <Bin weight="2">
+                  <Range lowerLimit="0.7" upperLimit="0.8"/>
+              </Bin>
+              <Bin weight="3">
+                  <Range lowerLimit="0.8" upperLimit="0.9"/>
+              </Bin>
+              <Bin weight="4">
+                  <Range lowerLimit="0.9" upperLimit="1.0"/>
+              </Bin>
+          </Histogram>
+      </StochasticDistribution>
+      <StochasticDistribution parameterName="EgoSpeed">
+          <LogNormalDistribution expectedValue="100.0" variance="20.0">
+              <Range lowerLimit="100" upperLimit="112.0"/>
+          </LogNormalDistribution>
+      </StochasticDistribution>
+    </Stochastic>
+  </ParameterValueDistribution>
+</OpenSCENARIO>

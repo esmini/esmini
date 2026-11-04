@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <array>
+#include <cmath>
 #include <set>
 
 #include "CommonMini.hpp"
@@ -3263,6 +3264,91 @@ TEST(DistributionTest, TestDeterministicDistribution)
     EXPECT_NEAR(std::atof(dist.GetParamValue(2).c_str()), 70.0, 1e-3);
     EXPECT_NEAR(std::atof(dist.GetParamValue(3).c_str()), 1.3, 1e-3);
     dist.Reset();
+}
+
+TEST(DistributionTest, TestStochasticDistribution)
+{
+    OSCParameterDistribution dist;
+    ASSERT_EQ(dist.Load("../../../resources/xosc/cut-in_parameter_set_stochastic.xosc"), 0);
+    EXPECT_FALSE(dist.isDeterministic);
+    ASSERT_EQ(dist.GetNumPermutations(), 5);
+
+    const std::array<std::string, 6> names =
+        {"HostVehicle", "TargetSpeedFactor", "EgoStartS", "HeadwayTime_LaneChange", "HeadwayTime_Brake", "EgoSpeed"};
+    const std::set<std::string> vehicles     = {"car_red", "car_blue", "car_yellow", "car_white"};
+    const std::array<double, 5> lower_limits = {1.2, 45.0, 0.2, 0.6, 100.0};
+    const std::array<double, 5> upper_limits = {2.0, 55.0, 0.6, 1.0, 112.0};
+
+    for (unsigned int run = 0; run < dist.GetNumPermutations(); run++)
+    {
+        SCOPED_TRACE(run);  // Adds extra context to failures
+        ASSERT_EQ(dist.SetIndex(run), 0);
+        ASSERT_EQ(dist.GetNumParameters(), names.size());
+        for (unsigned int parameter = 0; parameter < names.size(); parameter++)
+        {
+            EXPECT_EQ(dist.GetParamName(parameter), names[parameter]);
+        }
+        EXPECT_EQ(vehicles.count(dist.GetParamValue(0)), 1);
+        for (unsigned int parameter = 1; parameter < names.size(); parameter++)
+        {
+            SCOPED_TRACE(names[parameter]);
+            const double value = std::stod(dist.GetParamValue(parameter));
+            EXPECT_GE(value, lower_limits[parameter - 1]);
+            EXPECT_LE(value, upper_limits[parameter - 1]);
+            if (parameter == 2)  // Value is a Poisson distribution, make sure its sampled as an integer
+            {
+                EXPECT_DOUBLE_EQ(value, std::floor(value));
+            }
+        }
+        EXPECT_EQ(dist.GetParamName(static_cast<unsigned int>(names.size())), "");
+        EXPECT_EQ(dist.GetParamValue(static_cast<unsigned int>(names.size())), "");
+    }
+    EXPECT_EQ(dist.SetIndex(dist.GetNumPermutations()), -1);
+    EXPECT_EQ(dist.IncrementIndex(), -1);
+}
+
+TEST(DistributionTest, TestStochasticDistributionReproducibility)
+{
+    OSCParameterDistribution dist;
+    ASSERT_EQ(dist.Load("../../../resources/xosc/cut-in_parameter_set_stochastic.xosc"), 0);
+    ASSERT_EQ(dist.GetNumPermutations(), 5);
+    std::vector<std::vector<std::string>> samples;
+    for (unsigned int run = 0; run < dist.GetNumPermutations(); run++)
+    {
+        ASSERT_EQ(dist.SetIndex(run), 0);
+        ASSERT_EQ(dist.GetNumParameters(), 6);
+        std::vector<std::string> values;
+        for (unsigned int parameter = 0; parameter < dist.GetNumParameters(); parameter++)
+        {
+            values.push_back(dist.GetParamValue(parameter));
+            EXPECT_EQ(dist.GetParamValue(parameter), values.back());
+        }
+        samples.push_back(values);
+    }
+    EXPECT_NE(samples.front(), samples.back());
+
+    for (int run = static_cast<int>(samples.size()) - 1; run >= 0; run--)
+    {
+        ASSERT_EQ(dist.SetIndex(static_cast<unsigned int>(run)), 0);
+        for (unsigned int parameter = 0; parameter < samples[static_cast<size_t>(run)].size(); parameter++)
+        {
+            EXPECT_EQ(dist.GetParamValue(parameter), samples[static_cast<size_t>(run)][parameter]);
+        }
+    }
+
+    const unsigned int seed = dist.GetStochastic().random_seed;
+    dist.SetStochasticSeed(seed + 1);
+    std::vector<std::string> reseeded_values;
+    for (unsigned int parameter = 0; parameter < samples.front().size(); parameter++)
+    {
+        reseeded_values.push_back(dist.GetParamValue(parameter));
+    }
+    EXPECT_NE(reseeded_values, samples.front());
+    dist.SetStochasticSeed(seed);
+    for (unsigned int parameter = 0; parameter < samples.front().size(); parameter++)
+    {
+        EXPECT_EQ(dist.GetParamValue(parameter), samples.front()[parameter]);
+    }
 }
 
 class DistributionOpenDriveTest : public testing::Test

@@ -1910,6 +1910,15 @@ int ScenarioPlayer::Init()
         LOG_INFO("Generated seed {}", SE_Env::Inst().GetRand().GetSeed());
     }
 
+    if (!dist.isDeterministic)
+    {
+        if (!dist.GetStochastic().random_seed_set)
+        {
+            dist.SetStochasticSeed(SE_Env::Inst().GetRand().GetSeed());
+        }
+        LOG_INFO("Using parameter distribution seed {}", dist.GetStochastic().random_seed);
+    }
+
     if (opt.GetOptionSet("collision"))
     {
         SE_Env::Inst().SetCollisionDetection(true);

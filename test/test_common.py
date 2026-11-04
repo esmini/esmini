@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import time
 import sys
@@ -108,6 +109,24 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
         return log, duration, cpu_times, errlog
 
     assert False, 'No log file'
+
+def get_num_permutations(scenario):
+    _, _, _, output = run_scenario(scenario, '--return_nr_permutations', ignoreReturnCode=True, read_log=False)
+    match = re.search(r'Nr permutations: (\d+)', output)
+    assert match is not None, output
+    return int(match.group(1))
+
+def read_permutation_log(index, permutations):
+    with open(f"log_{index}_of_{permutations}.txt", 'r') as logfile:
+        log = logfile.read()
+    assert re.search(rf'Parameter permutation {index}/{permutations}\b', log) is not None, log
+    return log
+
+def remove_permutation_files(permutations):
+    for index in range(1, permutations + 1):
+        for filename in (f"log_{index}_of_{permutations}.txt", f"sim_{index}_of_{permutations}.dat"):
+            if os.path.isfile(filename):
+                os.remove(filename)
 
 def run_replayer(replayer_arguments = None):
 

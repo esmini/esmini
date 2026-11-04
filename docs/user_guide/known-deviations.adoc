@@ -69,6 +69,12 @@ The specified behavior in the standard is not super clear, but to our understand
 
 *Standard reference:* OpenSCENARIO XML v1.4.0 https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/LanePosition.html[LanePosition] and https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/RoadPosition.html[RoadPosition].
 
+==== randomSeed type in class Stochastic
+
+The `Stochastic` class defines `randomSeed` as a double, but esmini parses the element as an `unsigned int` instead. Integer-based seeding avoids floating-point precision discrepancies, ensuring consistent behavior across different runs and platforms.
+
+*Standard reference:* OpenSCENARIO XML v1.4.0 https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/Stochastic.html[Stochastic].
+
 [#deviations-opendrive]
 === OpenDRIVE
 

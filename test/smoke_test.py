@@ -2707,7 +2707,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(lines[938] == '7.000000, 37, obj37, 1, MEDIUM_CAR, 6.315084, 274.827883, 0.269692, 0.761141, 35.992651, -0.065520, 2.035548, -0.031802, -0.004935, 1.552224, 0.001827, -0.000010, -0.056813, 0.000000, 0.000000, -0.543809, 0.000000, 0.000000, 36.000698, -0.004703, 0.000000')
 
     def test_lane_layer(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/roadworks_temporary_lane_layer.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/roadworks_temporary_lane_layer.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*roadworks_temporary_lane_layer.xosc', log)  is not None)
@@ -2749,6 +2749,82 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^19.100, 1, Lead, 216.471, -6.100, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 1.757', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.100, 2, temp_layer_vehicle, 300.000, -4.625, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 3.204', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.100, 3, permanent_layer_vehicle, 300.000, -8.375, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 3.204', csv, re.MULTILINE))
+
+    def test_distribution_stochastic(self):
+        scenario = os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_parameter_set_stochastic.xosc')
+        # Just get number of permutations and make sure they are correct
+        permutations = get_num_permutations(scenario)
+        self.assertEqual(permutations, 5)
+
+        remove_permutation_files(permutations)
+        _, _, _, _ = run_scenario(scenario, COMMON_ESMINI_ARGS + "--fixed_timestep 0.1", read_log=False)
+
+        for i in range(1, permutations + 1):
+            basename = f"{i}_of_{permutations}"
+            log = read_permutation_log(i, permutations)
+
+            self.assertTrue(re.search('Using parameter distribution file: .*cut-in_parameter_set_stochastic.xosc', log) is not None)
+            self.assertTrue(re.search('Using parameter distribution seed 2', log) is not None)
+            if platform == "win32":
+                if i == 1:
+                    self.assertTrue(re.search('HostVehicle: car_white', log) is not None)
+                    self.assertTrue(re.search('TargetSpeedFactor: 1.480', log) is not None)
+                    self.assertTrue(re.search('EgoStartS: 50', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_LaneChange: 0.445', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_Brake: 0.917', log) is not None)
+                    self.assertTrue(re.search('EgoSpeed: 101.567', log) is not None)
+                    self.assertTrue(re.search('Loaded OpenDRIVE: .*e6mini.xodr', log) is not None)
+
+                    csv = generate_csv(f"sim_{basename}.dat")
+                    # First and last sample of simulation
+                    self.assertTrue(re.search('^0.000, 0, Ego, 8.173, 49.970, -0.041, 1.567, 0.001, 0.000, 28.213, 0.000, 0.000', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^19.600, 0, Ego, 23.636, 602.567, -0.826, 1.484, 6.283, 0.000, 28.213, -0.001, 2.853', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^19.600, 1, OverTaker, 12.575, 408.769, -0.734, 1.540, 0.002, 0.000, 0.000, -0.001, 1.356', csv, re.MULTILINE))
+                elif i == 5:
+                    self.assertTrue(re.search('HostVehicle: car_yellow', log) is not None)
+                    self.assertTrue(re.search('TargetSpeedFactor: 1.258', log) is not None)
+                    self.assertTrue(re.search('EgoStartS: 50', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_LaneChange: 0.546', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_Brake: 0.807', log) is not None)
+                    self.assertTrue(re.search('EgoSpeed: 104.781', log) is not None)
+                    self.assertTrue(re.search('Reusing OpenDRIVE: .*e6mini.xodr', log) is not None)
+
+                    csv = generate_csv(f"sim_{basename}.dat")
+                    # First and last sample of simulation
+                    self.assertTrue(re.search('^0.000, 0, Ego, 8.173, 49.970, -0.041, 1.567, 0.001, 0.000, 29.106, 0.000, 0.000', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^21.200, 0, Ego, 29.772, 666.344, -0.872, 1.467, 0.002, 0.000, 29.106, -0.001, 3.703', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^21.200, 1, OverTaker, 13.795, 444.448, -0.788, 1.533, 0.001, 0.000, 0.000, -0.001, 2.910', csv, re.MULTILINE))
+            elif platform == "linux" or platform == "linux2":
+                if i == 1:
+                    self.assertTrue(re.search('HostVehicle: car_white', log) is not None)
+                    self.assertTrue(re.search('TargetSpeedFactor: 1.480', log) is not None)
+                    self.assertTrue(re.search('EgoStartS: 49', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_LaneChange: 0.336', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_Brake: 0.904', log) is not None)
+                    self.assertTrue(re.search('EgoSpeed: 100.926', log) is not None)
+                    self.assertTrue(re.search('Loaded OpenDRIVE: .*e6mini.xodr', log) is not None)
+
+                    csv = generate_csv(f"sim_{basename}.dat")
+                    # First and last sample of simulation
+                    self.assertTrue(re.search('^0.000, 0, Ego, 8.170, 48.970, -0.039, 1.567, 0.001, 0.000, 28.035, 0.000, 0.000', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^19.400, 0, Ego, 22.771, 592.507, -0.829, 1.487, 6.283, 0.000, 28.035, -0.001, 1.996', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^19.400, 1, OverTaker, 12.339, 400.758, -0.720, 1.542, 0.002, 0.000, 0.000, -0.001, 3.810', csv, re.MULTILINE))
+                elif i == 5:
+                    self.assertTrue(re.search('HostVehicle: car_yellow', log) is not None)
+                    self.assertTrue(re.search('TargetSpeedFactor: 1.258', log) is not None)
+                    self.assertTrue(re.search('EgoStartS: 49', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_LaneChange: 0.228', log) is not None)
+                    self.assertTrue(re.search('HeadwayTime_Brake: 0.719', log) is not None)
+                    self.assertTrue(re.search('EgoSpeed: 103.109', log) is not None)
+                    self.assertTrue(re.search('Reusing OpenDRIVE: .*e6mini.xodr', log) is not None)
+
+                    csv = generate_csv(f"sim_{basename}.dat")
+                    # First and last sample of simulation
+                    self.assertTrue(re.search('^0.000, 0, Ego, 8.170, 48.970, -0.039, 1.567, 0.001, 0.000, 28.641, 0.000, 0.000', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^20.700, 0, Ego, 27.234, 641.303, -0.838, 1.473, 0.001, 0.000, 28.641, -0.001, 3.763', csv, re.MULTILINE))
+                    self.assertTrue(re.search('^20.700, 1, OverTaker, 12.941, 420.372, -0.753, 1.538, 0.002, 0.000, 0.000, -0.001, 4.177', csv, re.MULTILINE))
+        remove_permutation_files(permutations)
+
 
 if __name__ == "__main__":
     # execute only if run as a script
