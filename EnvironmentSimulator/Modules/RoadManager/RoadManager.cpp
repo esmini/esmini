@@ -11195,6 +11195,11 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     ReturnCode       ret_val = ReturnCode::OK;
     Road*            road    = GetOpenDrive()->GetRoadById(track_id_);
 
+    if (road == nullptr)
+    {
+        return Position::ReturnCode::ERROR_GENERIC;
+    }
+
     // find out ds along road s-axis
     double ds_road = ds;
     if (actualDistance)
