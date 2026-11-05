@@ -1,5 +1,33 @@
 ## esmini release notes
 
+### 2026-11-05 Version 3.11.0
+
+New features and behaviors:
+- Update OSI tracefile handling
+  - new standard naming convention per [OSI guidelines](https://opensimulationinterface.github.io/osi-antora-generator/asamosi/current/interface/architecture/trace_file_naming.html) ([issue #768](https://github.com/esmini/esmini/issues/768))
+  - new option to add custom suffix
+  - add `TrafficCommand` tracefile ([issue #830](https://github.com/esmini/esmini/issues/830))
+  - updated API for new features and options
+  - backwards compatible
+  - see also User guide [Use cases/Save OSI data](https://esmini.github.io/use-cases.html#_save_osi_data) and [lib programming/OSI data](https://esmini.github.io/esmini-lib-programming.html#_osi_data)
+- Parameterize OSI UDP port and data size ([PR #837](https://github.com/esmini/esmini/pull/837))
+  - command line options to set port and data sizes for the UDP sender
+  - makes `osi_receiver` compatible with big packets
+  - add API function `SE_OpenCustomOSISocket` exposing new parameters
+
+Improvements and fixes:
+
+- Fix [UserDefinedAction](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/UserDefinedAction.html) never ending ([PR #841](https://github.com/esmini/esmini/pull/841))
+- Update info on esmini dependencies
+  - move details from [User guide](https://esmini.github.io/build-guide.html#_external_dependency_details) to esmini-dependencies [release notes](https://github.com/esmini/esmini-dependencies/blob/main/release_notes.md)
+- Fix infinite loop in distance calculation involving trailer ([PR #833](https://github.com/esmini/esmini/pull/833))
+- Some additional minor fixes
+
+Build and CI updates:
+- Add ASAM OpenSCENARIO XML examples to CI
+  - currently running v1.4
+  - see also updated [User guide - Run ASAM OpenSCENARIO examples](https://esmini.github.io/run-asam-examples.html)
+
 ### 2026-10-22 Version 3.10.2
 
 Improvements and fixes:
