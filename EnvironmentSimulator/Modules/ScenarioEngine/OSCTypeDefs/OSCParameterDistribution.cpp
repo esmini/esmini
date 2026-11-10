@@ -305,8 +305,8 @@ int OSCParameterDistribution::ParseRange(pugi::xml_node node, DistributionRange&
         return -1;
     }
 
-    range.lower_limit = std::atof(node.attribute("lowerLimit").value());
-    range.upper_limit = std::atof(node.attribute("upperLimit").value());
+    range.lower_limit = node.attribute("lowerLimit").as_double();
+    range.upper_limit = node.attribute("upperLimit").as_double();
 
     if (range.upper_limit < range.lower_limit)
     {
@@ -407,7 +407,7 @@ int OSCParameterDistribution::ParseStochasticDistribution(pugi::xml_node node, S
             return -1;
         }
 
-        dist.expected_value = std::atof(dist_node.attribute("expectedValue").value());
+        dist.expected_value = dist_node.attribute("expectedValue").as_double();
 
         if (ParseRange(dist_node.child("Range"), dist.range, false) != 0)
         {
@@ -476,7 +476,7 @@ int OSCParameterDistribution::ParseStochastic(pugi::xml_node stochastic)
     }
 
     int n_runs = stochastic.attribute("numberOfTestRuns").as_int();
-    if (n_runs < 0)
+    if (n_runs <= 0)
     {
         LOG_ERROR("Stochastic numberOfTestRuns invalid value {}", n_runs);
         return -1;

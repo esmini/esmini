@@ -240,38 +240,53 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n16.250, 0, Vehicle 1, 170.240, 992.144, 0.000, 1.571, 0.000, 0.000, 41.667, 0.004, 5.586', csv))
         self.assertTrue(re.search('\\n16.250, 1, Vehicle 2, 170.490, 959.954, 0.000, 1.571, 0.000, 0.000, 36.111, 0.000, 5.260', csv))
 
-    def test_slow_preceding_vehicle_determenistic_parameter_set(self):
+    def test_slow_preceding_vehicle_stochastic_parameter_set(self):
         # Tests so running parameter distribution scenario with same road re-uses the road
 
-        scenario = os.path.join(OSC_EXAMPLES_PREFIX + 'SlowPrecedingVehicleDeterministicParameterSet.xosc')
+        scenario = os.path.join(OSC_EXAMPLES_PREFIX + 'SlowPrecedingVehicleStochasticParameterSet.xosc')
 
-        _, _, _, output = run_scenario(scenario, '--return_nr_permutations', ignoreReturnCode=True, read_log=False)
-        match = re.search(r'Nr permutations: (\d+)', output)
-        self.assertTrue(match is not None, output)
-        permutations = int(match.group(1))
+        permutations = get_num_permutations(scenario)
 
         self.assertGreater(permutations, 1)
 
         # Remove any logfiles that might exist prior to execution
-        for i in range(1, permutations + 1):
-            for filename in (f"log_{i}_of_{permutations}.txt", f"sim_{i}_of_{permutations}.dat"):
-                if os.path.isfile(filename):
-                    os.remove(filename)
+        remove_permutation_files(permutations)
 
         _, _, _, _ = run_scenario(scenario, COMMON_ESMINI_ARGS, read_log=False)
 
         for i in range(1, permutations + 1):
-            with open(f"log_{i}_of_{permutations}.txt", 'r') as logfile:
-                log = logfile.read()
+            log = read_permutation_log(i, permutations)
+            self.assertTrue(re.search(r'Using parameter distribution file: ./ASAM-OSC-XML-scenarios/ASAM_OpenSCENARIO_v1.4.0_Examples/SlowPrecedingVehicleStochasticParameterSet.xosc', log) is not None)
             self.assertTrue(re.search(r'Loading .*SlowPrecedingVehicle\.xosc', log) is not None)
-            self.assertTrue(re.search(rf'Parameter permutation {i}/{permutations}\b', log) is not None)
             if i == 1:
                 self.assertTrue(re.search(r'Loaded OpenDRIVE: ASAM-OSC-XML-scenarios/ASAM_OpenSCENARIO_v1\.4\.0_Examples/Databases/AB_RQ31_R2000\.xodr', log) is not None)
             else:
                 self.assertTrue(re.search(r'Reusing OpenDRIVE: ASAM-OSC-XML-scenarios/ASAM_OpenSCENARIO_v1\.4\.0_Examples/Databases/AB_RQ31_R2000\.xodr', log) is not None)
-            # Remove the files to keep clutter down, if debugging comment away these two lines
-            os.remove(f"log_{i}_of_{permutations}.txt")
-            os.remove(f"sim_{i}_of_{permutations}.dat")
+        remove_permutation_files(permutations)
+
+    def test_slow_preceding_vehicle_deterministic_parameter_set(self):
+        # Tests so running parameter distribution scenario with same road re-uses the road
+
+        scenario = os.path.join(OSC_EXAMPLES_PREFIX + 'SlowPrecedingVehicleDeterministicParameterSet.xosc')
+
+        permutations = get_num_permutations(scenario)
+
+        self.assertGreater(permutations, 1)
+
+        # Remove any logfiles that might exist prior to execution
+        remove_permutation_files(permutations)
+
+        _, _, _, _ = run_scenario(scenario, COMMON_ESMINI_ARGS, read_log=False)
+
+        for i in range(1, permutations + 1):
+            log = read_permutation_log(i, permutations)
+            self.assertTrue(re.search(r'Using parameter distribution file: ./ASAM-OSC-XML-scenarios/ASAM_OpenSCENARIO_v1.4.0_Examples/SlowPrecedingVehicleDeterministicParameterSet.xosc', log) is not None)
+            self.assertTrue(re.search(r'Loading .*SlowPrecedingVehicle\.xosc', log) is not None)
+            if i == 1:
+                self.assertTrue(re.search(r'Loaded OpenDRIVE: ASAM-OSC-XML-scenarios/ASAM_OpenSCENARIO_v1\.4\.0_Examples/Databases/AB_RQ31_R2000\.xodr', log) is not None)
+            else:
+                self.assertTrue(re.search(r'Reusing OpenDRIVE: ASAM-OSC-XML-scenarios/ASAM_OpenSCENARIO_v1\.4\.0_Examples/Databases/AB_RQ31_R2000\.xodr', log) is not None)
+        remove_permutation_files(permutations)
 
     def test_slow_preceding_vehicle(self):
         log, _, _, _ = run_scenario(os.path.join(OSC_EXAMPLES_PREFIX + 'SlowPrecedingVehicle.xosc'), COMMON_ESMINI_ARGS)

@@ -23,9 +23,8 @@ With some limitations (see details below and in https://github.com/esmini/esmini
 From esmini v3.10.2, the ASAM OpenSCENARIO v1.4.0 examples are run as https://github.com/esmini/esmini/blob/master/test/asam_osc_examples_suite.py[part] of esmini's CI. The test suite executes a https://github.com/esmini/OpenSCENARIO_XML_examples/tree/v1.4.0_1[subset] of the ASAM OpenSCENARIO examples.
 
 === Limitations
-Three of the examples are not covered by the CI suite, or need special handling:
+Two of the examples are not covered by the CI suite, or need special handling:
 
 . *EndOfTrafficJam* requires the esmini option `--disable_controllers` to run as intended.
-. *SlowPrecedingVehicleStochasticParameterSet* does not work since `StochasticParameterSet` is not supported by esmini.
 . *Signalized_T_Intersection* cannot be run since it refers to an `ExternalObjectReference` that is missing. Even if that is resolved, the scenario contains two features not yet supported by esmini: `VariableConstraints` and `TrafficSignalController` action.
 
