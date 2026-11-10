@@ -93,7 +93,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-14, windows-2022]
+        os: [ubuntu-22.04, macos-15, windows-2022]
         configuration: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -248,7 +248,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-14, windows-2022]
+        os: [ubuntu-22.04, macos-15, windows-2022]
         configuration: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -361,7 +361,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-14, windows-2022]
+        os: [ubuntu-22.04, macos-15, windows-2022]
 
     runs-on: ${{ matrix.os }}
 
