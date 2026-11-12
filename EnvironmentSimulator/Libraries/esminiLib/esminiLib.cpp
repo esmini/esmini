@@ -3091,6 +3091,7 @@ extern "C"
         }
 #else
         (void)filename;
+        (void)mask;
 #endif
         return -1;
     }
