@@ -2,6 +2,7 @@ macro(set_default_dependency_libs_versions)
     set(DEFAULT_OSI_VERSION "3.5.0_2")
     set(DEFAULT_IMPLOT_VERSION "0.16_1")
     set(DEFAULT_PROJ_VERSION "9.8.1_1")
+    set(DEFAULT_SUMO_VERSION "1.28.0_1")
 
     set(OSI_VERSION
         "${DEFAULT_OSI_VERSION}"
@@ -17,12 +18,18 @@ macro(set_default_dependency_libs_versions)
         "${DEFAULT_PROJ_VERSION}"
         CACHE STRING
             "proj version")
+
+    set(SUMO_VERSION
+        "${DEFAULT_SUMO_VERSION}"
+        CACHE STRING
+            "sumo version")
 endmacro()
 
 function(set_tags_from_version)
     string(REGEX REPLACE "_.*$" "" _default_osi_base_version "${DEFAULT_OSI_VERSION}")
     string(REGEX REPLACE "_.*$" "" _default_implot_base_version "${DEFAULT_IMPLOT_VERSION}")
     string(REGEX REPLACE "_.*$" "" _default_proj_base_version "${DEFAULT_PROJ_VERSION}")
+    string(REGEX REPLACE "_.*$" "" _default_sumo_base_version "${DEFAULT_SUMO_VERSION}")
 
     _map_version_to_release_tag(
         "osi"
@@ -50,12 +57,23 @@ function(set_tags_from_version)
         "${_default_proj_base_version}"
         "v${DEFAULT_PROJ_VERSION}")
 
-    # Propigate normal variables up to the parent scope
+    _map_version_to_release_tag(
+        "sumo"
+        "${SUMO_VERSION}"
+        SUMO_RELEASE_TAG
+        SUMO_TAG_URL
+        "${_default_sumo_base_version}"
+        "v${DEFAULT_SUMO_VERSION}")
+
+    # Propagate normal variables up to the parent scope
     set(OSI_RELEASE_TAG "${OSI_RELEASE_TAG}" PARENT_SCOPE)
     set(OSI_TAG_URL "${OSI_TAG_URL}" PARENT_SCOPE)
     set(IMPLOT_RELEASE_TAG "${IMPLOT_RELEASE_TAG}" PARENT_SCOPE)
     set(IMPLOT_TAG_URL "${IMPLOT_TAG_URL}" PARENT_SCOPE)
+    set(PROJ_RELEASE_TAG "${PROJ_RELEASE_TAG}" PARENT_SCOPE)
     set(PROJ_TAG_URL "${PROJ_TAG_URL}" PARENT_SCOPE)
+    set(SUMO_RELEASE_TAG "${SUMO_RELEASE_TAG}" PARENT_SCOPE)
+    set(SUMO_TAG_URL "${SUMO_TAG_URL}" PARENT_SCOPE)
 
     # Set if tests should run or not based on version and external lib usage flags
     _calculate_test_flag_default(_run_osi_tests "USE_OSI;USE_PROJ" "v${DEFAULT_OSI_VERSION}" "${OSI_RELEASE_TAG}") # OSI file sizes in tests relies on PROJ data being sent, only test if OSI and PROJ used

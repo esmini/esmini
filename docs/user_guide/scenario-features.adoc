@@ -1333,7 +1333,14 @@ The hex code for the color will be converted to a value between 0 and 1 and tran
 
 https://eclipse.dev/sumo/[SUMO] is a great open source traffic simulation tool. It has been integrated with esmini, making it possible to run SUMO simulations in esmini, and even mix or co-simulate SUMO vehicles with OpenSCENARIO vehicles.
 
-*NOTE:* Even though SUMO has been linked with esmini for quite long, it's on a experimental level and has not been used a lot. Hence, expect shortcomings and issues. The currently integrated SUMO version, as of esmini v2.37.1, is 1.6.0 while the current SUMO version is 1.19.0. There is plans to update SUMO version in esmini in a soon future.
+Integrated SUMO versions:
+[cols="1,1",options="header"]
+|===
+| from esmini version | SUMO version
+| v3.12.0 | v1.28.0
+| v1.7 | v1.6.0
+| before v1.7 | No SUMO support
+|===
 
 This chapter explains how to create a SUMO simulation and then how to use it in esmini. For just using SUMO simulations there is no need to install SUMO, it is already embedded with esmini (as long as it has not been explicitly excluded, see link:build-guide.html#_slim_esmini_customize_configration[Slim esmini - customize configration]). Only to create SUMO content it has to be installed.
 

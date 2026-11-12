@@ -82,13 +82,11 @@ Links to all packages can be found in https://github.com/esmini/esmini/blob/mast
 If you need to (re)build a 3rd party lib for some reason, e.g. for an yet unsupported system or need for a specific version, these build scripts might be a starting point:
 
 - https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[esmini/scripts/generate_osg_libs.sh]
-- https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[esmini/scripts/generate_sumo_libs.sh]
+- https://github.com/esmini/esmini-dependencies/blob/main/sumo/generate_sumo_libs.sh[esmini-dependencies/sumo/generate_sumo_libs.sh]
 - https://github.com/esmini/esmini-dependencies/blob/main/osi/generate_osi_3_5_libs.sh[esmini-dependencies/osi/generate_osi_3_5_libs.sh]
 - https://github.com/esmini/esmini-dependencies/blob/main/osi/generate_osi_3_8_libs.sh[esmini-dependencies/osi/generate_osi_3_8_libs.sh]
-
-or this script that builds all `sumo` and `osg` libs, combining a selection of the above ones:
-
-https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.sh[scripts/generate_sumo_osg_libs.sh]
+- https://github.com/esmini/esmini-dependencies/blob/main/implot/generate_implot_libs.sh[esmini-dependencies/implot/generate_implot_libs.sh]
+- https://github.com/esmini/esmini-dependencies/blob/main/proj/generate_proj_9_8_libs.sh[esmini-dependencies/proj/generate_proj_9_8_libs.sh]
 
 ==== External dependency details
 
@@ -274,6 +272,8 @@ To disable all run:  +
 ``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False -D USE_IMPLOT=False -D USE_PROJ=False``
 
 All options are enabled/True as default.
+
+SUMO is dependent on PROJ, so enabling SUMO will require PROJ to be enabled as well.
 
 *Note:* +
 Disabling an external dependency will disable corresponding functionality. So, for example, disabling OSI means that no OSI data can be created by esmini. Disabling OSG means that esmini can't visualize the scenario. However it can still run the scenario and create a .dat file, which can be played and visualized later in another esmini build in which OSG is enabled (even on another platform).

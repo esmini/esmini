@@ -52,8 +52,14 @@ function(
         message(STATUS "Download OK. Extracting... ")
     endif()
 
+    if(target_filename MATCHES "\\.tar\\.xz$")
+        set(tar_compression_flag J)
+    else()
+        set(tar_compression_flag z)
+    endif()
+
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename}
+        COMMAND ${CMAKE_COMMAND} -E tar xf${tar_compression_flag} ${target_filename}
         WORKING_DIRECTORY ${target_folder}
         RESULT_VARIABLE STATUS)
 
@@ -97,8 +103,13 @@ function(
         url
         IN
         LISTS urls)
-        set(package_name
-            "${entity_name}.7z")
+        if(url MATCHES "\\.tar\\.xz($|\\?)")
+            set(package_name
+                "${entity_name}.tar.xz")
+        else()
+            set(package_name
+                "${entity_name}.7z")
+        endif()
 
         message(STATUS "Downloading ${package_name} from ${url}")
 

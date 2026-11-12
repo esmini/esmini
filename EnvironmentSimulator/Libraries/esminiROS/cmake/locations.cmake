@@ -67,13 +67,15 @@ macro(set_project_external_paths)
     set(EXTERNALS_OSG_PATH
         ${EXTERNALS_PATH}/osg)
     set(EXTERNALS_OSI_PATH
-        ${EXTERNALS_PATH}/osi)
+        ${EXTERNALS_PATH}/osi/${SUMO_RELEASE_TAG})
     set(EXTERNALS_PUGIXML_PATH
         ${EXTERNALS_PATH}/pugixml)
     set(EXTERNALS_SUMO_PATH
-        ${EXTERNALS_PATH}/sumo)
+        ${EXTERNALS_PATH}/sumo/${SUMO_RELEASE_TAG})
     set(EXTERNALS_IMPLOT_PATH
-        ${EXTERNALS_PATH}/implot)
+        ${EXTERNALS_PATH}/implot/${IMPLOT_RELEASE_TAG})
+    set(EXTERNALS_PROJ_PATH
+        ${EXTERNALS_PATH}/proj/${PROJ_RELEASE_TAG})
     set(EXTERNALS_YAML_PATH
         ${EXTERNALS_PATH}/yaml)
     set(MODELS_PATH

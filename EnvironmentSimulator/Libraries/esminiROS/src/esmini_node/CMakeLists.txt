@@ -17,6 +17,11 @@ endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/locations.cmake)
 set_project_internal_paths()
+
+include(${SUPPORT_PATH}/cmake/common/version_mapping.cmake)
+set_default_dependency_libs_versions()
+set_tags_from_version()
+
 set_project_external_paths()
 set_project_os_specific_paths()
 set_project_includes()

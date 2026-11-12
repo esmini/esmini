@@ -12,11 +12,13 @@ macro(set_sumo_libs)
             ${EXTERNALS_SUMO_LIBRARY_PATH}/liblibsumostatic.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_vehicle.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_distribution.a
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_handlers.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_shapes.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_options.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_xml.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_geom.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_common.a
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_importio.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_iodevices.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_traction_wire.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_emissions.a
@@ -31,7 +33,9 @@ macro(set_sumo_libs)
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libmicrosim.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libmesosim.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_phemlight.a
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_phemlight_V5.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_tcpip.a
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_routingkit.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libmicrosim_cfmodels.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libzlibstatic.a
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libxerces-c_3.a
@@ -51,6 +55,8 @@ macro(set_sumo_libs)
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_distribution.a
             optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_handlers.a
+            optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_shapes.a
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_options.a
@@ -60,6 +66,8 @@ macro(set_sumo_libs)
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_geom.a
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_common.a
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_importio.a
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_iodevices.a
             optimized
@@ -89,7 +97,11 @@ macro(set_sumo_libs)
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_phemlight.a
             optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_phemlight_V5.a
+            optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_tcpip.a
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_routingkit.a
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libmicrosim_cfmodels.a
             optimized
@@ -109,6 +121,8 @@ macro(set_sumo_libs)
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_distributiond.a
             debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_handlersd.a
+            debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_shapesd.a
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_optionsd.a
@@ -118,6 +132,8 @@ macro(set_sumo_libs)
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_geomd.a
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_commond.a
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_importiod.a
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libutils_iodevicesd.a
             debug
@@ -147,7 +163,11 @@ macro(set_sumo_libs)
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_phemlightd.a
             debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_phemlight_V5d.a
+            debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_tcpipd.a
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/libforeign_routingkitd.a
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/libmicrosim_cfmodelsd.a
             debug
@@ -169,6 +189,8 @@ macro(set_sumo_libs)
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_distribution.lib
             optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_handlers.lib
+            optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_shapes.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_options.lib
@@ -178,6 +200,8 @@ macro(set_sumo_libs)
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_geom.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_common.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_importio.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_iodevices.lib
             optimized
@@ -207,7 +231,11 @@ macro(set_sumo_libs)
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlight.lib
             optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlight_V5.lib
+            optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_tcpip.lib
+            optimized
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_routingkit.lib
             optimized
             ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_cfmodels.lib
             optimized
@@ -227,6 +255,8 @@ macro(set_sumo_libs)
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_distributiond.lib
             debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_handlersd.lib
+            debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_shapesd.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_optionsd.lib
@@ -236,6 +266,8 @@ macro(set_sumo_libs)
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_geomd.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_commond.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_importiod.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/utils_iodevicesd.lib
             debug
@@ -265,7 +297,11 @@ macro(set_sumo_libs)
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlightd.lib
             debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_phemlight_V5d.lib
+            debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_tcpipd.lib
+            debug
+            ${EXTERNALS_SUMO_LIBRARY_PATH}/foreign_routingkitd.lib
             debug
             ${EXTERNALS_SUMO_LIBRARY_PATH}/microsim_cfmodelsd.lib
             debug

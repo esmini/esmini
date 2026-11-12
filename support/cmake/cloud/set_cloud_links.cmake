@@ -15,9 +15,7 @@ macro(set_cloud_links)
         set(OSI_PACKAGE_URL
             https://github.com/esmini/esmini-dependencies/releases/download/${OSI_TAG_URL}/osi-macos.tar.xz)
         set(SUMO_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1FAve0-MlJPv6lUZy0HvriZI7xstLAzvX&export=download&authuser=0&confirm=t;
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/sumo_mac.7z;
-            https://www.dropbox.com/s/0x8kwztk7nmacs1/sumo_mac.7z?dl=1)
+            https://github.com/esmini/esmini-dependencies/releases/download/${SUMO_TAG_URL}/sumo-macos.tar.xz)
         set(IMPLOT_PACKAGE_URL
             https://github.com/esmini/esmini-dependencies/releases/download/${IMPLOT_TAG_URL}/implot-macos.tar.xz)
         set(PROJ_PACKAGE_URL
@@ -30,9 +28,7 @@ macro(set_cloud_links)
         set(OSI_PACKAGE_URL
             https://github.com/esmini/esmini-dependencies/releases/download/${OSI_TAG_URL}/osi-linux.tar.xz)
         set(SUMO_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1m4znxNIXapP0D-l21oIm2l7L5ti-JbZH&export=download&authuser=0&confirm=t;
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/sumo_linux.7z;
-            https://dl.dropboxusercontent.com/s/gfwtqd3gf76f86a/sumo_linux.7z?dl=1)
+            https://github.com/esmini/esmini-dependencies/releases/download/${SUMO_TAG_URL}/sumo-linux.tar.xz)
         set(GTEST_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1Hyr9eJX2GmgpYwZhx14xOoXlZ2j-FY_p&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD972108097/libs/googletest_linux.7z;
@@ -49,9 +45,7 @@ macro(set_cloud_links)
         set(OSI_PACKAGE_URL
             https://github.com/esmini/esmini-dependencies/releases/download/${OSI_TAG_URL}/osi-windows.tar.xz)
         set(SUMO_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=18PhbSLyvs0IGWTAY3YBoYzpVnMFPbOuR&export=download&authuser=0&confirm=t;
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/sumo_v10.7z;
-            https://dl.dropboxusercontent.com/s/5jtpnnd61wonxuh/sumo_v10.7z?dl=1)
+            https://github.com/esmini/esmini-dependencies/releases/download/${SUMO_TAG_URL}/sumo-windows.tar.xz)
         set(GTEST_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1So-3gtrmEdW9RhEvVQisj1QFksHM_otU&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD972108097/libs/googletest_v10.7z;

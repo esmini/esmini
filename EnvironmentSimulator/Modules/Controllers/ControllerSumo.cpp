@@ -21,8 +21,41 @@
 #include <libsumo/Simulation.h>
 #include <libsumo/Vehicle.h>
 #include <libsumo/TraCIDefs.h>
+#include <config.h>
 
 using namespace scenarioengine;
+
+namespace
+{
+    libsumo::TraCIPosition FrontBumperOffset(const Object& object, double heading, double pitch)
+    {
+        libsumo::TraCIPosition offset;
+        // Both reference points are on the ground, not at bounding-box center height.
+        RotateVec3d(heading,
+                    pitch,
+                    0.0,
+                    object.boundingbox_.center_.x_ + 0.5 * object.boundingbox_.dimensions_.length_,
+                    object.boundingbox_.center_.y_,
+                    0.0,
+                    offset.x,
+                    offset.y,
+                    offset.z);
+        return offset;
+    }
+
+    void UpdateSumoPosition(Object& object, double x_offset, double y_offset)
+    {
+        const auto offset = FrontBumperOffset(object, object.pos_.GetH(), object.pos_.GetP());
+        libsumo::Vehicle::moveToXY(object.name_,
+                                   "random",
+                                   0,
+                                   object.pos_.GetX() + x_offset + offset.x,
+                                   object.pos_.GetY() + y_offset + offset.y,
+                                   GetAngleInInterval2PI(M_PI / 2.0 - object.pos_.GetH()) * 180.0 / M_PI,
+                                   0);
+        libsumo::Vehicle::setSpeed(object.name_, object.speed_);
+    }
+}  // namespace
 
 Controller* scenarioengine::InstantiateControllerSumo(void* args)
 {
@@ -123,6 +156,8 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     {
         LOG_ERROR_AND_QUIT("Failed to load SUMO simulation");
     }
+
+    LOG_INFO("SUMO version: SUMO {}", VERSION_STRING);
 }
 
 ControllerSumo::~ControllerSumo()
@@ -234,18 +269,43 @@ void ControllerSumo::Step(double timeStep)
     }
 
     // Add missing vehicles from OpenSCENARIO to the sumo simulation
-    std::vector<std::string> idlist = libsumo::Vehicle::getIDList();
+    // 1. Fetch the list from SUMO exactly once and load it into a fast lookup set
+    std::vector<std::string>        sumo_ids = libsumo::Vehicle::getIDList();
+    std::unordered_set<std::string> active_ids(sumo_ids.begin(), sumo_ids.end());
+
     for (size_t i = 0; i < entities_->object_.size(); i++)
     {
         Object* obj = entities_->object_[i];
-        if (obj->IsActive() && !obj->IsGhost() && obj->TowVehicle() == nullptr &&     // do not add trailers to sumo
-            std::find(idlist.begin(), idlist.end(), obj->GetName()) == idlist.end())  // not already in sumo list
+        if (obj->IsActive() && !obj->IsGhost() && obj->TowVehicle() == nullptr)
         {
-            std::string id = obj->name_;
-            LOG_INFO("SUMO controller: Add vehicle {} to SUMO", id);
-            libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
-            libsumo::Vehicle::moveToXY(id, "random", 0, obj->pos_.GetX() + sumo_x_offset_, obj->pos_.GetY() + sumo_y_offset_, obj->pos_.GetH(), 0);
-            libsumo::Vehicle::setSpeed(id, obj->speed_);
+            std::string id = obj->GetName();  // or obj->name_
+
+            // 2. Check against both existing SUMO vehicles and ones added earlier in this loop
+            if (active_ids.find(id) == active_ids.end())
+            {
+                LOG_INFO("SUMO controller: Add vehicle {} to SUMO", id);
+
+                try
+                {
+                    libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
+                    UpdateSumoPosition(*obj, sumo_x_offset_, sumo_y_offset_);
+
+                    // 3. Track locally so duplicate objects in the same frame won't trigger an add attempt
+                    active_ids.insert(id);
+                }
+                catch (const libsumo::TraCIException& e)
+                {
+                    LOG_ERROR("SUMO controller: Failed to add vehicle {} (route='', type='DEFAULT_VEHTYPE'): {}", id, e.what());
+                }
+                catch (const std::exception& e)
+                {
+                    LOG_ERROR("SUMO controller: Unexpected exception while adding vehicle {}: {}", id, e.what());
+                }
+                catch (...)
+                {
+                    LOG_ERROR("SUMO controller: Unknown exception while adding vehicle {}", id);
+                }
+            }
         }
     }
 
@@ -257,14 +317,17 @@ void ControllerSumo::Step(double timeStep)
         {
             if (obj->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_SUMO))
             {
-                std::string            sumoid = obj->name_;
-                libsumo::TraCIPosition pos    = libsumo::Vehicle::getPosition3D(sumoid);
+                std::string            sumoid  = obj->name_;
+                libsumo::TraCIPosition pos     = libsumo::Vehicle::getPosition3D(sumoid);
+                const double           heading = M_PI / 2.0 - libsumo::Vehicle::getAngle(sumoid) * M_PI / 180.0;
+                const double           pitch   = -libsumo::Vehicle::getSlope(sumoid) * M_PI / 180.0;
+                const auto             offset  = FrontBumperOffset(*obj, heading, pitch);
                 obj->SetSpeed(libsumo::Vehicle::getSpeed(sumoid));
-                obj->pos_.SetInertiaPosMode(pos.x - sumo_x_offset_,
-                                            pos.y - sumo_y_offset_,
-                                            pos.z,
-                                            -libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2,
-                                            libsumo::Vehicle::getSlope(sumoid) * M_PI / 180,
+                obj->pos_.SetInertiaPosMode(pos.x - sumo_x_offset_ - offset.x,
+                                            pos.y - sumo_y_offset_ - offset.y,
+                                            pos.z - offset.z,
+                                            heading,
+                                            pitch,
                                             0,
                                             roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
                                                 roadmanager::Position::PosMode::P_ABS | roadmanager::Position::PosMode::R_REL);
@@ -284,14 +347,7 @@ void ControllerSumo::Step(double timeStep)
             else if (!obj->IsGhost() && obj->TowVehicle() == nullptr)  // skip ghosts and trailers
             {
                 // Updates all positions for non-sumo controlled vehicles
-                libsumo::Vehicle::moveToXY(obj->name_,
-                                           "random",
-                                           0,
-                                           obj->pos_.GetX() + sumo_x_offset_,
-                                           obj->pos_.GetY() + sumo_y_offset_,
-                                           obj->pos_.GetH(),
-                                           0);
-                libsumo::Vehicle::setSpeed(obj->name_, obj->speed_);
+                UpdateSumoPosition(*obj, sumo_x_offset_, sumo_y_offset_);
             }
         }
     }
