@@ -819,9 +819,9 @@ Examples:
 
 === Parameter distributions
 
-Parameter values and distributions can be specified in a separate https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.3.1/09_reuse_mechanisms/09_03_parameter_distribution.html[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario.
+Parameter values and distributions can be specified in a separate https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.3.1/09_reuse_mechanisms/09_03_parameter_distribution.html[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario. From v3.12.0 esmini supports also https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/Stochastic.html[Stochastic] distributions.
 
-Here's an example: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc[cut-in_parameter_set.xosc].
+Here's an example: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc[cut-in_parameter_set.xosc] (for a stochastic distribution example, change file to https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set_stochastic.xosc[cut-in_parameter_set_stochastic.xosc])
 
 To run all permutations with esmini, the following variants works:
 
@@ -882,6 +882,8 @@ To view all results in parallel, make use of replayer like this:
 
 .View all permutations in parallel
 image::param_dist0.jpg[]
+
+To plot a resolved parameter from your distribution, see *plot_distributions* in https://esmini.github.io/tools-overview.html#_scripts[scripts].
 
 ==== Parallel execution
 
