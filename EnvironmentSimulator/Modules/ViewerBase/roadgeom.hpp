@@ -182,7 +182,9 @@ namespace roadgeom
         osg::Vec3d                                                     origin_                 = {0.0, 0.0, 0.0};
         std::string                                                    exe_dir_                = "";
         int                                                            roadmark_texture_found_ = -1;
+        // asciidoc tag::SaveToFile[]
         int SaveToFile(const std::string& filename, bool visible = true, osg::Node::NodeMask mask = ~0u);
+        // asciidoc end::SaveToFile[]
     };
 
 }  // namespace roadgeom

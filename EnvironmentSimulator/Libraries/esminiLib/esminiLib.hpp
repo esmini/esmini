@@ -1947,6 +1947,8 @@ extern "C"
     SE_DLL_API int
     SE_WriteTGAImage(const char *filename, int width, int height, const unsigned char *data, int pixelSize, int pixelFormat, bool upsidedown);
 
+    // asciidoc tag::SE_SaveGeneratedModelToFile[]
+
     /**
       Save the entire generated road model, including hidden nodes, as file in .osgb format to disk
       @param filename Output file name (e.g. "road_model.osgb")
@@ -1968,6 +1970,8 @@ extern "C"
       @return 0 on success, -1 on error
     */
     SE_DLL_API int SE_SaveGeneratedModelToFileFiltered(const char *filename, unsigned int mask);
+
+    // asciidoc end::SE_SaveGeneratedModelToFile[]
 
     /**
     Add a camera with relative position and orientation (heading and pitch)

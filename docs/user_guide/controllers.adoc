@@ -176,7 +176,7 @@ There are two different methods to probe the ghost trail:
 
 Both methods will return a RoadInfo structure including position details e.g. world position (absolute and relative Ego), road coordinates, road pitch, trail heading, heading angle to the target point and ghost speed at that point.
 
-[source,xml]
+[source,c++]
 ----
 include::{src-local-root}/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[tag=SE_RoadInfo_struct]
 ----

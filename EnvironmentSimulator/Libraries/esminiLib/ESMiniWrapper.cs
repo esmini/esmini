@@ -2237,6 +2237,7 @@ namespace ESMini
         public static extern int SE_WriteTGAImage(string filename, int width, int height, in byte data, int pixelSize, int pixelFormat, [MarshalAs(UnmanagedType.I1)] bool upsidedown);
 
         /// <summary>
+        /// asciidoc tag::SE_SaveGeneratedModelToFile[]
         /// Save the entire generated road model, including hidden nodes, as file in .osgb format to disk
         /// </summary>
         /// <param name="filename">Output file name (e.g. "road_model.osgb")</param>
@@ -2262,6 +2263,7 @@ namespace ESMini
         public static extern int SE_SaveGeneratedModelToFileFiltered(string filename, uint mask);
 
         /// <summary>
+        /// asciidoc end::SE_SaveGeneratedModelToFile[]
         /// Add a camera with relative position and orientation (heading and pitch)
         /// </summary>
         /// <param name="x">X coordinate relative vehicle currently in focus</param>

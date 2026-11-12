@@ -31,7 +31,7 @@ When position attributes like `z` (elevation), `pitch`, or `roll` are omitted, e
 
 If a value of zero (0) is explicitly required, it must be specified directly in the OpenSCENARIO XML.
 
-See link:See link:positioning.html[Positioning] for details and examples.
+See link:positioning.html[Positioning] for details and examples.
 
 *Standard reference, example:* https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/WorldPosition.html[OpenSCENARIO XML v1.4.0 / WorldPosition].
 

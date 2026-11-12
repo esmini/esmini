@@ -1,5 +1,6 @@
 = esmini user guide – OpenSceneGraph and 3D models
 include::attributes.adoc_[]
+:src-local-root: ../../
 
 include::nav.adoc_[]
 
@@ -325,8 +326,31 @@ The model will be saved as `generated_road.osgb`. It can be viewed using any Ope
 
 `osgviewer --window 60 60 1200 600 generated_road.osgb`
 
+To exclude permanently hidden parts, use `--save_generated_model_visible`. Output: `generated_road_visible.osgb`.
+
+==== Runtime
+
+While running esmini any application (`esmini`, `odrviewer`, `osgviewer`), press 'v' at any time to save the currently visible parts. Output: `generated_road_visible_filtered.osgb`
+
 ==== API
-Using esmini internal API, the 3D model can be saved programmatically. Here is a simplified example in C++:
+
+Similar functionality is available via both the esminiLIb and internal API, allowing the 3D model to be saved programmatically.
+
+===== esminiLib API
+
+[source,c++,indent=0]
+----
+include::{src-local-root}/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[tag=SE_SaveGeneratedModelToFile]
+----
+
+===== Internal API
+
+[source,c++,indent=0]
+----
+include::{src-local-root}/EnvironmentSimulator/Modules/ViewerBase/roadgeom.hpp[tag=SaveToFile]
+----
+
+Simplified example:
 
 [source,c++]
 ----
