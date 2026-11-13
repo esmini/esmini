@@ -183,28 +183,32 @@ if(DOWNLOAD_EXTERNALS)
         ${EXTERNALS_OSG_PATH}
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
         "*"
-        "${OSG_PACKAGE_URL}")
+        "${OSG_PACKAGE_URL}"
+        "${USE_OSG}")
 
     download(
         osi
         ${EXTERNALS_OSI_PATH}
         ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
         "*"
-        "${OSI_PACKAGE_URL}")
+        "${OSI_PACKAGE_URL}"
+        "${USE_OSI}")
 
     download(
         sumo
         ${EXTERNALS_SUMO_PATH}
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
         "*"
-        "${SUMO_PACKAGE_URL}")
+        "${SUMO_PACKAGE_URL}"
+        "${USE_SUMO}")
 
     download(
         implot
         ${EXTERNALS_IMPLOT_PATH}
         ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}
         "*"
-        "${IMPLOT_PACKAGE_URL}")
+        "${IMPLOT_PACKAGE_URL}"
+        "${USE_IMPLOT}")
 
     if(USE_PROJ)
         download(
@@ -212,7 +216,8 @@ if(DOWNLOAD_EXTERNALS)
             ${EXTERNALS_PROJ_PATH}
             ${EXTERNALS_PROJ_OS_SPECIFIC_PATH}
             "*"
-            "${PROJ_PACKAGE_URL}")
+            "${PROJ_PACKAGE_URL}"
+            "${USE_PROJ}")
     endif()
 
     download(
@@ -220,7 +225,8 @@ if(DOWNLOAD_EXTERNALS)
         ${RESOURCES_PATH}
         ${MODELS_PATH}
         "models"
-        "${MODELS_PACKAGE_URL}")
+        "${MODELS_PACKAGE_URL}"
+        TRUE)
 
     if(NOT
        (APPLE
@@ -230,7 +236,8 @@ if(DOWNLOAD_EXTERNALS)
             ${EXTERNALS_GOOGLETEST_PATH}
             ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
             "*"
-            "${GTEST_PACKAGE_URL}")
+            "${GTEST_PACKAGE_URL}"
+            "${USE_GTEST}")
     endif()
 endif()
 # ############################### Loading external packages ##########################################################

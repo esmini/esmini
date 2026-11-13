@@ -58,7 +58,7 @@ function(set_tags_from_version)
     set(PROJ_TAG_URL "${PROJ_TAG_URL}" PARENT_SCOPE)
 
     # Set if tests should run or not based on version and external lib usage flags
-    _calculate_test_flag_default(_run_osi_tests USE_OSI "v${DEFAULT_OSI_VERSION}" "${OSI_RELEASE_TAG}")
+    _calculate_test_flag_default(_run_osi_tests "USE_OSI;USE_PROJ" "v${DEFAULT_OSI_VERSION}" "${OSI_RELEASE_TAG}") # OSI file sizes in tests relies on PROJ data being sent, only test if OSI and PROJ used
     _calculate_test_flag_default(_run_implot_tests USE_IMPLOT "v${DEFAULT_IMPLOT_VERSION}" "${IMPLOT_RELEASE_TAG}")
 
     # Force set these to make sure cache is aligned
@@ -127,18 +127,20 @@ function(_map_version_to_release_tag _lib_name _requested_version _out_release_t
         PARENT_SCOPE)
 endfunction()
 
-function(_calculate_test_flag_default _out_var _use_flag _default_version _selected_version)
-    # Start assuming TRUE
+function(_calculate_test_flag_default _out_var _use_flags _default_version _selected_version)
     set(_result TRUE)
 
-    # Safely extract the value of the USE flag (e.g., USE_OSI)
-    set(_use_flag_value ${${_use_flag}})
+    foreach(_use_flag IN LISTS _use_flags)
+        set(_use_flag_value "${${_use_flag}}")
+        if(NOT DEFINED ${_use_flag} OR NOT _use_flag_value)
+            set(_result FALSE)
+            break()
+        endif()
+    endforeach()
 
-    # If USE flag is false, or versions don't match, default should be FALSE
-    if(NOT DEFINED ${_use_flag} OR NOT _use_flag_value OR NOT "${_default_version}" STREQUAL "${_selected_version}")
+    if(NOT "${_default_version}" STREQUAL "${_selected_version}")
         set(_result FALSE)
     endif()
 
-    # Pass the calculated local value back up
     set(${_out_var} ${_result} PARENT_SCOPE)
 endfunction()

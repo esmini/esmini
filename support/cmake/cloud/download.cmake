@@ -79,9 +79,13 @@ function(
     path
     os_specific_path
     clean_sub_folder
-    urls)
+    urls
+    used)
 
-    if(NOT
+    if(NOT used AND NOT FORCE_DOWNLOAD_BINARIES)
+        message(STATUS "${entity_name} not used, skipping")
+        return()
+    elseif(NOT
        FORCE_DOWNLOAD_BINARIES
        AND EXISTS
            ${os_specific_path})
