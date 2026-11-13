@@ -4,9 +4,9 @@ This directory contains the standalone Emscripten/WebAssembly wrapper for esmini
 
 Status:
 
-- intended as the starting point for browser integrations
-- not yet a complete web visualization solution
-- currently focused on simulation stepping and data access, not rendering
+- provides the WebAssembly simulation runtime and browser-facing API
+- the maintained three.js browser application is in `EnvironmentSimulator/Applications/esmini-wasm`
+- the build script copies the generated runtime into the application directory
 
 ## Points of attention
 
@@ -100,7 +100,7 @@ mkdir build
 cd build
 emcmake cmake ..
 emmake ninja
-copy esmini.js ..\example /y
+copy esmini.js ..\..\..\Applications\esmini-wasm /y
 cd ..
 ```
 
@@ -109,15 +109,15 @@ cd ..
 
     Linux & Mac
     ```
-    ll example/esmini.js
+    ls -l ../../Applications/esmini-wasm/esmini.js
     ```
 
     Windows cmd
     ```
-    dir example\esmini.js
+    dir ..\..\Applications\esmini-wasm\esmini.js
     ```
 
-* Load `example/index.html` in a browser
+* Serve `EnvironmentSimulator/Applications/esmini-wasm` over HTTP and open its `index.html`
     - The page should load the `esmini.js` runtime successfully
     - Use the demo buttons to step a scenario and inspect object state output in the page log
 
@@ -156,4 +156,4 @@ Compatibility helpers kept for the existing demo:
 
 These helpers still accumulate snapshots across multiple simulation steps, but new web clients should prefer the live stepping API.
 
-The example directory now also contains a separate three.js viewer page that consumes `get_road_geometry()` and the live frame API.
+The three.js application consumes `get_road_geometry()` and the live frame API; see `EnvironmentSimulator/Applications/esmini-wasm/README.md` for local preview and publishing details.
