@@ -12,7 +12,7 @@ OpenSCENARIO
             RouteCatalog                                                       Yes
     ParameterValueDistributionDefinition (1.1)
         Deterministic                                                          Yes
-        Stochastic                                                             No
+        Stochastic                                                             Yes
     ScenarioDefinition
         ParameterDeclaration                                                   Yes
         VariableDeclaration (1.2)                                              Yes
