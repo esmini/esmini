@@ -6,16 +6,13 @@ macro(set_special_build_flags)
 
     if(APPLE)
         set(CMAKE_CXX_FLAGS
-            "${CMAKE_CXX_FLAGS} ${CXX_STD_FLAG} -std=c++17 -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION")
+            "${CMAKE_CXX_FLAGS} ${CXX_STD_FLAG} -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION")
         set(CMAKE_EXE_LINKER_FLAGS
             "${CMAKE_EXE_LINKER_FLAGS} -dead_strip")
-    elseif(LINUX)
-        set(CXX_STD_FLAG
-            "${CXX_STD_FLAG} -std=c++17")
 
+    elseif(LINUX)
         set(CMAKE_C_FLAGS
             "-std=c11 ${CMAKE_C_FLAGS}")
-
         if(CMAKE_BUILD_TYPE
            STREQUAL
            "Release")
@@ -43,10 +40,9 @@ macro(set_special_build_flags)
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} /D NOMINMAX ")
 
-        if((MSVC)
-           AND (MSVC_VERSION
+        if(MSVC_VERSION
                 GREATER_EQUAL
-                1910))
+                1910)
 
             # remove default warning level from initial CMAKE_CXX_FLAGS
             string(
@@ -72,12 +68,10 @@ macro(set_special_build_flags)
                 /wd4127
                 /wd4100)
         endif()
+
     elseif(MINGW)
-        set(CXX_STD_FLAG
-            "-std=c++17")
         set(CMAKE_C_FLAGS
             "-std=c11 ${CMAKE_C_FLAGS}")
-
         if(CMAKE_BUILD_TYPE
            STREQUAL
            "Release")
