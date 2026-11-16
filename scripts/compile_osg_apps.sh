@@ -6,9 +6,21 @@
 #   On Windows optionally specify Visual Studio compiler, set GENERATOR_ARGUMENTS variable below
 #     If GENERATOR_ARGUMENTS is not specified, default compiler will be used
 #   Check other settings below, e.g. "build_examples"
+#   FBX SDKs must be downloaded manually; Autodesk no longer allows downloading them with curl.
+#   Place the appropriate download below alongside this script. The script creates fbxsdk/ in the current working directory and
+#   extracts the Linux/macOS archives there or copies and runs the Windows installer.
+#     Linux: https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz
+#     macOS: https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_clang_mac.pkg.tgz
+#     Windows: https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe
+#
+#   Tip:
+#     In order to keep the scripts/ directory clean, create an empty folder and execute the script from there, e.g.:
+#     mkdir osgapps
+#     cd osgapps
+#     ../scripts/compile_osg_apps.sh
 #
 # Script steps:
-#   1. Fetch FBX SDK (headers and pre-compiled libraries)
+#   1. Install FBX SDK (headers and pre-compiled libraries)
 #   2. Extract FBX files. NOTE: User input is required "yes" to license and "n" to skip readme
 #   3. Fetch and extract OSG source code
 #   4. Generate build configuration (1st cmake command)
@@ -49,18 +61,20 @@ z_exe_win="$PROGRAMFILES/7-Zip/7z"
 install_folder="$osg_root_dir/osg"
 # Parallel compile. Set specific number, e.g. "-j 4" or just "-j" for compiler default. Set to "" for cmake versions < 3.12.
 parallel_make_flag="-j4"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # actions
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
-    if [ ! -d fbxsdk ]; then
-        if [ ! -f fbx202001_fbxsdk_linux.tar.gz ];then
-            curl -L -A "Mozilla/5.0 (X11; Linux x86_64)" -e "https://aps.autodesk.com/developer/overview/fbx-sdk" "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
-        fi
-        mkdir fbxsdk
-        tar xzvf fbx202001_fbxsdk_linux.tar.gz --directory fbxsdk
-        ./fbxsdk/fbx202001_fbxsdk_linux ./fbxsdk
+    if [ ! -f "$script_dir/fbx202001_fbxsdk_linux.tar.gz" ]; then
+        echo "Download the Linux FBX SDK archive and place it alongside this script."
+        exit 1
     fi
+    mkdir -p fbxsdk
+    if [ ! -f fbxsdk/fbx202001_fbxsdk_linux ]; then
+        tar xzvf "$script_dir/fbx202001_fbxsdk_linux.tar.gz" --directory fbxsdk
+    fi
+    ./fbxsdk/fbx202001_fbxsdk_linux ./fbxsdk
 
     sudo apt install libtiff-dev
     sudo apt install libjpeg-dev
@@ -73,9 +87,13 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 
-    curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_clang_mac.pkg.tgz" -O
-    tar xzvf fbx202021_fbxsdk_clang_mac.pkg.tgz
-    sudo installer -pkg fbx202021_fbxsdk_clang_macos.pkg -target /
+    if [ ! -f "$script_dir/fbx202021_fbxsdk_clang_mac.pkg.tgz" ]; then
+        echo "Download the macOS FBX SDK archive and place it alongside this script."
+        exit 1
+    fi
+    mkdir -p fbxsdk
+    tar xzvf "$script_dir/fbx202021_fbxsdk_clang_mac.pkg.tgz" --directory fbxsdk
+    sudo installer -pkg fbxsdk/fbx202021_fbxsdk_clang_macos.pkg -target /
 
     brew install libtiff
     brew install libjpeg
@@ -88,19 +106,23 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 
 elif [[ "$OSTYPE" == "msys" ]]; then
 
+    if [ ! -f "$script_dir/fbx202021_fbxsdk_vs2017_win.exe" ]; then
+        echo "Download the Windows FBX SDK installer and place it alongside this script."
+        exit 1
+    fi
+    mkdir -p fbxsdk
+    cp "$script_dir/fbx202021_fbxsdk_vs2017_win.exe" fbxsdk/
+
     if [ ! -d 3rdParty_x64 ]; then
         if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
             curl -L "https://www.dropbox.com/scl/fi/fs54s1g2zbjbi6ou7zjt0/3rdParty_VS2017_v141_x64_V11_full.7z?rlkey=usiax6ry5xvclmye7sdypqwd9&st=fhfauw9e&dl=1" -O
         fi
         "$z_exe_win" x 3rdParty_VS2017_v141_x64_V11_full.7z
     fi
-    if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
-        curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -O
-    fi
 
     if [ ! -d "$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include" ]; then
         echo Installing FBX SDK...
-        powershell -Command "Start-Process fbx202021_fbxsdk_vs2017_win.exe -ArgumentList /S -Wait"
+        powershell -Command "Start-Process fbxsdk/fbx202021_fbxsdk_vs2017_win.exe -ArgumentList /S -Wait"
     else
         echo FBX SDK already installed
     fi
