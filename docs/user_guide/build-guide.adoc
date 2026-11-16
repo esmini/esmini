@@ -128,12 +128,65 @@ A few additional notes:
 
 Linux Ubuntu
 
-[source]
+For most use-cases, install the following packages (default configuration):
+
+[source,bash]
 ----
-sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake black
+sudo apt install git build-essential cmake libgl1-mesa-dev libxrandr-dev libxinerama-dev libcairo2-dev
 ----
 
-Also, g\++ version >= 5 is needed for c++14 code support.
+See table below for more info on build configurations. Choose a package set based on your use case. Each set includes the packages from the previous set:
+
+[cols="1,3,3",options="header"]
+|===
+|Configuration |Install command |Use
+
+|`esmini-run`
+a|
+[source,bash]
+----
+-
+----
+|No dependencies required to run pre-built esmini, e.g. from release packages.
+
+|`esmini-slim`
+a|
+[source,bash]
+----
+sudo apt install git build-essential cmake
+----
+|Build esmini without OSG and ImPlot support.
+
+|`esmini-default`
+a|
+[source,bash]
+----
+sudo apt install git build-essential cmake libgl1-mesa-dev libxrandr-dev libxinerama-dev libcairo2-dev
+----
+|Build esmini with full functionality.
+
+|`esmini-developer`
+a|
+[source,bash]
+----
+sudo apt install git build-essential cmake libgl1-mesa-dev libxrandr-dev libxinerama-dev libcairo2-dev gdb ninja-build
+----
+|Build esmini with full functionality, including the Ninja build executor and GDB for debugging.
+
+|`esmini-full`
+a|
+[source,bash]
+----
+sudo apt install git build-essential cmake libgl1-mesa-dev libxrandr-dev libxinerama-dev libcairo2-dev gdb ninja-build pkg-config libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libpoppler-glib-dev curl p7zip-full
+----
+|Build esmini with full functionality. +
+Run all scripts (e.g. build osg apps). +
+Run all examples from the user guide (e.g. create video clip from esmini runs). +
+
+Python scripts require `pip install -r support/python/requirements.txt`
+|===
+
+g\++ version >= 7 is needed for c++17 code support.
 
 Windows and Mac: Install the https://cmake.org/[cmake] application
 
