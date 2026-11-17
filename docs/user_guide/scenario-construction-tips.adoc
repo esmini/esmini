@@ -98,7 +98,7 @@ Commonly used conditions are:
 
 Here follows a few scenario examples highlighting various useful features.
 
-To run the examples, grab and unzip the latest esmini *demo* (not bin) package, from https://github.com/esmini/esmini/releases/latest[here]. The run instructions assume you’re located in esmini root folder.
+To run the examples, grab and unzip the latest esmini *demo* (not bin) package, from https://github.com/esmini/esmini/releases/latest[here]. The run instructions assume you’re located in the `esmini-demo` root folder.
 
 ==== Example 1: scenario_nurb_straight_road
 Scenariofile: https://github.com/esmini/esmini/blob/dev/resources/scenario_construct_examples/scenario_nurb_straight_road.xosc[scenario_nurb_straight_road.xosc]
