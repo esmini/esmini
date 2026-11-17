@@ -7342,6 +7342,35 @@ TEST(LaneChange, InternalPositionHandling)
     EXPECT_NEAR(pos.GetOffset(), 0.0, 1e-3);
 }
 
+TEST(InitActions, TestInitActionsReorderingRelativeRoad)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_road_init_order.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->GetInitStatus(), 0);
+    scenario_step(se, 0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_EQ(entities->object_.size(), 3);
+    Object* car1 = entities->GetObjectByName("Car1");
+    Object* car2 = entities->GetObjectByName("Car2");
+    Object* car3 = entities->GetObjectByName("Car3");
+    ASSERT_NE(car1, nullptr);
+    ASSERT_NE(car2, nullptr);
+    ASSERT_NE(car3, nullptr);
+
+    EXPECT_EQ(car1->pos_.GetTrackId(), 1);
+    EXPECT_NEAR(car1->pos_.GetS(), 100.0, 1e-3);
+    EXPECT_NEAR(car1->pos_.GetT(), -1.5, 1e-3);
+    EXPECT_EQ(car2->pos_.GetTrackId(), 1);
+    EXPECT_NEAR(car2->pos_.GetS(), 110.0, 1e-3);
+    EXPECT_NEAR(car2->pos_.GetT(), -1.6, 1e-3);
+    EXPECT_EQ(car3->pos_.GetTrackId(), 1);
+    EXPECT_NEAR(car3->pos_.GetS(), 105.0, 1e-3);
+    EXPECT_NEAR(car3->pos_.GetT(), -1.4, 1e-3);
+
+    delete se;
+}
+
 TEST(InitActions, TestInitActionsReorderingGhost)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/init_actions_reorder.xosc");
