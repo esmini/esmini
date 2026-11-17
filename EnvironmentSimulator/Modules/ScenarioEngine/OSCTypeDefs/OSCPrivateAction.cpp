@@ -932,13 +932,8 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     // signal that an action owns control
     object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
-    if (!object_->IsGhost() && simTime < 0.0)
-    {
-        // Only ghosts are moving up to and including time == 0
-        return;
-    }
-
-    if (abs(object_->GetSpeed()) < SMALL_NUMBER)
+    // Only ghost moving in headstart, or object is standing still
+    if ((!object_->IsGhost() && simTime < 0.0) || abs(object_->GetSpeed()) < SMALL_NUMBER)
     {
         return;
     }
@@ -946,9 +941,10 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     bool instant_transition = transition_.shape_ == DynamicsShape::STEP ||
                               (transition_.dimension_ != DynamicsDimension::RATE && transition_.GetParamTargetVal() < SMALL_NUMBER);
 
+    // dt == 0 should only initialize action state. Avoid lane/track/inertial round-trips for continuous transitions.
     if (dt == 0.0 && !instant_transition)
     {
-        // dt == 0 should only initialize action state. Avoid lane/track/inertial round-trips for continuous transitions.
+        // If we instantly reach target offset (maybe relativeposition=0), we want to end align the heading and end the action
         if (fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER)
         {
             OSCAction::End();
@@ -1036,12 +1032,12 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         }
     }
 
-    if (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
-        // Close enough?
-        fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
-        // Passed target value?
-        (transition_.GetParamVal() > 0 &&
-         SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal())))
+    const bool transition_complete = transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER;
+    const bool target_reached      = fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER;
+    const bool target_passed       = (transition_.GetParamVal() > 0 &&
+                                SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()));
+
+    if (transition_complete || target_reached || target_passed)
     {
         // Lane change complete - update current lane layer to target lane layer
         object_->SetCurrentLaneLayer(target_->layer_);
@@ -1064,7 +1060,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     {
         OSCAction::End();
     }
-
+    // Mark SPEED as dirty so prepareGroundTruth() keeps the speed used for this move instead of recalculating it from the position change.
     object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 }
 
