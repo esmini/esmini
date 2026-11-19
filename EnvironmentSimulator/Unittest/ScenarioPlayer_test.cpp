@@ -13,6 +13,197 @@ using namespace scenarioengine;
 
 #include <osg/TriangleFunctor>
 
+TEST(ShadowTest, OverallOpacityFadesOnlyWhenBothDimensionsAreBelowCollarMinimum)
+{
+    constexpr auto       mask = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+    const viewer::Shadow reference("reference", 0.0, 2.0, 0.0, 0.3, 0.3, 6.0, mask, false, nullptr);
+    const viewer::Shadow thin("thin", 0.0, 2.0, 0.0, 0.06, 0.1, 6.0, mask, false, nullptr);
+    const viewer::Shadow at_threshold("at threshold", 0.0, 2.0, 0.0, 0.2, 0.06, 6.0, mask, false, nullptr);
+    const viewer::Shadow wide("wide", 0.0, 2.0, 0.0, 0.06, 0.3, 6.0, mask, false, nullptr);
+    const viewer::Shadow zero("zero", 0.0, 2.0, 0.0, 0.0, 0.0, 6.0, mask, false, nullptr);
+
+    ASSERT_EQ(thin.color_->size(), 1u);
+    EXPECT_FLOAT_EQ(thin.color_->at(0).a(), 0.5f * reference.color_->at(0).a());
+    EXPECT_FLOAT_EQ(at_threshold.color_->at(0).a(), reference.color_->at(0).a());
+    EXPECT_FLOAT_EQ(wide.color_->at(0).a(), reference.color_->at(0).a());
+    EXPECT_FLOAT_EQ(zero.color_->at(0).a(), 0.0f);
+    EXPECT_EQ(zero.pat_->getChild(0)->getNodeMask(), 0u);
+}
+
+TEST(ShadowTest, CollarShrinksForThinFootprints)
+{
+    constexpr auto       mask = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+    const viewer::Shadow reference("reference", 0.0, 2.0, 0.0, 0.3, 0.3, 6.0, mask, false, nullptr);
+    const viewer::Shadow thin("thin", 0.0, 2.0, 0.0, 0.06, 0.1, 6.0, mask, false, nullptr);
+    const viewer::Shadow at_threshold("at threshold", 0.0, 2.0, 0.0, 0.2, 0.06, 6.0, mask, false, nullptr);
+    const viewer::Shadow wide("wide", 0.0, 2.0, 0.0, 0.06, 0.3, 6.0, mask, false, nullptr);
+    const viewer::Shadow zero("zero", 0.0, 2.0, 0.0, 0.0, 0.0, 6.0, mask, false, nullptr);
+    const viewer::Shadow short_thin("short thin", 0.0, 0.0, 0.0, 0.1, 0.06, 0.1, mask, false, nullptr);
+
+    const float reference_collar = reference.vertices_->at(5).x() - reference.vertices_->at(4).x();
+    EXPECT_FLOAT_EQ(thin.vertices_->at(5).x() - thin.vertices_->at(4).x(), 0.5f * reference_collar);
+    EXPECT_FLOAT_EQ(thin.vertices_->at(5).y() - thin.vertices_->at(1).y(), 0.5f * reference_collar);
+    EXPECT_FLOAT_EQ(at_threshold.vertices_->at(5).x() - at_threshold.vertices_->at(4).x(), reference_collar);
+    EXPECT_FLOAT_EQ(wide.vertices_->at(5).x() - wide.vertices_->at(4).x(), reference_collar);
+    EXPECT_FLOAT_EQ(zero.vertices_->at(5).x() - zero.vertices_->at(4).x(), 0.0f);
+    EXPECT_NEAR(short_thin.vertices_->at(5).x() - short_thin.vertices_->at(4).x(), 0.1, 1e-6);
+}
+
+TEST(ShadowTest, RoadShadowStaysVisibleAcrossSmallElevationChanges)
+{
+    ASSERT_TRUE(Position::LoadOpenDrive("../../../resources/xodr/straight_500m.xodr"));
+    Position pos;
+    ASSERT_EQ(pos.SetLanePos(1, -1, 10.0, 0.0), Position::ReturnCode::OK);
+
+    constexpr auto mask = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+    viewer::Shadow shadow("pole", 0.0, -0.00645162, 0.0, 0.5, 0.5, 0.6, mask, false, nullptr);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+    EXPECT_DOUBLE_EQ(shadow.z_, 0.0);
+    EXPECT_FLOAT_EQ(shadow.color_->at(0).a(), 1.0f);
+
+    pos.SetZRelative(-0.005);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+
+    pos.SetZRelative(0.005);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+
+    pos.SetZRelative(0.02);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_NEAR(shadow.color_->at(0).a(), 0.998, 1e-6);
+
+    pos.SetZRelative(-0.01);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+
+    pos.SetZRelative(-0.011);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), 0u);
+}
+
+TEST(ShadowTest, GroundPlaneElevationUpdatesShadowAppearance)
+{
+    Position::GetOpenDrive()->Reset();
+    Position       pos;
+    constexpr auto mask = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+    viewer::Shadow shadow("pole", 0.0, -0.00645162, 0.0, 0.5, 0.5, 0.6, mask, false, nullptr);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+    EXPECT_DOUBLE_EQ(shadow.z_, 0.0);
+
+    pos.SetZ(2.0);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_NEAR(shadow.color_->at(0).a(), 0.8, 1e-6);
+    pos.SetZ(-0.005);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+    EXPECT_DOUBLE_EQ(shadow.pat_->getPosition().z(), 0.0);
+
+    pos.SetZ(-0.02);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_EQ(shadow.pat_->getNodeMask(), 0u);
+}
+
+TEST(ShadowTest, FlatSceneFallbackRequiresLessThanOneCentimeter)
+{
+    auto* odr = Position::GetOpenDrive();
+    odr->Reset();
+    const osg::ref_ptr<osg::Geode> environment = new osg::Geode;
+    constexpr auto                 mask        = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+    Position                       pos;
+    pos.SetZ(0.0);
+
+    for (const float height : {0.005f, 0.01f, 0.02f})
+    {
+        SCOPED_TRACE(height);
+        environment->removeDrawables(0, environment->getNumDrawables());
+        environment->addDrawable(osg::createTexturedQuadGeometry(osg::Vec3(0, 0, 0), osg::Vec3(10, 0, 0), osg::Vec3(0, 10, height)));
+        const roadgeom::RoadGeom mesh(odr, environment.get(), osg::Vec3d(), false, false, "");
+        viewer::Shadow           shadow("flat scene", 0.0, 0.0, std::nan(""), 0.5, 0.5, 0.6, mask, false, nullptr, mesh.flat_scene_z_);
+        shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+
+        if (height == 0.005f)
+        {
+            EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+            EXPECT_NEAR(shadow.pat_->getPosition().z(), height, 1e-6);
+            pos.SetZ(-0.02);
+            shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+            EXPECT_EQ(shadow.pat_->getNodeMask(), 0u);
+            pos.SetZ(0.0);
+        }
+        else
+        {
+            EXPECT_EQ(shadow.pat_->getNodeMask(), 0u);
+        }
+    }
+}
+
+TEST(ShadowTest, ThickSceneFallbackFollowsEntityElevation)
+{
+    auto* odr = Position::GetOpenDrive();
+    odr->Reset();
+    const osg::ref_ptr<osg::Geode> environment = new osg::Geode;
+    constexpr auto                 mask        = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+    Position                       pos;
+
+    for (const float height : {0.01f, 0.02f, 0.11f})
+    {
+        SCOPED_TRACE(height);
+        environment->removeDrawables(0, environment->getNumDrawables());
+        environment->addDrawable(osg::createTexturedQuadGeometry(osg::Vec3(0, 0, 0), osg::Vec3(10, 0, 0), osg::Vec3(0, 10, height)));
+        const roadgeom::RoadGeom mesh(odr, environment.get(), osg::Vec3d(), false, false, "");
+        viewer::Shadow shadow("entity", 0.0, 0.0, std::nan(""), 4.0, 2.0, 1.5, mask, true, nullptr, mesh.flat_scene_z_, mesh.entity_shadow_fallback_);
+        pos.SetZ(2.0);
+        shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+
+        EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+        EXPECT_DOUBLE_EQ(shadow.pat_->getPosition().z(), 2.0);
+        pos.SetZ(-1.0);
+        shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+        EXPECT_EQ(shadow.pat_->getNodeMask(), static_cast<osg::Node::NodeMask>(mask));
+        EXPECT_DOUBLE_EQ(shadow.pat_->getPosition().z(), -1.0);
+        EXPECT_FLOAT_EQ(shadow.color_->at(0).a(), 1.0f);
+
+        viewer::Shadow on_plane("plane", 0.0, 0.0, -2.0, 4.0, 2.0, 1.5, mask, true, nullptr, mesh.flat_scene_z_, mesh.entity_shadow_fallback_);
+        on_plane.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+        EXPECT_DOUBLE_EQ(on_plane.pat_->getPosition().z(), -2.0);
+    }
+}
+
+TEST(ShadowTest, ProjectionUsesWorldOrientationOnBankedAndSlopedRoad)
+{
+    ASSERT_TRUE(Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/straight_500_superelevation_elevation_curve.xodr"));
+    Position pos;
+    pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::P_ABS | Position::PosMode::R_ABS);
+    pos.SetPitch(0.0);
+    pos.SetRoll(0.0);
+    ASSERT_EQ(pos.SetLanePos(1, -1, 150.0, 0.0), Position::ReturnCode::OK);
+    ASSERT_NEAR(pos.GetR(), 0.0, 1e-6);
+    ASSERT_GT(std::abs(std::sin(pos.GetRRelative())), 0.1);
+
+    constexpr auto mask = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+    viewer::Shadow shadow("pole", 0.0, 0.0, 0.0, 0.1, 0.1, 2.0, mask, false, nullptr);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_NEAR(shadow.scale_x_, 1.0, 1e-6);
+    EXPECT_NEAR(shadow.scale_y_, 1.0, 1e-6);
+    EXPECT_GT(std::abs((osg::Vec3d(0.0, 1.0, 0.0) * osg::Matrixd::rotate(shadow.pat_->getAttitude())).z()), 0.1);
+
+    ASSERT_EQ(pos.SetLanePos(1, -1, 300.0, 0.0), Position::ReturnCode::OK);
+    ASSERT_NEAR(pos.GetP(), 0.0, 1e-6);
+    ASSERT_GT(std::abs(std::sin(pos.GetPRelative())), 0.1);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_NEAR(shadow.scale_x_, 1.0, 1e-6);
+    EXPECT_NEAR(shadow.scale_y_, 1.0, 1e-6);
+
+    pos.SetPitch(0.3);
+    pos.SetRoll(0.25);
+    shadow.UpdatePositionAndOrientation(&pos, 0.0, 0.0);
+    EXPECT_NEAR(shadow.scale_x_, std::abs(std::cos(pos.GetP())) + 20.0 * std::abs(std::sin(pos.GetP())), 1e-6);
+    EXPECT_NEAR(shadow.scale_y_, std::abs(std::cos(pos.GetR())) + 20.0 * std::abs(std::sin(pos.GetR())), 1e-6);
+}
+
 TEST(RoadGeomTest, LaneHeightBoundaryBeforeRejectedCandidate)
 {
     ASSERT_TRUE(Position::LoadOpenDriveFromXMLString(R"(

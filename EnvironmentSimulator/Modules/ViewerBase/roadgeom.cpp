@@ -601,6 +601,25 @@ namespace roadgeom
         : environment_(environment),
           origin_(origin)
     {
+        if (environment_ != nullptr && (odr == nullptr || odr->GetNumOfRoads() == 0))
+        {
+            osg::ComputeBoundsVisitor bounds;
+            environment_->accept(bounds);
+            const osg::BoundingBox& bb = bounds.getBoundingBox();
+            if (bb.valid())
+            {
+                const float scene_height = bb.zMax() - bb.zMin();
+                if (scene_height < FLAT_SCENE_HEIGHT_LIMIT)
+                {
+                    flat_scene_z_ = bb.zMax();
+                }
+                else
+                {
+                    entity_shadow_fallback_ = true;
+                }
+            }
+        }
+
         if (!generate_road_surface && !generate_road_objects)
         {
             return;

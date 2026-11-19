@@ -2961,6 +2961,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
 
     if (!SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::CONFIG_ENUM::DISABLE_SHADOWS))
     {
+        const double flat_scene_z           = roadGeom ? roadGeom->flat_scene_z_ : std::nan("");
+        const bool   entity_shadow_fallback = roadGeom && roadGeom->entity_shadow_fallback_;
+
         Shadow* shadow_model_ = new Shadow("shadow_tx_model",
                                            xc - refpoint_x_offset,
                                            tempModelBB._min.z(),
@@ -2970,7 +2973,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
                                            height,
                                            NodeMask::NODE_MASK_ENTITY_MODEL,
                                            type == EntityModel::EntityType::VEHICLE,
-                                           shadow_texture_);
+                                           shadow_texture_,
+                                           flat_scene_z,
+                                           entity_shadow_fallback);
 
         Shadow* shadow_bb_ = new Shadow("shadow_tx_filled_bb",
                                         xc - refpoint_x_offset,
@@ -2981,7 +2986,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
                                         bbDimensions.z(),
                                         NodeMask::NODE_MASK_ENTITY_BB_FILLED,
                                         type == EntityModel::EntityType::VEHICLE,
-                                        shadow_texture_);
+                                        shadow_texture_,
+                                        flat_scene_z,
+                                        entity_shadow_fallback);
 
         emodel->SetShadowModel(shadow_model_);
         emodel->SetShadowBB(shadow_bb_);
@@ -3170,9 +3177,13 @@ viewer::Shadow::Shadow(std::string                  name,
                        double                       bb_height,
                        NodeMask                     node_mask,
                        bool                         is_vehicle,
-                       osg::ref_ptr<osg::Texture2D> texture)
+                       osg::ref_ptr<osg::Texture2D> texture,
+                       double                       flat_scene_z,
+                       bool                         entity_shadow_fallback)
     : z_(z),
       ground_plane_z_(ground_plane_z),
+      flat_scene_z_(flat_scene_z),
+      entity_shadow_fallback_(entity_shadow_fallback),
       p_(0.0),
       r_(0.0),
       length_(bb_length),
@@ -3303,36 +3314,60 @@ viewer::Shadow::Shadow(std::string                  name,
     pat_->setNodeMask(node_mask);
 
     Recalculate();
+    if (color_->at(0).a() == 0.0f)
+    {
+        // A zero-footprint shadow must not mask other shadows in the stencil buffer.
+        geode->setNodeMask(0u);
+    }
 }
 
 void viewer::Shadow::UpdatePositionAndOrientation(roadmanager::Position* pos, double origin_x, double origin_y)
 {
     bool recalculate = false;
 
-    // establish ground level for the shadow, in priority order: road surface, then ground plane
-    // if none of the two is present, skip shadow altogether
-    double z_ground = std::nan("");
+    // Prefer a known surface over using the entity's own elevation.
+    double z_ground       = std::nan("");
+    double z_relative     = std::nan("");
+    bool   follows_entity = false;
     if (roadmanager::Position::GetOpenDrive()->GetNumOfRoads() > 0)
     {
-        if (abs(pos->GetZRelative() - z_) > 1e-2)
-        {
-            // object elevation above road changed, recalculate shadow intensity and edge fading
-            z_          = pos->GetZRelative();
-            recalculate = true;
-        }
-        z_ground = pos->GetZRoad();
+        z_ground   = pos->GetZRoad();
+        z_relative = pos->GetZRelative();
     }
     else if (!std::isnan(ground_plane_z_))
     {
-        z_ground = ground_plane_z_;
-        z_       = pos->GetZ() - z_ground;
+        z_ground   = ground_plane_z_;
+        z_relative = pos->GetZ() - z_ground;
+    }
+    else if (!std::isnan(flat_scene_z_))
+    {
+        z_ground   = flat_scene_z_;
+        z_relative = pos->GetZ() - z_ground;
+        // An entity at the base of a thin scene may be just below its top.
+        if (z_relative >= -RoadGeom::FLAT_SCENE_HEIGHT_LIMIT)
+        {
+            z_relative = MAX(0.0, z_relative);
+        }
+    }
+    else if (entity_shadow_fallback_)
+    {
+        z_ground       = pos->GetZ();
+        z_relative     = 0.0;
+        follows_entity = true;
     }
 
-    if (std::isnan(z_ground) || z_ < -SMALL_NUMBER)
+    if (std::isnan(z_ground) || z_relative < -1e-2)
     {
         // no ground or entity below ground level
         pat_->setNodeMask(0x0);
         return;
+    }
+
+    if (!z_initialized_ || abs(z_relative - z_) > 1e-2)
+    {
+        z_             = z_relative;
+        z_initialized_ = true;
+        recalculate    = true;
     }
 
     if (pat_->getNodeMask() != static_cast<osg::Node::NodeMask>(node_mask_))
@@ -3343,20 +3378,26 @@ void viewer::Shadow::UpdatePositionAndOrientation(roadmanager::Position* pos, do
 
     pat_->setPosition(osg::Vec3(pos->GetX() - origin_x, pos->GetY() - origin_y, z_ground));
 
-    // for absolute position mode, the pitch offset is included, for relative mode the pitch consider reference line only
-    // we need to add an offset for the effect of roll change rate on local pitch
-    int    mode     = (pos->GetMode(roadmanager::Position::PosModeType::SET) & roadmanager::Position::PosMode::P_MASK);
-    double p_offset = (mode == roadmanager::Position::PosMode::P_ABS) ? pos->GetPOffset() : 0.0;
+    if (follows_entity)
+    {
+        pat_->setAttitude(osg::Quat(pos->GetH(), osg::Vec3(osg::Z_AXIS)));
+    }
+    else
+    {
+        // Include pitch from the road's roll change rate in absolute pitch mode.
+        int    mode     = (pos->GetMode(roadmanager::Position::PosModeType::SET) & roadmanager::Position::PosMode::P_MASK);
+        double p_offset = (mode == roadmanager::Position::PosMode::P_ABS) ? pos->GetPOffset() : 0.0;
 
-    pat_->setAttitude(osg::Quat(pos->GetR() - pos->GetRRelative(),
-                                osg::Vec3(osg::X_AXIS),
-                                pos->GetP() - pos->GetPRelative() + p_offset,
-                                osg::Vec3(osg::Y_AXIS),
-                                pos->GetH(),
-                                osg::Vec3(osg::Z_AXIS)));
+        pat_->setAttitude(osg::Quat(pos->GetR() - pos->GetRRelative(),
+                                    osg::Vec3(osg::X_AXIS),
+                                    pos->GetP() - pos->GetPRelative() + p_offset,
+                                    osg::Vec3(osg::Y_AXIS),
+                                    pos->GetH(),
+                                    osg::Vec3(osg::Z_AXIS)));
+    }
 
-    double p = pos->GetPRelative();
-    double r = pos->GetRRelative();
+    double p = pos->GetP();
+    double r = pos->GetR();
 
     if (abs(p - p_) > 0.1 || abs(r - r_) > 0.1)
     {
@@ -3378,8 +3419,9 @@ void viewer::Shadow::Recalculate()
 {
     double add_z = is_vehicle_ ? vehicle_z_offset_ : 0.0;  // For vehicles, consider some ground clearance for shadow softening
 
-    // Ensure collar size is within specified bounds
-    double collar_size = MAX(collar_min_size_, MIN((z_ + add_z + height_) * height_factor_, collar_max_size_));
+    const double thickness        = MAX(length_, width_);
+    const double thickness_factor = collar_min_size_ > 0.0 && thickness < collar_min_size_ ? MAX(0.0, thickness) / collar_min_size_ : 1.0;
+    double       collar_size      = MAX(collar_min_size_, MIN((z_ + add_z + height_) * height_factor_, collar_max_size_)) * thickness_factor;
 
     // calculate collar offset, from center at object edge, + outwards, - inwards
     double collar_offset = collar_offset_factor_ * collar_size / 2 + add_z * offset_z_factor_;
@@ -3405,7 +3447,7 @@ void viewer::Shadow::Recalculate()
     }
     vertices_->dirty();
 
-    color_->at(0).a() = MAX(min_alpha_, 1.0f - z_ / max_z_);  // weaker shadow with object elevation, but never fully transparent
+    color_->at(0).a() = static_cast<float>(MAX(min_alpha_, 1.0 - z_ / max_z_) * thickness_factor);
     color_->dirty();
 }
 

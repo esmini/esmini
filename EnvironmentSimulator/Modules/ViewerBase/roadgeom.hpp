@@ -68,6 +68,10 @@ namespace roadgeom
 
         const double ground_plane_default_z_offset_ = -1;
         double       ground_plane_z_                = std::nan("");  // height of any added ground plane
+        double       flat_scene_z_                  = std::nan("");
+        bool         entity_shadow_fallback_        = false;
+
+        static constexpr float FLAT_SCENE_HEIGHT_LIMIT = 0.01f;
 
         osg::ref_ptr<osg::Group>                                  root_;
         osg::ref_ptr<osg::Vec4Array>                              color_asphalt_ = new osg::Vec4Array;

@@ -352,7 +352,9 @@ namespace viewer
                double                       bb_height,
                NodeMask                     node_mask,
                bool                         is_vehicle,
-               osg::ref_ptr<osg::Texture2D> texture);
+               osg::ref_ptr<osg::Texture2D> texture,
+               double                       flat_scene_z           = std::nan(""),
+               bool                         entity_shadow_fallback = false);
 
         void UpdatePositionAndOrientation(roadmanager::Position* pos, double origin_x, double origin_y);
         void Recalculate();
@@ -361,27 +363,30 @@ namespace viewer
         osg::ref_ptr<osg::Vec3Array>                 vertices_;
         osg::ref_ptr<osg::Vec4Array>                 color_;
 
-        double   z_                    = 0.0;  // relative elevation of object wrt road surface
-        double   p_                    = 0.0;  // relative pitch of object wrt road surface
-        double   r_                    = 0.0;  // relative roll of object wrt road surface
-        double   scale_x_              = 1.0;  // longitudinal scale factor, wrt object orientation
-        double   scale_y_              = 1.0;  // lateral scale factor, wrt object orientation
-        double   max_z_                = 0.0;
-        double   length_               = 0.0;
-        double   width_                = 0.0;
-        double   height_               = 0.0;
-        double   min_alpha_            = 0.0;
-        bool     is_vehicle_           = false;
-        double   height_factor_        = 0.0;
-        double   roundness_            = 0.0;           // shift inner shadow edge from circle center outwards [0,1]
-        double   collar_min_size_      = 0.0;           // minimum size of the collar (outer area where shadow fades)
-        double   collar_max_size_      = 0.0;           // maximum size of the collar
-        double   collar_offset_factor_ = 0.0;           // offset factor for the collar, moving collar inwards (-) or outwards (+) [-1,1]
-        double   vehicle_z_offset_     = 0.0;           // added Z elevation for vehicle ground clearance
-        double   offset_z_factor_      = 0.0;           // adjust collar offset based on added Z elevation [-1, 1]
-        double   x_offset_             = 0.0;           // x offset from shadow rectangle center
-        double   ground_plane_z_       = std::nan("");  // height of ground plane, if any
-        NodeMask node_mask_            = NodeMask::NODE_MASK_NONE;
+        double   z_                      = 0.0;  // relative elevation of object wrt road surface
+        double   p_                      = 0.0;  // world pitch of object
+        double   r_                      = 0.0;  // world roll of object
+        double   scale_x_                = 1.0;  // longitudinal scale factor, wrt object orientation
+        double   scale_y_                = 1.0;  // lateral scale factor, wrt object orientation
+        double   max_z_                  = 0.0;
+        double   length_                 = 0.0;
+        double   width_                  = 0.0;
+        double   height_                 = 0.0;
+        double   min_alpha_              = 0.0;
+        bool     is_vehicle_             = false;
+        bool     z_initialized_          = false;
+        double   height_factor_          = 0.0;
+        double   roundness_              = 0.0;           // shift inner shadow edge from circle center outwards [0,1]
+        double   collar_min_size_        = 0.0;           // minimum size of the collar (outer area where shadow fades)
+        double   collar_max_size_        = 0.0;           // maximum size of the collar
+        double   collar_offset_factor_   = 0.0;           // offset factor for the collar, moving collar inwards (-) or outwards (+) [-1,1]
+        double   vehicle_z_offset_       = 0.0;           // added Z elevation for vehicle ground clearance
+        double   offset_z_factor_        = 0.0;           // adjust collar offset based on added Z elevation [-1, 1]
+        double   x_offset_               = 0.0;           // x offset from shadow rectangle center
+        double   ground_plane_z_         = std::nan("");  // height of ground plane, if any
+        double   flat_scene_z_           = std::nan("");  // height of flat environment model, if any
+        bool     entity_shadow_fallback_ = false;
+        NodeMask node_mask_              = NodeMask::NODE_MASK_NONE;
     };
 
     class EntityModel

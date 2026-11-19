@@ -105,6 +105,8 @@ Add optional flat ground plane: +
 
 The generated model can be saved, see: link:openscenegraph-3d-models.html#_export_generated_3d_model[Export generated 3D model].
 
+Shadows will normally be projected onto the generated road network or the ground plane. If any `SceneGraphFile` is provided and is found to be flat, it will be used as the surface for shadows. Otherwise, if not flat, the fallback solution is to let shadow follow entity elevation.
+
 ==== Background color
 esmini default background color is skyish, light blue. Change by launch argument --clear-color <r,g,b>, where r, g, b are the red, green, blue components as floating numbers in the range (0:1). Some examples:
 
