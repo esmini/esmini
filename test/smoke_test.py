@@ -23,6 +23,16 @@ class TestSuite(unittest.TestCase):
         )
         return result.stdout.find("CMAKE_BUILD_TYPE:STRING=" + build_type) != -1
 
+    def test_relative_road_init_order(self):
+        scenario = os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/relative_road_init_order.xosc')
+        log, _, _, _ = run_scenario(scenario, COMMON_ESMINI_ARGS)
+
+        self.assertTrue(re.search('Loading .*relative_road_init_order.xosc', log) is not None)
+        csv = generate_csv()
+        self.assertTrue(re.search(r'\n0\.000, 0, Car1, 100\.000, -1\.500, 0\.000', csv))
+        self.assertTrue(re.search(r'\n0\.000, 1, Car2, 110\.000, -1\.600, 0\.000', csv))
+        self.assertTrue(re.search(r'\n0\.000, 2, Car3, 105\.000, -1\.400, 0\.000', csv))
+
     def test_cut_in(self):
         log, _, _, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
 
