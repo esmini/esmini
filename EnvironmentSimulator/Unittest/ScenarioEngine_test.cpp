@@ -53,7 +53,7 @@ static void scenario_step(ScenarioEngine* scenario_engine, double dt)
 }
 
 #if defined(_USE_OSI) && _RUN_OSI_TESTS
-class OSIFileOptionsTest : public ::testing::TestWithParam<std::tuple<int, int>>
+class OSIFileTest : public ::testing::Test
 {
 protected:
     void SetUp() override
@@ -102,6 +102,10 @@ protected:
     std::set<fs::path> existing_traces_;
     fs::path           directory_;
     std::string        scenario_;
+};
+
+class OSIFileOptionsTest : public OSIFileTest, public ::testing::WithParamInterface<std::tuple<int, int>>
+{
 };
 
 TEST_P(OSIFileOptionsTest, FilenameCombinations)
@@ -171,6 +175,48 @@ TEST_P(OSIFileOptionsTest, FilenameCombinations)
 
 // File: 0=absent, 1=bare, 2=explicit; suffix: 0=absent, 1=named, 2=relative, 3=absolute, 4=directory.
 INSTANTIATE_TEST_SUITE_P(OSIFileOptions, OSIFileOptionsTest, ::testing::Combine(::testing::Range(0, 3), ::testing::Range(0, 5)));
+
+class OSIBareFileOptionTest : public OSIFileTest
+{
+protected:
+    void RunWithBareOption(const char* option)
+    {
+        // scenario_ comes from OSIFileTest fixture
+        std::vector<std::string> args = {"esmini", "--osc", scenario_, "--headless", "--disable_log", option};
+        std::vector<char*>       argv;
+        for (auto& arg : args)
+        {
+            argv.push_back(&arg[0]);
+        }
+        ScenarioPlayer player(static_cast<int>(argv.size()), argv.data());
+        ASSERT_EQ(player.Init(), 0);
+        // Traffic commands are only written when scenario actions start.
+        for (int step = 0; step < 10 && !player.IsQuitRequested(); ++step)
+        {
+            player.Frame(1.0);
+        }
+    }
+};
+
+MATCHER_P(HasDefaultTraceFilename, type, "")
+{
+    const std::regex pattern("[0-9]{8}T[0-9]{6}Z_" + std::string(type) + "_[0-9]+_[0-9]+_[1-9][0-9]*\\.osi");
+    return std::regex_match(arg.filename().string(), pattern);
+}
+
+TEST_F(OSIBareFileOptionTest, AllTraces)
+{
+    ASSERT_NO_FATAL_FAILURE(RunWithBareOption("--osi_files"));
+    // Require exactly one default GT filename and one default TC filename, in either directory iteration order.
+    EXPECT_THAT(GetTraces(), ::testing::UnorderedElementsAre(HasDefaultTraceFilename("gt"), HasDefaultTraceFilename("tc")));
+}
+
+TEST_F(OSIBareFileOptionTest, TrafficCommand)
+{
+    ASSERT_NO_FATAL_FAILURE(RunWithBareOption("--osi_tc_file"));
+    // Require exactly one trace, and check that its filename matches the default TC pattern.
+    EXPECT_THAT(GetTraces(), ::testing::ElementsAre(HasDefaultTraceFilename("tc")));
+}
 
 // GetParam() selects compression. Output files are removed by TearDown().
 class OSITraceWriterTest : public ::testing::TestWithParam<bool>

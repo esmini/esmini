@@ -154,9 +154,8 @@ bool ScenarioPlayer::OpenOSIFile(const char* filename, OSIReporter::OSITraceMess
     const std::string suffix_path = SE_Env::Inst().GetOptions().GetOptionValue(ground_truth ? "osi_file_suffix" : "osi_tc_file_suffix");
     // Extract suffix in case we have received a path and suffix
     std::string suffix = FileNameOf(suffix_path);
-    // path is input filename, if set. Default value also means no explicit filename was set
-    std::string path =
-        (filename == nullptr || filename == SE_Env::Inst().GetOptions().GetOptionByEnum(esmini_options::OSI_FILE)->default_value_) ? "" : filename;
+    // path is input filename, if set. Default value, indicated by '<#frames>', also means no explicit filename was set
+    std::string path = (filename == nullptr || std::string(filename).find("<#frames>") != std::string::npos) ? "" : filename;
     // No path received through filename, then path is from the suffix option
     if (path.empty() || path == ".")
     {
@@ -2070,7 +2069,12 @@ int ScenarioPlayer::Init()
 
     if (opt.GetOptionSet("osi_files"))
     {
+        // If no value provided, so we have default value as argument, clear it before creating the files
         std::string arg = opt.GetOptionValue("osi_files");
+        if (arg == opt.GetOption("osi_files")->default_value_)
+        {
+            arg.clear();
+        }
         opt.SetOptionValue("osi_file_suffix", arg);
         opt.SetOptionValue("osi_tc_file_suffix", arg);
     }
