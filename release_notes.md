@@ -1,5 +1,43 @@
 ## esmini release notes
 
+### 2026-11-23 Version 3.12.0
+
+New features:
+- Add support for stochastic distributions
+  - see brief info in updated [User guide - Parameter distributions](https://esmini.github.io/scenario-features.html#_parameter_distributions)
+  - update OSC example test suite to include stochastic permutation runs
+- Update SUMO integration
+  - bump SUMO to v1.28 (from v1.6)
+  - update and move build script to [esmini-dependencies/sumo](https://github.com/esmini/esmini-dependencies/tree/main/sumo)
+  - adjust positions for SUMO front buffer reference point
+  - fix duplicate ID bug when adding vehicles to SUMO
+
+Improvements and fixes:
+- Improve shadows
+  - decrease footprint and intensity for thin objects
+  - add shadows also for scenarios lacking road network (no OpenDRIVE):
+    - flat environment model (.osgb): Project on ground
+    - non flat environment: Shadow follows entity elevation
+  - some further bug fixes and small improvements
+- Update documentation on road object visibility and export, see:
+  - [User guide - Road object Visualization notes](https://esmini.github.io/scenario-features.html#_visualization_notes) ([issue #854](https://github.com/esmini/esmini/issues/854))
+  - [User guide - Export generated 3D model](https://esmini.github.io/openscenegraph-3d-models.html#_export_generated_3d_model) ([issue #593](https://github.com/esmini/esmini/issues/593))
+- Update documentation on linux system dependencies
+  - specify dependencies needed per use case, see:
+    - [User guide - Build esmini - quick guide](https://esmini.github.io/getting-started.html#_build_esmini_quick_guide)
+    - [User guide - Additional platform dependencies](https://esmini.github.io/build-guide.html#_additional_platform_dependencies)
+- Fix TrafficCommand OSI tracefile wrong default name
+- Remove some obsolete build scripts (from [scripts folder](https://github.com/esmini/esmini/tree/master/scripts))
+  - look in [esmini-dependencies](https://github.com/esmini/esmini-dependencies) instead
+
+Build and CI updates:
+- Update cmake logic
+  - external dependencies only downloaded if used
+- Bump CI and release macOS version to 15
+- Cleanup a few cpp flags centralizing v17 setting ([issue #838](https://github.com/esmini/esmini/issues/838))
+- Update FBX handling in compile_osg_apps.sh
+  - manual download now required, steps described
+
 ### 2026-11-05 Version 3.11.0
 
 New features and behaviors:
@@ -16,7 +54,6 @@ New features and behaviors:
   - add API function `SE_OpenCustomOSISocket` exposing new parameters
 
 Improvements and fixes:
-
 - Fix [UserDefinedAction](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.4.0/generated/content/UserDefinedAction.html) never ending ([PR #841](https://github.com/esmini/esmini/pull/841))
 - Update info on esmini dependencies
   - move details from [User guide](https://esmini.github.io/build-guide.html#_external_dependency_details) to esmini-dependencies [release notes](https://github.com/esmini/esmini-dependencies/blob/main/release_notes.md)
