@@ -453,6 +453,8 @@ video::gvfFI4hgw1M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 The reference point can be placed anywhere along the vehicle x-axis, relative mid rear axle, by specifying the Vehicle property `refpoint_x_offset`.
 
+When following a road, route, or trajectory, the reference point follows the specified path and the vehicle heading is adjusted according to the rear axle position. This heading adjustment preserves the reference point's road coordinates.
+
 .Original reference point (red) can be moved along vehicle x-axis, for example at midpoint or front axle.
 image::x_offset.png[]
 

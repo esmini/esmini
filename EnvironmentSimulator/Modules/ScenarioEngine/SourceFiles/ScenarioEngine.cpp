@@ -331,7 +331,8 @@ int ScenarioEngine::step(double deltaSimTime)
                 {
                     double xy_heading = GetAngleInInterval2PI(atan2(v->pos_.GetY() - v->rear_axle_pos_.y(), v->pos_.GetX() - v->rear_axle_pos_.x()));
 
-                    v->pos_.SetInertiaPos(v->pos_.GetX(), v->pos_.GetY(), xy_heading);
+                    // Update heading, align pitch and roll, preserve road coordinates
+                    v->pos_.SetInertiaPos(v->pos_.GetX(), v->pos_.GetY(), xy_heading, false);
 
                     // calculate new rear axle position and then its speed
                     SE_Vector rac         = SE_Vector(v->pos_.GetX(), v->pos_.GetY()) + SE_Vector(-v->GetRefpointXOffset(), 0.0).Rotate(xy_heading);

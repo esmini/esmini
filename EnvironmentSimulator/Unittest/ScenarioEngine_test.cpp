@@ -6087,6 +6087,75 @@ TEST(ActionTest, TestInstantLaneChange)
     delete se;
 }
 
+TEST(RoutingTest, ReferencePointOffsetPreservesRouteMovement)
+{
+    for (double dt : {0.01, 0.1})
+    {
+        for (double offset : {0.0, 3.1018})
+        {
+            SCOPED_TRACE(testing::Message() << "dt=" << dt << ", offset=" << offset);
+            pugi::xml_document doc;
+            ASSERT_TRUE(doc.load_file("../../../EnvironmentSimulator/Unittest/xosc/route_detour.xosc"));
+            doc.child("OpenSCENARIO").child("RoadNetwork").child("LogicFile").attribute("filepath") =
+                "../../../EnvironmentSimulator/Unittest/xodr/route_strategy_test_road.xodr";
+            auto storyboard = doc.child("OpenSCENARIO").child("Storyboard");
+            storyboard.remove_child("Story");
+            auto actions = storyboard.child("Init").child("Actions").child("Private");
+            for (auto action : actions.children("PrivateAction"))
+            {
+                auto position = action.child("TeleportAction").child("Position").child("LanePosition");
+                if (position)
+                {
+                    position.attribute("roadId") = 200;
+                    position.attribute("s")      = 0.5;
+                }
+                auto speed = action.child("LongitudinalAction").child("SpeedAction").child("SpeedActionTarget").child("AbsoluteTargetSpeed");
+                if (speed)
+                {
+                    speed.attribute("value") = 2.7777777777777777;
+                }
+            }
+            auto route                = actions.child("PrivateAction").child("RoutingAction").child("AssignRouteAction").child("Route");
+            auto first                = route.child("Waypoint").child("Position").child("LanePosition");
+            first.attribute("roadId") = 2;
+            first.attribute("s")      = 25.0;
+            auto last                 = route.child("Waypoint").next_sibling("Waypoint").child("Position").child("LanePosition");
+            last.attribute("roadId")  = 3;
+            last.attribute("s")       = 100.0;
+            route.remove_child(route.last_child());
+
+            ScenarioEngine engine(doc, true);
+            ASSERT_EQ(engine.GetInitStatus(), 0);
+            ASSERT_EQ(engine.entities_.object_.size(), 1);
+            auto* vehicle = static_cast<Vehicle*>(engine.entities_.object_[0]);
+            vehicle->SetRefpointXOffset(offset);
+            vehicle->AlignRearAxlePosition();
+            scenario_step(&engine, 0.0);
+
+            for (int i = 0; i < static_cast<int>(3.0 / dt); i++)
+            {
+                Position expected = vehicle->pos_;
+                expected.SetRoute(nullptr);
+                ASSERT_GE(expected.MoveAlongS(vehicle->GetSpeed() * dt,
+                                              0.0,
+                                              vehicle->GetJunctionSelectorAngle(),
+                                              true,
+                                              Position::MoveDirectionMode::HEADING_DIRECTION,
+                                              false),
+                          Position::ReturnCode::OK);
+                scenario_step(&engine, dt);
+                ASSERT_EQ(vehicle->pos_.GetTrackId(), expected.GetTrackId());
+                ASSERT_NEAR(vehicle->pos_.GetS(), expected.GetS(), 1e-9);
+                ASSERT_NEAR(vehicle->pos_.GetT(), expected.GetT(), 1e-9);
+                ASSERT_NEAR(vehicle->pos_.GetX(), expected.GetX(), 1e-9);
+                ASSERT_NEAR(vehicle->pos_.GetY(), expected.GetY(), 1e-9);
+                ASSERT_TRUE(vehicle->pos_.route_->OnRoute());
+                ASSERT_NEAR(vehicle->pos_.route_->currentPos_.GetS(), vehicle->pos_.GetS(), 1e-9);
+            }
+        }
+    }
+}
+
 TEST(RoutingTest, TestPositionOffRoute)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/route_detour.xosc", true);
