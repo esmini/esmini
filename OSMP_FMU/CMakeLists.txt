@@ -107,10 +107,15 @@ set(DEBUG_BREAKS
 
 string(TIMESTAMP FMUTIMESTAMP UTC)
 string(MD5 FMUGUID modelDescription.in.xml)
+# Versions for the model description template: OSI version without the package suffix (e.g. 3.5.0_2 -> 3.5.0)
+string(REGEX REPLACE "_.*$" "" OSIVERSION "${OSI_VERSION}")
+set(OSMPVERSION "${OSMP_VERSION}")
 configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Modules/CommonMini
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/fmt/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${IMPLOT_RELEASE_TAG}/${EXT_INCL_DIR}/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${OSI_RELEASE_TAG}/${EXT_INCL_DIR}/include)
 
@@ -134,6 +139,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../externals/fmi2/headers)
 add_library(${TARGET} SHARED esmini.cpp)
 set_target_properties(${TARGET} PROPERTIES PREFIX "")
 target_compile_definitions(${TARGET} PRIVATE "FMU_SHARED_OBJECT")
+if(STATIC_LINKING)
+    # The FMU is linked with the OpenSceneGraph viewer (ViewerBase, OSG_LIBRARIES below)
+    target_compile_definitions(${TARGET} PRIVATE "_USE_OSG")
+endif()
 
 if(STATIC_LINKING)
     message("Link esmini statically")
@@ -199,12 +208,11 @@ add_custom_command(
     TARGET ${TARGET}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/buildfmu"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/sources"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}"
     COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/modelDescription.xml" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu"
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET}> $<$<PLATFORM_ID:Windows>:$<$<CONFIG:Debug>:$<TARGET_PDB_FILE:${TARGET}>>>
             "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}"
     COMMAND
         ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/buildfmu" ${CMAKE_COMMAND} -E tar "cfv" "../esmini.fmu" --format=zip
-        "modelDescription.xml" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/sources"
+        "modelDescription.xml"
         "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}")

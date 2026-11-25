@@ -109,6 +109,7 @@ public:
     fmi2Status SetBoolean(const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]);
     fmi2Status SetString(const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]);
     bool get_slave_terminated() { return fmiSlaveTerminated; };
+    void forward_esmini_log(const std::string& message);
 
 protected:
     /* Internal Implementation */
@@ -189,6 +190,12 @@ protected:
         va_end(ap);
 #endif
     }
+
+    /* Messages for the FMI logger, independent of PUBLIC_LOGGING: warnings and errors always, others only with debug logging on */
+    void log_message(fmi2Status status, const char* category, const std::string& message);
+
+    /* Sends esmini's own log messages to the FMI logger instead of log.txt and stdout */
+    void setup_esmini_logging();
 
 protected:
     /* Members */

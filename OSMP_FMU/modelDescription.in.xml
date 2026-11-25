@@ -12,15 +12,12 @@
   <CoSimulation
     modelIdentifier="esmini"
     canHandleVariableCommunicationStepSize="true"
-    canNotUseMemoryManagementFunctions="true">
-    <SourceFiles>
-      <File name="esmini.cpp"/>
-    </SourceFiles>
-  </CoSimulation>
+    canNotUseMemoryManagementFunctions="true"/>
   <LogCategories>
     <Category name="FMI" description="Enable logging of all FMI calls"/>
     <Category name="OSMP" description="Enable OSMP-related logging"/>
     <Category name="OSI" description="Enable OSI-related logging"/>
+    <Category name="esmini" description="Messages of esmini (warnings and errors always, infos with debug logging)"/>
   </LogCategories>
   <DefaultExperiment startTime="0.0" stepSize="0.10"/>
   <VendorAnnotations>
@@ -66,37 +63,37 @@
     <ScalarVariable name="OSMPTrafficCommandUpdateIn.base.lo" valueReference="6" causality="input" variability="discrete">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="base.lo" mime-type="application/x-open-simulation-interface; type=TrafficUpdate; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="base.lo" mime-type="application/x-open-simulation-interface; type=TrafficCommandUpdate; version=@OSIVERSION@"/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="OSMPTrafficCommandUpdateIn.base.hi" valueReference="7" causality="input" variability="discrete">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="base.hi" mime-type="application/x-open-simulation-interface; type=TrafficUpdate; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="base.hi" mime-type="application/x-open-simulation-interface; type=TrafficCommandUpdate; version=@OSIVERSION@"/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="OSMPTrafficCommandUpdateIn.size" valueReference="8" causality="input" variability="discrete">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="size" mime-type="application/x-open-simulation-interface; type=TrafficUpdate; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandUpdateIn" role="size" mime-type="application/x-open-simulation-interface; type=TrafficCommandUpdate; version=@OSIVERSION@"/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="OSMPTrafficCommandOut.base.lo" valueReference="9" causality="output" variability="discrete" initial="exact">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="base.lo" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="base.lo" mime-type="application/x-open-simulation-interface; type=TrafficCommand; version=@OSIVERSION@"/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="OSMPTrafficCommandOut.base.hi" valueReference="10" causality="output" variability="discrete" initial="exact">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="base.hi" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="base.hi" mime-type="application/x-open-simulation-interface; type=TrafficCommand; version=@OSIVERSION@"/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="OSMPTrafficCommandOut.size" valueReference="11" causality="output" variability="discrete" initial="exact">
       <Integer start="0"/>
       <Annotations>
-        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="size" mime-type="application/x-open-simulation-interface; type=SensorView; version=@OSIVERSION@"/></Tool>
+        <Tool name="net.pmsf.osmp" xmlns:osmp="http://xsd.pmsf.net/OSISensorModelPackaging"><osmp:osmp-binary-variable name="OSMPTrafficCommandOut" role="size" mime-type="application/x-open-simulation-interface; type=TrafficCommand; version=@OSIVERSION@"/></Tool>
       </Annotations>
     </ScalarVariable>
     <ScalarVariable name="valid" valueReference="0" causality="output" variability="discrete" initial="exact">
