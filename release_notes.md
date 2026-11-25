@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2026-11-25 Version 3.12.1
+
+Improvements and fixes:
+- Fix possible accumulating position error for shifted reference point
+
 ### 2026-11-23 Version 3.12.0
 
 New features:
