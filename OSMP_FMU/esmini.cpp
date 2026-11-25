@@ -5,6 +5,7 @@
 //
 
 #include "esminiLib.hpp"
+#include "logger.hpp"
 
 #include "osi_common.pb.h"
 #include "osi_object.pb.h"
@@ -57,6 +58,91 @@ using namespace std;
 #ifdef PRIVATE_LOG_PATH
 ofstream COSMPDummySource::private_log_file;
 #endif
+
+/*
+ * esmini's Log Messages
+ *
+ * esmini's API is global (one scenario per loaded library), and its logger
+ * calls a plain function without user data, so the instance that receives
+ * esmini's messages is global as well: the one that initialized the scenario.
+ */
+
+namespace
+{
+    EsminiOsiSource* esmini_log_receiver            = nullptr;
+    bool             esmini_log_callback_registered = false;
+
+    void receive_esmini_log(const std::string& message)
+    {
+        if (esmini_log_receiver != nullptr)
+        {
+            esmini_log_receiver->forward_esmini_log(message);
+        }
+    }
+}  // namespace
+
+void EsminiOsiSource::log_message(fmi2Status status, const char* category, const std::string& message)
+{
+    if (functions.logger == nullptr)
+    {
+        return;
+    }
+    if (status == fmi2OK && !(loggingOn && loggingCategories.count(category)))
+    {
+        return;
+    }
+    functions.logger(functions.componentEnvironment, instanceName.c_str(), status, category, "%s", message.c_str());
+}
+
+void EsminiOsiSource::forward_esmini_log(const std::string& message)
+{
+    // esmini's format: "[<simulation time>] [<level>] <text>\n"; the line with the wall-clock time at the start of a
+    // scenario has no level and is skipped
+    const size_t level_start = message.find("] [");
+    if (level_start == std::string::npos)
+    {
+        return;
+    }
+    const size_t level_end = message.find("] ", level_start + 3);
+    if (level_end == std::string::npos)
+    {
+        return;
+    }
+    const std::string level = message.substr(level_start + 3, level_end - level_start - 3);
+    std::string       text  = message.substr(level_end + 2);
+    while (!text.empty() && (text.back() == '\n' || text.back() == '\r'))
+    {
+        text.pop_back();
+    }
+    if (text.empty())
+    {
+        return;
+    }
+
+    fmi2Status status = fmi2OK;
+    if (level == "error")
+    {
+        status = fmi2Error;
+    }
+    else if (level == "warn")
+    {
+        status = fmi2Warning;
+    }
+    log_message(status, "esmini", text);
+}
+
+void EsminiOsiSource::setup_esmini_logging()
+{
+    esmini_log_receiver = this;
+    if (!esmini_log_callback_registered)
+    {
+        txtLogger.RegisterCallback(receive_esmini_log);
+        esmini_log_callback_registered = true;
+    }
+    SE_SetLogFilePath("");                     // no log.txt
+    SE_SetOptionPersistent("disable_stdout");  // nothing on stdout
+    SE_SetOptionValuePersistent("log_level", loggingOn ? "info" : "warn");
+}
 
 /*
  * ProtocolBuffer Accessors
@@ -222,18 +308,28 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
 {
     DEBUGBREAK();
 
+    setup_esmini_logging();
+
     std::string esmini_args = fmi_esmini_args();
     if (esmini_args.empty())
     {
         const std::string xosc_path = fmi_xosc_path();
         if (xosc_path.empty())
         {
-            std::cerr << "No OpenScenario file selected!" << std::endl;
+            log_message(fmi2Error, "esmini", "No OpenSCENARIO file selected: set the parameter xosc_path (or esmini_args)");
             return fmi2Error;
         }
-        if (SE_Init(xosc_path.c_str(), 0, fmi_use_viewer(), 0, 0) != 0)
+        int use_viewer = fmi_use_viewer() ? 1 : 0;
+#ifndef _USE_OSG
+        if (use_viewer != 0)
         {
-            std::cerr << "Failed to initialize the scenario" << std::endl;
+            log_message(fmi2Warning, "esmini", "esmini's viewer is not part of this build; the parameter use_viewer is ignored");
+            use_viewer = 0;
+        }
+#endif
+        if (SE_Init(xosc_path.c_str(), 0, use_viewer, 0, 0) != 0)
+        {
+            log_message(fmi2Error, "esmini", "Failed to initialize the scenario: " + xosc_path);
             return fmi2Error;
         }
     }
@@ -258,7 +354,7 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
         }
         if (SE_InitWithArgs(argc, argv.data()) != 0)
         {
-            std::cerr << "Failed to initialize the scenario" << std::endl;
+            log_message(fmi2Error, "esmini", "Failed to initialize the scenario with the arguments: " + esmini_args);
             return fmi2Error;
         }
     }
@@ -310,7 +406,7 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
     // Run simulation step
     if (SE_StepDT((float)communicationStepSize) != 0)
     {
-        std::cerr << "Failed run simulation step" << std::endl;
+        log_message(fmi2Error, "esmini", "Failed to run the simulation step");
         return fmi2Error;
     }
 
@@ -354,6 +450,13 @@ fmi2Status EsminiOsiSource::doTerm()
 void EsminiOsiSource::doFree()
 {
     DEBUGBREAK();
+
+    // Release esmini's global state; its messages still reach this instance meanwhile
+    if (esmini_log_receiver == this)
+    {
+        SE_Close();
+        esmini_log_receiver = nullptr;
+    }
 }
 
 /*
@@ -383,6 +486,7 @@ EsminiOsiSource::EsminiOsiSource(fmi2String                   theinstanceName,
     loggingCategories.insert("FMI");
     loggingCategories.insert("OSMP");
     loggingCategories.insert("OSI");
+    loggingCategories.insert("esmini");
 }
 
 EsminiOsiSource::~EsminiOsiSource()
@@ -408,6 +512,8 @@ fmi2Status EsminiOsiSource::SetDebugLogging(fmi2Boolean theloggingOn, size_t nCa
                 loggingCategories.insert("OSMP");
             else if (0 == strcmp(categories[i], "OSI"))
                 loggingCategories.insert("OSI");
+            else if (0 == strcmp(categories[i], "esmini"))
+                loggingCategories.insert("esmini");
         }
     }
     else
@@ -416,6 +522,12 @@ fmi2Status EsminiOsiSource::SetDebugLogging(fmi2Boolean theloggingOn, size_t nCa
         loggingCategories.insert("FMI");
         loggingCategories.insert("OSMP");
         loggingCategories.insert("OSI");
+        loggingCategories.insert("esmini");
+    }
+    if (esmini_log_receiver == this)
+    {
+        SE_SetOptionValuePersistent("log_level", loggingOn ? "info" : "warn");
+        txtLogger.SetLoggerVerbosity();
     }
     return fmi2OK;
 }
