@@ -27,7 +27,7 @@ User guide: https://esmini.github.io
 
 Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under [Binaries and demos](#binaries-and-demos).
 
-esmini supports OpenSCENARIO XML v1.0 - v1.3. However, please note that feature [coverage](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) is limited. The functionality grows slow but steady, based on need and contributions.
+esmini supports selected features from the (OpenX) standards OpenSCENARIO XML (v1.0-v1.4), OpenDRIVE (v1.4-v1.9) and OSI (3.5,3.8). Feature coverage is limited, see [osc_coverage.txt](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) and [odr_coverage.txt](https://github.com/esmini/esmini/blob/master/odr_coverage.txt) for an indication (may not be fully up to date). Capabilities are added slowly but steadily, driven by need and contributions.
 
 There is currently no plan to support OpenSCENARIO DSL.
 
