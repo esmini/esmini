@@ -10,7 +10,7 @@ fi
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd -- "$script_dir/../../.." && pwd)"
 build_dir="${script_dir}/build"
-example_dir="${script_dir}/example"
+app_dir="${repo_root}/EnvironmentSimulator/Applications/esmini-wasm"
 patched_fmt_root="${build_dir}/patched-externals/fmt"
 patched_fmt_include_dir="${patched_fmt_root}/include"
 fmt_patch="${repo_root}/scripts/patches/fmt-11.2.0-emscripten-cstdlib.patch"
@@ -58,9 +58,9 @@ cd "$build_dir"
 emcmake cmake -DCMAKE_BUILD_TYPE=Release -DFMT_OVERRIDE_INCLUDE_DIR="$patched_fmt_include_dir" ..
 cmake --build . --parallel "$parallel_jobs"
 
-cp -f esmini.js "$example_dir/"
+cp -f esmini.js "$app_dir/"
 if [[ -f esmini.wasm ]]; then
-    cp -f esmini.wasm "$example_dir/"
+    cp -f esmini.wasm "$app_dir/"
 fi
 
-echo "Built esminiJS artifacts in $build_dir and copied runtime files to $example_dir"
+echo "Built esminiJS artifacts in $build_dir and copied runtime files to $app_dir"
