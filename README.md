@@ -25,7 +25,7 @@ Repository: <https://github.com/esmini/esmini>
 
 User guide: https://esmini.github.io
 
-Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under [Binaries and demos](#binaries-and-demos).
+Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini-demo/run/esmini" and run any of the example scripts. See more info below under [Binaries and demos](#binaries-and-demos).
 
 esmini supports OpenSCENARIO XML v1.0 - v1.3. However, please note that feature [coverage](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) is limited. The functionality grows slow but steady, based on need and contributions.
 
@@ -46,7 +46,7 @@ Windows, Linux and Mac supported
 
 Latest release including source, binaries and demo packages is found here: https://github.com/esmini/esmini/releases/latest
 
-Some example scenarios make use of pre-created 3D models, which are included in the demo packages. They are also available [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0). Unpack into esmini/resources. These assets works on all platforms.
+Some example scenarios make use of pre-created 3D models, which are included in the demo packages. They are also available [here](https://www.dropbox.com/scl/fi/3jwz3ie6xkgpga33cbyju/models_with_lights.7z?rlkey=9obptnofidldoagn4154iyntl&st=zxoupatb&dl=1). Unpack into esmini/resources (into a `models` subfolder). These assets work on all platforms.
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.mscsoftware.com/solutions/3d-environment-road-network).
 
 See [User Guide](https://esmini.github.io) for more information.
